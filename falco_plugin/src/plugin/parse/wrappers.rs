@@ -35,7 +35,7 @@ impl<T: ParsePlugin + 'static> ParsePluginApi<T> {
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C" fn plugin_get_parse_event_types<T: ParsePlugin>(
+pub unsafe extern "C-unwind" fn plugin_get_parse_event_types<T: ParsePlugin>(
     numtypes: *mut u32,
     _plugin: *mut ss_plugin_t,
 ) -> *mut u16 {
@@ -49,7 +49,8 @@ pub unsafe extern "C" fn plugin_get_parse_event_types<T: ParsePlugin>(
 }
 
 //noinspection DuplicatedCode
-pub extern "C" fn plugin_get_parse_event_sources<T: ParsePlugin + 'static>() -> *const c_char {
+pub extern "C-unwind" fn plugin_get_parse_event_sources<T: ParsePlugin + 'static>() -> *const c_char
+{
     static SOURCES: Mutex<BTreeMap<TypeId, CString>> = Mutex::new(BTreeMap::new());
 
     let ty = TypeId::of::<T>();
@@ -69,7 +70,7 @@ pub extern "C" fn plugin_get_parse_event_sources<T: ParsePlugin + 'static>() -> 
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C" fn plugin_parse_event<T: ParsePlugin>(
+pub unsafe extern "C-unwind" fn plugin_parse_event<T: ParsePlugin>(
     plugin: *mut ss_plugin_t,
     event: *const ss_plugin_event_input,
     parse_input: *const ss_plugin_event_parse_input,

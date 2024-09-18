@@ -34,14 +34,14 @@ impl<T: ExtractPlugin> ExtractPluginApi<T> {
     };
 }
 
-pub extern "C" fn plugin_get_fields<T: ExtractPlugin>() -> *const c_char {
+pub extern "C-unwind" fn plugin_get_fields<T: ExtractPlugin>() -> *const c_char {
     T::get_fields().as_ptr()
 }
 
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C" fn plugin_get_extract_event_types<T: ExtractPlugin>(
+pub unsafe extern "C-unwind" fn plugin_get_extract_event_types<T: ExtractPlugin>(
     numtypes: *mut u32,
     _plugin: *mut ss_plugin_t,
 ) -> *mut u16 {
@@ -51,7 +51,7 @@ pub unsafe extern "C" fn plugin_get_extract_event_types<T: ExtractPlugin>(
 }
 
 //noinspection DuplicatedCode
-pub extern "C" fn plugin_get_extract_event_sources<T: ExtractPlugin>() -> *const c_char {
+pub extern "C-unwind" fn plugin_get_extract_event_sources<T: ExtractPlugin>() -> *const c_char {
     static SOURCES: Mutex<BTreeMap<TypeId, CString>> = Mutex::new(BTreeMap::new());
     let ty = TypeId::of::<T>();
     let mut sources_map = SOURCES.lock().unwrap();
@@ -70,7 +70,7 @@ pub extern "C" fn plugin_get_extract_event_sources<T: ExtractPlugin>() -> *const
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C" fn plugin_extract_fields<T: ExtractPlugin>(
+pub unsafe extern "C-unwind" fn plugin_extract_fields<T: ExtractPlugin>(
     plugin: *mut ss_plugin_t,
     event_input: *const ss_plugin_event_input,
     extract_input: *const ss_plugin_field_extract_input,

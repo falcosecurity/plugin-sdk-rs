@@ -46,12 +46,12 @@ impl Drop for Routine {
 #[derive(Debug)]
 pub struct ThreadPool {
     owner: *mut ss_plugin_owner_t,
-    subscribe: unsafe extern "C" fn(
+    subscribe: unsafe extern "C-unwind" fn(
         o: *mut ss_plugin_owner_t,
         f: ss_plugin_routine_fn_t,
         i: *mut ss_plugin_routine_state_t,
     ) -> *mut ss_plugin_routine_t,
-    unsubscribe: unsafe extern "C" fn(
+    unsubscribe: unsafe extern "C-unwind" fn(
         o: *mut ss_plugin_owner_t,
         r: *mut ss_plugin_routine_t,
     ) -> ss_plugin_rc,
@@ -87,7 +87,7 @@ impl ThreadPool {
     where
         F: FnMut() -> ControlFlow<()> + Send + 'static,
     {
-        unsafe extern "C" fn cb_wrapper<F>(
+        unsafe extern "C-unwind" fn cb_wrapper<F>(
             _plugin: *mut ss_plugin_t,
             data: *mut ss_plugin_routine_state_t,
         ) -> ss_plugin_bool
@@ -110,7 +110,7 @@ impl ThreadPool {
 
         let callback = Some(
             cb_wrapper::<F>
-                as unsafe extern "C" fn(
+                as unsafe extern "C-unwind" fn(
                     _plugin: *mut ss_plugin_t,
                     data: *mut ss_plugin_routine_state_t,
                 ) -> ss_plugin_bool,

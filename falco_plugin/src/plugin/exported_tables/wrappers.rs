@@ -15,7 +15,7 @@ use num_traits::FromPrimitive;
 use std::ffi::{c_char, CStr};
 
 // SAFETY: `table` must be a valid pointer to Table<K,E>
-unsafe extern "C" fn get_table_name<K, E>(table: *mut ss_plugin_table_t) -> *const c_char
+unsafe extern "C-unwind" fn get_table_name<K, E>(table: *mut ss_plugin_table_t) -> *const c_char
 where
     K: Key + Ord + Clone,
     E: Entry,
@@ -30,7 +30,7 @@ where
 }
 
 // SAFETY: `table` must be a valid pointer to Table<K,E>
-unsafe extern "C" fn get_table_size<K, E>(table: *mut ss_plugin_table_t) -> u64
+unsafe extern "C-unwind" fn get_table_size<K, E>(table: *mut ss_plugin_table_t) -> u64
 where
     K: Key + Ord + Clone,
     E: Entry,
@@ -46,7 +46,7 @@ where
 
 // SAFETY: `table` must be a valid pointer to Table<K,E>
 // SAFETY: `key` must be a valid pointer to ss_plugin_state_data
-unsafe extern "C" fn get_table_entry<K, E>(
+unsafe extern "C-unwind" fn get_table_entry<K, E>(
     table: *mut ss_plugin_table_t,
     key: *const ss_plugin_state_data,
 ) -> *mut ss_plugin_table_entry_t
@@ -72,7 +72,7 @@ where
 }
 
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn read_entry_field<K, E>(
+unsafe extern "C-unwind" fn read_entry_field<K, E>(
     table: *mut ss_plugin_table_t,
     entry: *mut ss_plugin_table_entry_t,
     field: *const ss_plugin_table_field_t,
@@ -102,7 +102,7 @@ where
 }
 
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn release_table_entry<E>(
+unsafe extern "C-unwind" fn release_table_entry<E>(
     _table: *mut ss_plugin_table_t,
     entry: *mut ss_plugin_table_entry_t,
 ) where
@@ -117,7 +117,7 @@ unsafe extern "C" fn release_table_entry<E>(
 }
 
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn iterate_entries<K, E>(
+unsafe extern "C-unwind" fn iterate_entries<K, E>(
     table: *mut ss_plugin_table_t,
     func: ss_plugin_table_iterator_func_t,
     state: *mut ss_plugin_table_iterator_state_t,
@@ -145,7 +145,7 @@ where
 }
 
 // SAFETY: `table` must be a valid pointer to Table<K,E>
-unsafe extern "C" fn clear_table<K, E>(table: *mut ss_plugin_table_t) -> ss_plugin_rc
+unsafe extern "C-unwind" fn clear_table<K, E>(table: *mut ss_plugin_table_t) -> ss_plugin_rc
 where
     K: Key + Ord + Clone,
     E: Entry,
@@ -162,7 +162,7 @@ where
 
 // TODO(spec) is removing a nonexistent entry an error?
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn erase_table_entry<K, E>(
+unsafe extern "C-unwind" fn erase_table_entry<K, E>(
     table: *mut ss_plugin_table_t,
     key: *const ss_plugin_state_data,
 ) -> ss_plugin_rc
@@ -185,7 +185,7 @@ where
 }
 
 // SAFETY: `table` must be a valid pointer to Table<K,E>
-unsafe extern "C" fn create_table_entry<K, E>(
+unsafe extern "C-unwind" fn create_table_entry<K, E>(
     table: *mut ss_plugin_table_t,
 ) -> *mut ss_plugin_table_entry_t
 where
@@ -207,7 +207,7 @@ where
 
 // TODO(spec) what if the entry already exists?
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn add_table_entry<K, E>(
+unsafe extern "C-unwind" fn add_table_entry<K, E>(
     table: *mut ss_plugin_table_t,
     key: *const ss_plugin_state_data,
     entry: *mut ss_plugin_table_entry_t,
@@ -239,7 +239,7 @@ where
 }
 
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn write_entry_field<K, E>(
+unsafe extern "C-unwind" fn write_entry_field<K, E>(
     table: *mut ss_plugin_table_t,
     entry: *mut ss_plugin_table_entry_t,
     field: *const ss_plugin_table_field_t,
@@ -268,7 +268,7 @@ where
 }
 
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn list_table_fields<K, E>(
+unsafe extern "C-unwind" fn list_table_fields<K, E>(
     table: *mut ss_plugin_table_t,
     nfields: *mut u32,
 ) -> *const ss_plugin_table_fieldinfo
@@ -288,7 +288,7 @@ where
 }
 
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn get_table_field<K, E>(
+unsafe extern "C-unwind" fn get_table_field<K, E>(
     table: *mut ss_plugin_table_t,
     name: *const c_char,
     data_type: ss_plugin_state_type,
@@ -318,7 +318,7 @@ where
 }
 
 // SAFETY: all pointers must be valid
-unsafe extern "C" fn add_table_field<K, E>(
+unsafe extern "C-unwind" fn add_table_field<K, E>(
     table: *mut ss_plugin_table_t,
     name: *const c_char,
     data_type: ss_plugin_state_type,

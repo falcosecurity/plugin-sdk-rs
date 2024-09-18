@@ -31,27 +31,29 @@ pub enum TableError {
 #[derive(Debug)]
 pub struct TableReader {
     pub(in crate::plugin::tables) get_table_name:
-        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
     pub(in crate::plugin::tables) get_table_size:
-        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> u64,
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64,
     pub(in crate::plugin::tables) get_table_entry:
-        unsafe extern "C" fn(
+        unsafe extern "C-unwind" fn(
             t: *mut ss_plugin_table_t,
             key: *const ss_plugin_state_data,
         ) -> *mut ss_plugin_table_entry_t,
-    pub(in crate::plugin::tables) read_entry_field: unsafe extern "C" fn(
+    pub(in crate::plugin::tables) read_entry_field: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         e: *mut ss_plugin_table_entry_t,
         f: *const ss_plugin_table_field_t,
         out: *mut ss_plugin_state_data,
-    ) -> ss_plugin_rc,
+    )
+        -> ss_plugin_rc,
     pub(in crate::plugin::tables) release_table_entry:
-        unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    pub(in crate::plugin::tables) iterate_entries: unsafe extern "C" fn(
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+    pub(in crate::plugin::tables) iterate_entries: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         it: ss_plugin_table_iterator_func_t,
         s: *mut ss_plugin_table_iterator_state_t,
-    ) -> ss_plugin_bool,
+    )
+        -> ss_plugin_bool,
 
     pub(in crate::plugin::tables) last_error: LastError,
 }
@@ -91,27 +93,29 @@ impl TableReader {
 #[derive(Debug)]
 pub struct TableWriter {
     pub(in crate::plugin::tables) clear_table:
-        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
-    pub(in crate::plugin::tables) erase_table_entry: unsafe extern "C" fn(
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
+    pub(in crate::plugin::tables) erase_table_entry: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         key: *const ss_plugin_state_data,
-    ) -> ss_plugin_rc,
+    )
+        -> ss_plugin_rc,
     pub(in crate::plugin::tables) create_table_entry:
-        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
     pub(in crate::plugin::tables) destroy_table_entry:
-        unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
     pub(in crate::plugin::tables) add_table_entry:
-        unsafe extern "C" fn(
+        unsafe extern "C-unwind" fn(
             t: *mut ss_plugin_table_t,
             key: *const ss_plugin_state_data,
             entry: *mut ss_plugin_table_entry_t,
         ) -> *mut ss_plugin_table_entry_t,
-    pub(in crate::plugin::tables) write_entry_field: unsafe extern "C" fn(
+    pub(in crate::plugin::tables) write_entry_field: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         e: *mut ss_plugin_table_entry_t,
         f: *const ss_plugin_table_field_t,
         in_: *const ss_plugin_state_data,
-    ) -> ss_plugin_rc,
+    )
+        -> ss_plugin_rc,
 
     pub(in crate::plugin::tables) last_error: LastError,
 }
@@ -148,18 +152,18 @@ impl TableWriter {
 #[derive(Debug)]
 pub struct TableFields {
     pub(in crate::plugin::tables) list_table_fields:
-        unsafe extern "C" fn(
+        unsafe extern "C-unwind" fn(
             t: *mut ss_plugin_table_t,
             nfields: *mut u32,
         ) -> *const ss_plugin_table_fieldinfo,
     pub(in crate::plugin::tables) get_table_field:
-        unsafe extern "C" fn(
+        unsafe extern "C-unwind" fn(
             t: *mut ss_plugin_table_t,
             name: *const ::std::os::raw::c_char,
             data_type: ss_plugin_state_type,
         ) -> *mut ss_plugin_table_field_t,
     pub(in crate::plugin::tables) add_table_field:
-        unsafe extern "C" fn(
+        unsafe extern "C-unwind" fn(
             t: *mut ss_plugin_table_t,
             name: *const ::std::os::raw::c_char,
             data_type: ss_plugin_state_type,
@@ -190,17 +194,18 @@ impl TableFields {
 pub struct TablesInput {
     owner: *mut ss_plugin_owner_t,
     pub(in crate::plugin::tables) last_error: LastError,
-    pub(in crate::plugin::tables) list_tables: unsafe extern "C" fn(
-        o: *mut ss_plugin_owner_t,
-        ntables: *mut u32,
-    )
-        -> *mut ss_plugin_table_info,
-    pub(in crate::plugin::tables) get_table: unsafe extern "C" fn(
+    pub(in crate::plugin::tables) list_tables:
+        unsafe extern "C-unwind" fn(
+            o: *mut ss_plugin_owner_t,
+            ntables: *mut u32,
+        ) -> *mut ss_plugin_table_info,
+    pub(in crate::plugin::tables) get_table: unsafe extern "C-unwind" fn(
         o: *mut ss_plugin_owner_t,
         name: *const ::std::os::raw::c_char,
         key_type: ss_plugin_state_type,
-    ) -> *mut ss_plugin_table_t,
-    pub(in crate::plugin::tables) add_table: unsafe extern "C" fn(
+    )
+        -> *mut ss_plugin_table_t,
+    pub(in crate::plugin::tables) add_table: unsafe extern "C-unwind" fn(
         o: *mut ss_plugin_owner_t,
         in_: *const ss_plugin_table_input,
     ) -> ss_plugin_rc,

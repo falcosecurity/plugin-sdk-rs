@@ -13,7 +13,7 @@ use std::sync::RwLock;
 
 pub(super) struct FalcoPluginLoggerImpl {
     pub(super) owner: *mut ss_plugin_owner_t,
-    pub(super) logger_fn: unsafe extern "C" fn(
+    pub(super) logger_fn: unsafe extern "C-unwind" fn(
         o: *mut ss_plugin_owner_t,
         component: *const c_char,
         msg: *const c_char,

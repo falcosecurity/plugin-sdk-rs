@@ -9,8 +9,9 @@ use falco_plugin_api::{
 pub struct RawEntry {
     pub(crate) table: *mut ss_plugin_table_t,
     pub(crate) entry: *mut ss_plugin_table_entry_t,
-    pub(crate) destructor:
-        Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t)>,
+    pub(crate) destructor: Option<
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+    >,
 }
 
 impl RawEntry {

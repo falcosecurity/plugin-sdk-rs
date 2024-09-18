@@ -14,7 +14,7 @@ use std::ffi::c_char;
 #[derive(Debug)]
 pub struct AsyncHandler {
     pub(crate) owner: *mut ss_plugin_owner_t,
-    pub(crate) raw_handler: unsafe extern "C" fn(
+    pub(crate) raw_handler: unsafe extern "C-unwind" fn(
         o: *mut ss_plugin_owner_t,
         evt: *const ss_plugin_event,
         err: *mut c_char,

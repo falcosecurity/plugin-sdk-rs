@@ -285,7 +285,7 @@ impl RawTable {
 
 fn iter_inner<F>(
     table: *mut ss_plugin_table_t,
-    iterate_entries: unsafe extern "C" fn(
+    iterate_entries: unsafe extern "C-unwind" fn(
         *mut ss_plugin_table_t,
         it: ss_plugin_table_iterator_func_t,
         s: *mut ss_plugin_table_iterator_state_t,
@@ -295,7 +295,7 @@ fn iter_inner<F>(
 where
     F: FnMut(*mut ss_plugin_table_entry_t) -> bool,
 {
-    extern "C" fn iter_wrapper<WF>(
+    extern "C-unwind" fn iter_wrapper<WF>(
         s: *mut ss_plugin_table_iterator_state_t,
         entry: *mut ss_plugin_table_entry_t,
     ) -> ss_plugin_bool

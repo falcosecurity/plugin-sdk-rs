@@ -31,7 +31,8 @@ impl<T: AsyncEventPlugin + 'static> AsyncPluginApi<T> {
     };
 }
 
-pub extern "C" fn plugin_get_async_event_sources<T: AsyncEventPlugin + 'static>() -> *const c_char {
+pub extern "C-unwind" fn plugin_get_async_event_sources<T: AsyncEventPlugin + 'static>(
+) -> *const c_char {
     static SOURCES: Mutex<BTreeMap<TypeId, CString>> = Mutex::new(BTreeMap::new());
 
     let ty = TypeId::of::<T>();
@@ -48,7 +49,7 @@ pub extern "C" fn plugin_get_async_event_sources<T: AsyncEventPlugin + 'static>(
         .as_ptr()
 }
 
-pub extern "C" fn plugin_get_async_events<T: AsyncEventPlugin + 'static>() -> *const c_char {
+pub extern "C-unwind" fn plugin_get_async_events<T: AsyncEventPlugin + 'static>() -> *const c_char {
     static EVENTS: Mutex<BTreeMap<TypeId, CString>> = Mutex::new(BTreeMap::new());
 
     let ty = TypeId::of::<T>();
@@ -68,7 +69,7 @@ pub extern "C" fn plugin_get_async_events<T: AsyncEventPlugin + 'static>() -> *c
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C" fn plugin_set_async_event_handler<T: AsyncEventPlugin>(
+pub unsafe extern "C-unwind" fn plugin_set_async_event_handler<T: AsyncEventPlugin>(
     plugin: *mut ss_plugin_t,
     owner: *mut ss_plugin_owner_t,
     handler: ss_plugin_async_event_handler_t,
