@@ -18,7 +18,7 @@ thread-safe-tables = ["dep:parking_lot"]
 [dependencies]
 thiserror = "1.0.58"
 falco_event = { path = "../falco_event", version = "0.1.2" }
-falco_plugin_api = { path = "../falco_plugin_api", version = "0.1.2" }
+falco_plugin_api = { path = "../falco_plugin_api", version = "0.2.0" }
 falco_plugin_derive = { path = "../falco_plugin_derive", version = "0.2.0" }
 serde = "1.0.197"
 serde_json = "1.0.114"

@@ -204,7 +204,7 @@ dependencies = [
 
 [[package]]
 name = "falco_plugin_api"
-version = "0.1.2"
+version = "0.2.0"
 
 [[package]]
 name = "falco_plugin_derive"
