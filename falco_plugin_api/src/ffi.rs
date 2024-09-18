@@ -830,9 +830,15 @@ fn bindgen_test_layout_ss_plugin_extract_field() {
         )
     );
 }
-pub type ss_plugin_table_t = ::std::os::raw::c_void;
-pub type ss_plugin_table_entry_t = ::std::os::raw::c_void;
-pub type ss_plugin_table_field_t = ::std::os::raw::c_void;
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_plugin_table_t(pub ::std::os::raw::c_void);
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_plugin_table_entry_t(pub ::std::os::raw::c_void);
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_plugin_table_field_t(pub ::std::os::raw::c_void);
 pub const ss_plugin_state_type_SS_PLUGIN_ST_INT8: ss_plugin_state_type = 1;
 pub const ss_plugin_state_type_SS_PLUGIN_ST_INT16: ss_plugin_state_type = 2;
 pub const ss_plugin_state_type_SS_PLUGIN_ST_INT32: ss_plugin_state_type = 3;
@@ -1079,9 +1085,15 @@ fn bindgen_test_layout_ss_plugin_table_fieldinfo() {
         )
     );
 }
-pub type ss_plugin_owner_t = ::std::os::raw::c_void;
-pub type ss_plugin_t = ::std::os::raw::c_void;
-pub type ss_instance_t = ::std::os::raw::c_void;
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_plugin_owner_t(pub ::std::os::raw::c_void);
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_plugin_t(pub ::std::os::raw::c_void);
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_instance_t(pub ::std::os::raw::c_void);
 pub const ss_plugin_log_severity_SS_PLUGIN_LOG_SEV_FATAL: ss_plugin_log_severity = 1;
 pub const ss_plugin_log_severity_SS_PLUGIN_LOG_SEV_CRITICAL: ss_plugin_log_severity = 2;
 pub const ss_plugin_log_severity_SS_PLUGIN_LOG_SEV_ERROR: ss_plugin_log_severity = 3;
@@ -1491,7 +1503,9 @@ fn bindgen_test_layout_ss_plugin_table_reader_vtable() {
         )
     );
 }
-pub type ss_plugin_table_iterator_state_t = ::std::os::raw::c_void;
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_plugin_table_iterator_state_t(pub ::std::os::raw::c_void);
 pub type ss_plugin_table_iterator_func_t = ::std::option::Option<
     unsafe extern "C-unwind" fn(
         s: *mut ss_plugin_table_iterator_state_t,
@@ -2356,8 +2370,12 @@ fn bindgen_test_layout_ss_plugin_set_config_input() {
         )
     );
 }
-pub type ss_plugin_routine_t = ::std::os::raw::c_void;
-pub type ss_plugin_routine_state_t = ::std::os::raw::c_void;
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_plugin_routine_t(pub ::std::os::raw::c_void);
+#[repr(transparent)]
+#[derive(Debug)]
+pub struct ss_plugin_routine_state_t(pub ::std::os::raw::c_void);
 pub type ss_plugin_routine_fn_t = ::std::option::Option<
     unsafe extern "C-unwind" fn(
         s: *mut ss_plugin_t,

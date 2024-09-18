@@ -18,5 +18,17 @@ categories = ["external-ffi-bindings"]
 cmd = [
     "wget https://raw.githubusercontent.com/falcosecurity/libs/master/userspace/plugin/plugin_types.h -O plugin/plugin_types.h",
     "wget https://raw.githubusercontent.com/falcosecurity/libs/master/userspace/plugin/plugin_api.h -O plugin/plugin_api.h",
-    "bindgen plugin/plugin_api.h --no-debug 'ss_plugin_table_info|ss_plugin_table_fieldinfo' --override-abi '.*=C-unwind' -- -I. > src/ffi.rs"]
+    """bindgen plugin/plugin_api.h \
+        --new-type-alias ss_plugin_table_t --no-copy ss_plugin_table_t \
+        --new-type-alias ss_plugin_table_entry_t --no-copy ss_plugin_table_entry_t \
+        --new-type-alias ss_plugin_table_field_t --no-copy ss_plugin_table_field_t \
+        --new-type-alias ss_plugin_owner_t --no-copy ss_plugin_owner_t \
+        --new-type-alias ss_plugin_t --no-copy ss_plugin_t \
+        --new-type-alias ss_instance_t --no-copy ss_instance_t \
+        --new-type-alias ss_plugin_table_iterator_state_t --no-copy ss_plugin_table_iterator_state_t \
+        --new-type-alias ss_plugin_routine_t --no-copy ss_plugin_routine_t \
+        --new-type-alias ss_plugin_routine_state_t --no-copy ss_plugin_routine_state_t \
+        --no-debug 'ss_plugin_table_info|ss_plugin_table_fieldinfo' \
+        --override-abi '.*=C-unwind' \
+        -- -I. > src/ffi.rs"""]
 working_dir = "."
