@@ -11,6 +11,9 @@ use std::ops::{Deref, DerefMut};
 ///
 /// This type implements [`Deref`] and [`DerefMut`], so you do not need any extra
 /// code when accessing the actual data.
+///
+/// **Note**: the wrapped type must implement [`Default`] as entries may be created
+/// over the plugin API without any interaction with your plugin code.
 #[derive(Debug)]
 pub struct Private<T>(T);
 
