@@ -33,7 +33,7 @@ use std::fmt::{Debug, Formatter};
 ///
 /// See [`crate::tables::export`] for details.
 ///
-/// The implementation it's *not* thread-safe.
+/// The implementation it's thread-safe when the `thread-safe-tables` feature is enabled.
 #[must_use]
 pub struct Table<K, E>
 where
