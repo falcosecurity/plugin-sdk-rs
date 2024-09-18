@@ -585,7 +585,7 @@ pub mod listen {
 /// | source      | no access            | no access       |
 /// | parse       | full access          | read/write      |
 /// | extract     | full access ^2       | read only       |
-/// | listen      | full access          | n/a             |
+/// | listen      | full access          | n/a ^3          |
 /// | async       | no access            | no access       |
 ///
 /// **Notes**:
