@@ -34,6 +34,7 @@ use std::fmt::{Debug, Formatter};
 /// See [`crate::tables::export`] for details.
 ///
 /// The implementation it's *not* thread-safe.
+#[must_use]
 pub struct Table<K, E>
 where
     K: Key + Ord + Clone,
