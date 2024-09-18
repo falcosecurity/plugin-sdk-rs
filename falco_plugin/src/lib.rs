@@ -553,8 +553,15 @@ pub mod listen {
 /// Any other types are not supported, including in particular e.g. collections (`Vec<T>`),
 /// enums or any structs.
 ///
-/// Using tables as fields (nested tables) is currently very experimental and doesn't really
-/// work yet.
+/// # Nested tables
+///
+/// Fields can also have a table type. This amounts to nested tables, like:
+/// ```ignore
+/// let fd_type = threads[tid].file_descriptors[fd].fd_type;
+/// ```
+///
+/// One important limitation is that you cannot add a nested table at runtime, so the only
+/// nested tables that exist are defined by the plugin (or Falco core) which owns the parent table.
 ///
 /// # Exporting and importing tables
 ///
@@ -644,6 +651,13 @@ pub mod tables {
     /// It lets you use a struct type as a parameter to [`export::Table`]. You can then create
     /// a new table using [`TablesInput::add_table`].
     ///
+    /// Every field in the entry struct must be wrapped in [`Public`](`crate::tables::export::Public`),
+    /// [`Private`](`crate::tables::export::Private`) or [`Readonly`](`crate::tables::export::Readonly`),
+    /// except for nested tables. These just need to be a `Box<Table<K, E>>`, as it makes no sense
+    /// to have a private nested table and the distinction between writable and readonly is meaningless
+    /// for tables (they have no setter to replace the whole table and you can always add/remove
+    /// entries from the nested table).
+    ///
     /// # Example
     ///
     /// ```
@@ -722,6 +736,15 @@ pub mod tables {
     /// # use std::sync::Arc;
     /// # use falco_plugin::tables::import::{Entry, Field, Table, TableMetadata};
     /// #
+    /// type NestedThing = Entry<Arc<NestedThingMetadata>>;
+    /// type NestedThingTable = Table<u64, NestedThing>;
+    ///
+    /// #[derive(TableMetadata)]
+    /// #[entry_type(NestedThing)]
+    /// struct NestedThingMetadata {
+    ///     number: Field<u64, NestedThing>,
+    /// }
+    ///
     /// type ImportedThing = Entry<Arc<ImportedThingMetadata>>;
     /// type ImportedThingTable = Table<u64, ImportedThing>;
     ///
@@ -729,6 +752,7 @@ pub mod tables {
     /// #[entry_type(ImportedThing)]
     /// struct ImportedThingMetadata {
     ///     imported: Field<u64, ImportedThing>,
+    ///     nested: Field<NestedThingTable, ImportedThing>,
     ///
     ///     #[name(c"type")]
     ///     thing_type: Field<u64, ImportedThing>,
@@ -766,7 +790,9 @@ pub mod tables {
     /// ## Generated methods
     ///
     /// Each scalar field gets a getter and setter method, e.g. declaring a metadata struct like
-    /// the above example will generate the following methods **on the `ImportedThing` type**:
+    /// the above example will generate the following methods **on the `ImportedThing` type**
+    /// (for the scalar fields):
+    ///
     /// ```ignore
     /// fn get_imported(&self, reader: &TableReader) -> Result<u64, anyhow::Error>;
     /// fn set_imported(&self, writer: &TableWriter, value: &u64) -> Result<(), anyhow::Error>;
@@ -778,11 +804,17 @@ pub mod tables {
     /// fn set_added(&self, writer: &TableWriter, value: &CStr) -> Result<(), anyhow::Error>;
     /// ```
     ///
+    /// Each table-typed field (nested table) gets a getter and a nested getter, so the above example
+    /// will generate the following methods for the `nested` field:
+    ///
+    /// ```ignore
+    /// fn get_nested(&self, reader: &TableReader) -> Result<NestedThingTable, anyhow::Error>;
+    /// fn get_nested_by_key(&self, reader: &TableReader, key: &u64)
+    ///     -> Result<NestedThing, anyhow::Error>;
+    /// ```
+    ///
     /// **Note**: setters do not take `&mut self` as all the mutation happens on the other side
     /// of the API (presumably in another plugin).
-    ///
-    /// **Note**: non-scalar fields are limited to nested tables, which are disabled for now
-    /// (due to issues within the plugin API itself), so the description above applies to all types.
     ///
     /// # Example
     ///
