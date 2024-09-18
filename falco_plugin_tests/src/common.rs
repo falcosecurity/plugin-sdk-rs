@@ -29,7 +29,7 @@ pub struct CaptureNotStarted;
 pub struct CaptureStarted;
 
 #[repr(transparent)]
-pub struct Api(pub falco_plugin_api::plugin_api);
+pub struct Api(pub falco_plugin::api::plugin_api);
 
 unsafe impl ExternType for Api {
     type Id = type_id!("falco_plugin_api");

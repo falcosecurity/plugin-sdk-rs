@@ -7,7 +7,6 @@ edition = "2021"
 anyhow = "1.0.88"
 cxx = { version = "1.0.124", features = ["c++17"] }
 falco_plugin = { path = "../falco_plugin" }
-falco_plugin_api = { version = "0.1.1", path = "../falco_plugin_api" }
 log = "0.4.22"
 
 [build-dependencies]

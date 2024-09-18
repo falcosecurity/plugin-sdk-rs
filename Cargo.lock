@@ -223,7 +223,6 @@ dependencies = [
  "cxx",
  "cxx-build",
  "falco_plugin",
- "falco_plugin_api",
  "log",
  "pkg-config",
 ]
