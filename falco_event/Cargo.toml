@@ -13,7 +13,6 @@ categories = ["api-bindings"]
 [dependencies]
 byteorder = "1.5.0"
 falco_event_derive = { path = "../falco_event_derive", version = "0.2.0" }
-falco_plugin_api = { path = "../falco_plugin_api", version = "0.1.1" }
 memchr = "2.7.1"
 num-derive = "0.4.2"
 num-traits = "0.2.17"

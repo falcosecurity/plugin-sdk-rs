@@ -163,7 +163,6 @@ dependencies = [
  "byteorder",
  "chrono",
  "falco_event_derive",
- "falco_plugin_api",
  "hexdump",
  "memchr",
  "nix",
