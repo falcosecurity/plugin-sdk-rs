@@ -17,6 +17,21 @@ library, you need to:
 1. Specify `crate_type = ["dylib"]` in the `[lib]` section of `Cargo.toml`,
 2. Invoke [`plugin!`] and all the macros corresponding to the capabilities your plugin implements.
 
+The most basic `Cargo.toml` file for a dynamically linked plugin without any dependencies could be:
+
+```toml
+[package]
+name = "my-plugin"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+falco_plugin = "0.3.0"
+```
+
 The general layout of your plugin code would be:
 
 ```ignore
@@ -65,6 +80,23 @@ For a statically linked plugin, you need to:
 1. Specify `crate_type = ["staticlib"]` in the `[lib]` section of `Cargo.toml`,
 2. Invoke the [`static_plugin!`] macro. You do not need to handle individual capabilities.
 
+The most basic `Cargo.toml` file for a statically linked plugin without any dependencies could be:
+
+```toml
+[package]
+name = "my-plugin"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+falco_plugin = "0.3.0"
+```
+
+The outline of the plugin code would look like:
+
 ```ignore
 struct MyPlugin { /* ... */ }
 
@@ -80,6 +112,19 @@ static_plugin!(MY_PLUGIN_API = MyPlugin);
 ```
 
 Loading and configuring a statically linked plugin entirely depends on the application you're linking it into.
+
+### Building static and dynamic plugins from a single codebase
+
+You cannot have static and dynamic plugin built from a single crate. Linking multiple dynamic plugins into a single
+library will have conflicting symbols between the plugins (they will both want to expose the same function names).
+
+One workaround might be to use three separate crates:
+
+1. One `rlib` (the default Rust library crate), containing all the code except for the `plugin!`/`static_plugin!` macros
+2. One crate for the dynamic plugin
+3. One crate for the static plugin
+
+The two latter crates just need to import the actual plugin code from crate 1 and invoke the relevant macros.
 
 ## Plugin capabilities
 
