@@ -165,6 +165,7 @@ pub fn derive_table_metadata(input: TokenStream) -> TokenStream {
 
         #(#field_trait_impls)*
 
+        #[allow(unused_imports)]
         use #private_ns::*;
     )
     .into()
