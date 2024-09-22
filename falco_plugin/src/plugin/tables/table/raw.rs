@@ -1,5 +1,5 @@
 use crate::plugin::error::as_result::{AsResult, WithLastError};
-use crate::plugin::tables::data::{Key, Value};
+use crate::plugin::tables::data::{FieldTypeId, Key, Value};
 use crate::plugin::tables::entry::raw::RawEntry;
 use crate::plugin::tables::field::raw::RawField;
 use crate::plugin::tables::traits::TableMetadata;
@@ -11,6 +11,7 @@ use falco_plugin_api::{
     ss_plugin_table_entry_t, ss_plugin_table_field_t, ss_plugin_table_fieldinfo,
     ss_plugin_table_iterator_func_t, ss_plugin_table_iterator_state_t, ss_plugin_table_t,
 };
+use num_traits::FromPrimitive;
 use std::ffi::CStr;
 use std::ops::ControlFlow;
 
@@ -105,15 +106,20 @@ impl RawTable {
     }
 
     /// # Look up an entry in `table` corresponding to `key`
-    ///
-    /// # Safety
-    /// The key type must be the same as actually used by the table. Using the wrong type
-    /// (especially using a number if the real key type is a string) will lead to UB.
-    pub unsafe fn get_entry<K: Key>(
+    pub fn get_entry<K: Key>(
         &self,
         reader_vtable: &TableReader,
         key: &K,
     ) -> Result<RawEntry, anyhow::Error> {
+        let input = unsafe { &*(self.table as *mut falco_plugin_api::ss_plugin_table_input) };
+        if input.key_type != K::TYPE_ID as ss_plugin_state_type {
+            anyhow::bail!(
+                "Bad key type, requested {:?}, table has {:?}",
+                K::TYPE_ID,
+                FieldTypeId::from_u32(input.key_type),
+            );
+        }
+
         let entry =
             unsafe { (reader_vtable.get_table_entry)(self.table, &key.to_data() as *const _) };
 
@@ -239,13 +245,14 @@ impl RawTable {
         unsafe { Ok((writer_vtable.clear_table)(self.table).as_result()?) }
     }
 
-    pub(in crate::plugin::tables) unsafe fn with_subtable<F, R>(
+    pub(in crate::plugin::tables) unsafe fn with_subtable<K, F, R>(
         &self,
         field: *mut ss_plugin_table_field_t,
         tables_input: &TablesInput,
         func: F,
     ) -> Result<R, anyhow::Error>
     where
+        K: Key,
         F: FnOnce(&RawTable) -> R,
     {
         let entry = unsafe { (tables_input.writer_ext.create_table_entry)(self.table) };
@@ -262,6 +269,16 @@ impl RawTable {
             anyhow::bail!("Failed to get field value for temporary table entry")
         }
 
+        let input = unsafe { &*(val.table as *mut falco_plugin_api::ss_plugin_table_input) };
+        if input.key_type != K::TYPE_ID as ss_plugin_state_type {
+            unsafe { (tables_input.writer_ext.destroy_table_entry)(self.table, entry) };
+            anyhow::bail!(
+                "Bad key type, requested {:?}, table has {:?}",
+                K::TYPE_ID,
+                FieldTypeId::from_u32(input.key_type),
+            );
+        }
+
         let raw_table = unsafe { RawTable { table: val.table } };
         let ret = func(&raw_table);
         unsafe { (tables_input.writer_ext.destroy_table_entry)(self.table, entry) };
@@ -270,13 +287,13 @@ impl RawTable {
 
     #[doc(hidden)]
     // this is not really intended to be called by the end user, it's just for the derive macros
-    pub fn get_metadata<M: TableMetadata, V: Value + ?Sized>(
+    pub fn get_metadata<K: Key, M: TableMetadata, V: Value + ?Sized>(
         &self,
         field: &RawField<V>,
         tables_input: &TablesInput,
     ) -> Result<M, anyhow::Error> {
         unsafe {
-            self.with_subtable(field.field, tables_input, |subtable| {
+            self.with_subtable::<K, _, _>(field.field, tables_input, |subtable| {
                 M::new(subtable, tables_input)
             })
         }?

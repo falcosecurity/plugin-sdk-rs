@@ -61,7 +61,7 @@ where
 {
     /// Look up an entry in `table` corresponding to `key`
     pub fn get_entry(&self, reader_vtable: &TableReader, key: &K) -> Result<E, Error> {
-        let raw_entry = unsafe { self.raw_table.get_entry(reader_vtable, key)? };
+        let raw_entry = self.raw_table.get_entry(reader_vtable, key)?;
         Ok(E::new(
             raw_entry,
             self.raw_table.table,
@@ -186,13 +186,14 @@ where
     /// The call to `get_table_field` takes a closure, which is passed a reference to
     /// a sample entry in the nested table (enough to manage its fields) and returns a tuple
     /// of `(the table field, (whatever_the_closure_returns))`
-    pub fn get_table_field<V, U, F, R>(
+    pub fn get_table_field<NK, V, U, F, R>(
         &self,
         tables_input: &TablesInput,
         name: &CStr,
         func: F,
     ) -> Result<(Field<V, E>, R), Error>
     where
+        NK: Key,
         for<'a> V::AssocData: From<&'a M>,
         V: Value + ?Sized,
         U: Entry,
@@ -204,7 +205,7 @@ where
 
         let fields = unsafe {
             self.raw_table
-                .with_subtable(field.field, tables_input, |subtable| {
+                .with_subtable::<NK, _, _>(field.field, tables_input, |subtable| {
                     let owned = RawTable {
                         table: subtable.table,
                     };
@@ -302,7 +303,7 @@ where
         field: *mut ss_plugin_table_field_t,
         tables_input: &TablesInput,
     ) -> Result<Self::AssocData, Error> {
-        table.with_subtable(field, tables_input, |subtable| {
+        table.with_subtable::<K, _, _>(field, tables_input, |subtable| {
             M::new(subtable, tables_input)
         })?
     }
