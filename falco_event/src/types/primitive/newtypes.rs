@@ -167,26 +167,27 @@ newtype!(
     SigSet(u32)
 );
 
-impl<F> Format<F> for SigSet {
+impl<F> Format<F> for SigSet
+where
+    SigType: Format<F>,
+{
     fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
         <u32 as Format<format_type::PF_HEX>>::format(&self.0, fmt)?;
         if self.0 != 0 {
-            write!(fmt, "(")?;
+            let mut first = false;
             for sig in 0..32 {
                 if (self.0 & (1 << sig)) != 0 {
-                    #[cfg(target_os = "linux")]
-                    let sig_obj = nix::sys::signal::Signal::try_from(self.0 as i32);
-
-                    #[cfg(not(target_os = "linux"))]
-                    let sig_obj: Result<(), ()> = Err(());
-
-                    if let Ok(sig) = sig_obj {
-                        write!(fmt, "{sig:?}")?;
+                    if first {
+                        write!(fmt, "(")?;
+                        first = false;
                     } else {
-                        write!(fmt, "SIG{sig}")?;
+                        write!(fmt, ",")?;
                     }
+                    let sig_type = SigType(sig);
+                    sig_type.format(fmt)?;
                 }
             }
+            write!(fmt, ")")?;
         }
 
         Ok(())
