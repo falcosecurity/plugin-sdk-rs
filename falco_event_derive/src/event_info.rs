@@ -2,6 +2,7 @@ use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::{quote, ToTokens};
 use syn::parse::{Parse, ParseStream};
+use syn::spanned::Spanned;
 use syn::{braced, bracketed, parse_macro_input, Token};
 
 pub(crate) enum LifetimeType {
@@ -73,21 +74,32 @@ impl EventArg {
     }
 
     fn lifetimes(&self) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
-        if let Some((_, IdentOrNumber::Number(num), _)) = &self.info {
-            // shortcut: only PT_FSRELPATH uses these and it takes a lifetime param,
-            // so don't bother supporting const generics without lifetimes just yet
-            (proc_macro2::TokenStream::new(), quote!(<'a, #num>))
-        } else {
-            let field_type = self.final_field_type();
+        let field_type = self.final_field_type();
 
-            match lifetime_type(&field_type.to_string()) {
-                LifetimeType::Ref => (quote!(&'a), proc_macro2::TokenStream::new()),
-                LifetimeType::Generic => (proc_macro2::TokenStream::new(), quote!(<'a>)),
-                LifetimeType::None => (
-                    proc_macro2::TokenStream::new(),
-                    proc_macro2::TokenStream::new(),
-                ),
-            }
+        match lifetime_type(&field_type.to_string()) {
+            LifetimeType::Ref => (quote!(&'a), proc_macro2::TokenStream::new()),
+            LifetimeType::Generic => (proc_macro2::TokenStream::new(), quote!(<'a>)),
+            LifetimeType::None => (
+                proc_macro2::TokenStream::new(),
+                proc_macro2::TokenStream::new(),
+            ),
+        }
+    }
+
+    fn dirfd_method(&self, event_info: &EventInfo) -> Option<proc_macro2::TokenStream> {
+        if let Some((_, IdentOrNumber::Number(num), _)) = &self.info {
+            let num = num.base10_parse().ok()?;
+            let (_, _, args) = event_info.args.as_ref()?;
+            let dirfd_arg = args.iter().nth(num)?.ident();
+            let method_name = Ident::new(&format!("{}_dirfd", &self.name.value()), self.span());
+
+            Some(quote!(
+                pub fn #method_name(&self) -> std::option::Option<crate::fields::types::PT_FD> {
+                    self.#dirfd_arg
+                }
+            ))
+        } else {
+            None
         }
     }
 }
@@ -190,6 +202,7 @@ impl EventInfo {
         let mut fields = Vec::new();
         let mut wants_lifetime = false;
         let mut field_fmts = Vec::new();
+        let mut dirfd_methods = Vec::new();
 
         if let Some((_, _, args)) = self.args.as_ref() {
             fields = args.iter().map(|arg| arg.to_token_stream()).collect();
@@ -226,6 +239,8 @@ impl EventInfo {
                     )
                 })
                 .collect();
+
+            dirfd_methods = args.iter().map(|a| a.dirfd_method(&self)).collect();
         }
 
         let lifetime = if wants_lifetime {
@@ -242,6 +257,10 @@ impl EventInfo {
             #[derive(Debug)]
             pub struct #event_code #lifetime {
                 #(#fields,)*
+            }
+
+            impl #lifetime #event_code #lifetime {
+                #(#dirfd_methods)*
             }
 
             impl #lifetime crate::event_derive::EventPayload for #event_code #lifetime {

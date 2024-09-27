@@ -6,21 +6,15 @@ use std::path::Path;
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::Format;
 
-// TODO(sdk) not really trivial to use DIRFD_PARAM :)
-//      might need a dedicated generated method on the event type
 /// A relative path
 ///
-/// This type has a generic const parameter to describe which parameter (by number)
-/// of the event containing this field stores the directory file descriptor needed
-/// to convert this path to absolute.
-///
-/// **Note**: there isn't really a way to use this parameter right now, but that would
-/// require much more infrastructure (involving e.g. actually keeping track of dir fds
-/// and where they point).
+/// Events containing a parameter of this type will have an extra method available, derived
+/// from the field name. For example, if the field is called `name`, the event type will have
+/// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
 #[derive(Debug)]
-pub struct RelativePath<'a, const DIRFD_PARAM: usize>(pub &'a Path);
+pub struct RelativePath<'a>(pub &'a Path);
 
-impl<'a, const DIRFD_PARAM: usize> ToBytes for RelativePath<'a, DIRFD_PARAM> {
+impl<'a> ToBytes for RelativePath<'a> {
     fn binary_size(&self) -> usize {
         self.0.binary_size()
     }
@@ -34,18 +28,18 @@ impl<'a, const DIRFD_PARAM: usize> ToBytes for RelativePath<'a, DIRFD_PARAM> {
     }
 }
 
-impl<'a, const DIRFD_PARAM: usize> FromBytes<'a> for RelativePath<'a, DIRFD_PARAM> {
+impl<'a> FromBytes<'a> for RelativePath<'a> {
     fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
         Ok(Self(<&'a Path>::from_bytes(buf)?))
     }
 }
 
-impl<'a, const DIRFD_PARAM: usize, F> Format<F> for RelativePath<'a, DIRFD_PARAM>
+impl<'a, F> Format<F> for RelativePath<'a>
 where
     &'a [u8]: Format<F>,
 {
     fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
-        write!(fmt, "<{}>", DIRFD_PARAM)?;
+        write!(fmt, "<...>")?;
 
         let bytes = self.0.as_os_str().as_bytes();
         bytes.format(fmt)
@@ -63,7 +57,7 @@ mod tests {
     #[test]
     fn test_relative_path() {
         let path = PathBuf::from_str("/foo").unwrap();
-        let rel_path = RelativePath::<'_, 0usize>(path.as_path());
+        let rel_path = RelativePath(path.as_path());
         let mut binary = Vec::new();
 
         rel_path.write(&mut binary).unwrap();
@@ -72,7 +66,7 @@ mod tests {
         assert_eq!(binary.as_slice(), "/foo\0".as_bytes());
 
         let mut buf = binary.as_slice();
-        let path = <RelativePath<'_, 0usize>>::from_bytes(&mut buf).unwrap();
+        let path = RelativePath::from_bytes(&mut buf).unwrap();
         assert_eq!(path.0.to_str().unwrap(), "/foo");
     }
 }
