@@ -7,7 +7,7 @@ pub mod ffi;
 
 use std::ffi::CStr;
 
-pub mod fallback;
+pub mod native;
 
 pub mod common;
 pub use common::*;
@@ -29,7 +29,7 @@ macro_rules! instantiate_tests {
             $(
             #[test]
             fn $func() {
-                super::$func::<$crate::fallback::Driver>()
+                super::$func::<$crate::native::Driver>()
             }
             )*
         }
