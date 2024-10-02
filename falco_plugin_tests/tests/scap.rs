@@ -77,12 +77,12 @@ mod tests {
     }
 
     fn test_capture_open<D: SavefileTestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(super::PARSE_API, c"").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::PARSE_API, c"").unwrap();
         open_capture_file(driver).unwrap();
     }
 
     fn test_count_events<D: SavefileTestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(super::PARSE_API, c"").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::PARSE_API, c"").unwrap();
         let mut driver = open_capture_file(driver).unwrap();
 
         let mut counter = 0;
@@ -100,7 +100,7 @@ mod tests {
     }
 
     fn test_with_plugin<D: SavefileTestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(super::PARSE_API, c"").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::PARSE_API, c"").unwrap();
         let mut driver = open_capture_file(driver).unwrap();
 
         let mut counter = 0;

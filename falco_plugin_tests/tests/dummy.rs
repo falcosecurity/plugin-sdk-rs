@@ -37,7 +37,7 @@ mod tests {
     use falco_plugin_tests::{init_plugin, instantiate_tests, TestDriver};
 
     fn test_dummy_init<D: TestDriver>() {
-        let res = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"testing");
+        let res = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"testing");
 
         // Exception { what: "cannot load plugin with custom vtable: plugin does not implement any capability" }
         assert!(res.is_err())

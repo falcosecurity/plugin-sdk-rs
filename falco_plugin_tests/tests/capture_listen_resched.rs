@@ -101,7 +101,7 @@ mod tests {
     };
 
     fn test_listen<D: TestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
         loop {

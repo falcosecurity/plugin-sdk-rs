@@ -26,7 +26,7 @@ use std::ffi::{c_char, CStr, CString};
 use std::fmt::{Display, Formatter};
 use std::rc::Rc;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ScapStatus {
     Ok,
     Failure,

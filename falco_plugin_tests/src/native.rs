@@ -1,72 +1,97 @@
-use crate::{
-    Api, CaptureNotStarted, CaptureStarted, CapturingTestDriver, ScapStatus, SinspMetric,
-    TestDriver,
-};
+use crate::{CapturingTestDriver, ScapStatus, SinspMetric, TestDriver};
+use falco_plugin_runner::{CapturingPluginRunner, PluginRunner};
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
-use std::marker::PhantomData;
 
-pub struct SinspEvent;
+pub struct NativePlugin;
 
-pub struct SinspPlugin;
-
-impl Debug for SinspPlugin {
+impl Debug for NativePlugin {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("SinspPlugin")
+        f.write_str("NativePlugin")
     }
 }
 
-pub struct SinspTestDriver<S>(PhantomData<S>);
+pub struct NativeTestDriver(PluginRunner);
 
-impl<S> Debug for SinspTestDriver<S> {
+pub struct NativeCapturingTestDriver(CapturingPluginRunner);
+
+impl Debug for NativeTestDriver {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.write_str("SinspTestDriver")
+        f.write_str("NativeTestDriver")
     }
 }
 
-impl TestDriver for SinspTestDriver<CaptureNotStarted> {
-    type Capturing = SinspTestDriver<CaptureStarted>;
-    type Plugin = SinspPlugin;
+impl Debug for NativeCapturingTestDriver {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.write_str("NativeCapturingTestDriver")
+    }
+}
+
+impl TestDriver for NativeTestDriver {
+    type Capturing = NativeCapturingTestDriver;
+    type Plugin = NativePlugin;
 
     fn new() -> anyhow::Result<Self> {
-        Ok(Self(PhantomData))
+        Ok(Self(PluginRunner::new()))
     }
 
-    fn register_plugin(&mut self, _api: &Api, _config: &CStr) -> anyhow::Result<Self::Plugin> {
-        anyhow::bail!("not implemented")
+    fn register_plugin(
+        &mut self,
+        api: &'static falco_plugin::api::plugin_api,
+        config: &CStr,
+    ) -> anyhow::Result<Self::Plugin> {
+        self.0.register_plugin(&api, config)?;
+        Ok(NativePlugin)
     }
 
     unsafe fn register_plugin_raw(
         &mut self,
-        _api: *const Api,
-        _config: &CStr,
+        api: *const falco_plugin::api::plugin_api,
+        config: &CStr,
     ) -> anyhow::Result<Self::Plugin> {
-        anyhow::bail!("not implemented")
+        // no point in making the PluginRunner support raw pointers, just handle it here
+        anyhow::ensure!(!api.is_null(), "null pointer in register_plugin");
+        let api: &'static falco_plugin::api::plugin_api = &*api;
+        self.0.register_plugin(api, config)?;
+        Ok(NativePlugin)
     }
 
     fn add_filterchecks(&mut self, _plugin: &Self::Plugin, _source: &CStr) -> anyhow::Result<()> {
-        anyhow::bail!("not implemented")
+        // filterchecks are automatically registered with the native runner
+        Ok(())
     }
 
     fn start_capture(self, _name: &CStr, _config: &CStr) -> anyhow::Result<Self::Capturing> {
-        anyhow::bail!("not implemented")
+        let capturing = self.0.start_capture()?;
+        Ok(NativeCapturingTestDriver(capturing))
     }
 }
 
-impl CapturingTestDriver for SinspTestDriver<CaptureStarted> {
-    type NonCapturing = SinspTestDriver<CaptureNotStarted>;
-    type Event = SinspEvent;
+impl CapturingTestDriver for NativeCapturingTestDriver {
+    type NonCapturing = NativeTestDriver;
+    type Event = falco_plugin_runner::Event;
 
     fn next_event(&mut self) -> Result<Self::Event, ScapStatus> {
-        Err(ScapStatus::NotSupported)
+        match self.0.next_event() {
+            Ok(evt) => Ok(evt),
+            Err(e) => match e.downcast_ref::<ScapStatus>() {
+                Some(ss) => Err(*ss),
+                None => Err(ScapStatus::Failure),
+            },
+        }
     }
 
     fn event_field_as_string(
         &mut self,
-        _field_name: &CStr,
-        _event: &Self::Event,
+        field_name: &CStr,
+        event: &Self::Event,
     ) -> anyhow::Result<Option<String>> {
-        anyhow::bail!("not implemented")
+        let s = std::str::from_utf8(field_name.to_bytes())?;
+        match self.0.extract_field(event, s) {
+            None => Ok(None),
+            Some(Err(e)) => Err(anyhow::anyhow!("failed to extract field: {}", e)),
+            Some(Ok(s)) => Ok(Some(s.to_string())),
+        }
     }
 
     fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>> {
@@ -74,4 +99,4 @@ impl CapturingTestDriver for SinspTestDriver<CaptureStarted> {
     }
 }
 
-pub type Driver = SinspTestDriver<CaptureNotStarted>;
+pub type Driver = NativeTestDriver;

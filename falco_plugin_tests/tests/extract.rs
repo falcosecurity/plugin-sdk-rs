@@ -233,7 +233,7 @@ mod tests {
     }
 
     fn test_dummy_next<D: TestDriver>() {
-        let (mut driver, plugin) = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"").unwrap();
+        let (mut driver, plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
         driver.add_filterchecks(&plugin, c"dummy").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 

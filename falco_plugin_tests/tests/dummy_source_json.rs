@@ -78,11 +78,11 @@ mod tests {
     };
 
     fn test_dummy_init<D: TestDriver>() {
-        init_plugin::<D>(super::DUMMY_PLUGIN_API, c"{\"five\": 5}").unwrap();
+        init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"{\"five\": 5}").unwrap();
     }
 
     fn test_dummy_init_bad_config_schema<D: TestDriver>() {
-        let res = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"{\"six\": 6}");
+        let res = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"{\"six\": 6}");
 
         assert!(res
             .unwrap_err()
@@ -91,14 +91,14 @@ mod tests {
     }
 
     fn test_dummy_init_bad_config_value<D: TestDriver>() {
-        let res = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"{\"five\": 6}");
+        let res = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"{\"five\": 6}");
 
         assert!(res.unwrap_err().to_string().contains("I wanted five"));
     }
 
     fn test_dummy_next<D: TestDriver>() {
         let (driver, _plugin) =
-            init_plugin::<D>(super::DUMMY_PLUGIN_API, c"{\"five\": 5}").unwrap();
+            init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"{\"five\": 5}").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
         let event = driver.next_event();

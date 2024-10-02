@@ -73,7 +73,7 @@ impl Display for ExtractedField {
         match self {
             ExtractedField::None => write!(f, "None"),
             ExtractedField::U64(value) => write!(f, "{}", value),
-            ExtractedField::String(cstr) => write!(f, "{:?}", cstr),
+            ExtractedField::String(cstr) => write!(f, "{}", cstr.to_string_lossy()),
             ExtractedField::Vec(vector) => {
                 let mut first = true;
                 write!(f, "(")?;

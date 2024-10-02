@@ -1,30 +1,9 @@
 use anyhow::Context;
 use cxx::{type_id, ExternType};
 use std::ffi::CStr;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::Debug;
 
-#[derive(Debug)]
-pub enum ScapStatus {
-    Ok,
-    Failure,
-    Timeout,
-    Eof,
-    NotSupported,
-    Other(i32),
-}
-
-impl Display for ScapStatus {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ScapStatus::Ok => f.write_str("OK"),
-            ScapStatus::Failure => f.write_str("Failure"),
-            ScapStatus::Timeout => f.write_str("Timeout"),
-            ScapStatus::Eof => f.write_str("Eof"),
-            ScapStatus::NotSupported => f.write_str("NotSupported"),
-            ScapStatus::Other(rc) => write!(f, "Other({})", rc),
-        }
-    }
-}
+pub use falco_plugin_runner::ScapStatus;
 
 pub struct CaptureNotStarted;
 
@@ -49,13 +28,17 @@ pub trait TestDriver: Debug + Sized {
 
     fn new() -> anyhow::Result<Self>;
 
-    fn register_plugin(&mut self, api: &Api, config: &CStr) -> anyhow::Result<Self::Plugin>;
+    fn register_plugin(
+        &mut self,
+        api: &'static falco_plugin::api::plugin_api,
+        config: &CStr,
+    ) -> anyhow::Result<Self::Plugin>;
 
     /// # Safety
     /// `api` must be a valid pointer (or null, to be caught by the framework)
     unsafe fn register_plugin_raw(
         &mut self,
-        api: *const Api,
+        api: *const falco_plugin::api::plugin_api,
         config: &CStr,
     ) -> anyhow::Result<Self::Plugin>;
 

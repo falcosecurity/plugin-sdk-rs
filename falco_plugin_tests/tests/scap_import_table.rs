@@ -168,7 +168,7 @@ mod tests {
     }
 
     fn test_with_plugin<D: SavefileTestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(super::PARSE_API, c"").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::PARSE_API, c"").unwrap();
         let mut driver = open_capture_file(driver).unwrap();
 
         loop {

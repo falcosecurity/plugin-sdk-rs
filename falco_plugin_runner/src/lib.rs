@@ -7,9 +7,9 @@ pub use crate::plugin::Metric;
 pub use crate::plugin::MetricType;
 pub use crate::plugin::MetricValue;
 pub use crate::plugin::ScapStatus;
+pub use event::Event;
 
 use crate::tables::Tables;
-use event::Event;
 use plugin::Plugin;
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};

@@ -107,7 +107,7 @@ mod tests {
     }
 
     fn test_dummy_next<D: TestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
         assert_eq!(

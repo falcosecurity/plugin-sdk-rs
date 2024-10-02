@@ -70,11 +70,11 @@ mod tests {
     };
 
     fn test_dummy_init<D: TestDriver>() {
-        init_plugin::<D>(super::DUMMY_PLUGIN_API, c"testing").unwrap();
+        init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"testing").unwrap();
     }
 
     fn test_dummy_init_bad_config<D: TestDriver>() {
-        let res = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"not testing");
+        let res = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"not testing");
         assert!(res
             .unwrap_err()
             .to_string()
@@ -82,7 +82,7 @@ mod tests {
     }
 
     fn test_dummy_next<D: TestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"testing").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"testing").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
         let event = driver.next_event();

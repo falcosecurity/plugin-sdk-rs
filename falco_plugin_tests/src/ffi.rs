@@ -106,26 +106,30 @@ impl TestDriver for SinspTestDriver<CaptureNotStarted> {
         })
     }
 
-    fn register_plugin(&mut self, api: &Api, config: &CStr) -> anyhow::Result<SinspPlugin> {
+    fn register_plugin(
+        &mut self,
+        api: &'static falco_plugin::api::plugin_api,
+        config: &CStr,
+    ) -> anyhow::Result<Self::Plugin> {
         let plugin = unsafe {
             self.driver
                 .as_mut()
                 .unwrap()
-                .register_plugin(api as *const _, config.as_ptr())?
+                .register_plugin(api as *const _ as *const Api, config.as_ptr())?
         };
         Ok(SinspPlugin { plugin })
     }
 
     unsafe fn register_plugin_raw(
         &mut self,
-        api: *const Api,
+        api: *const falco_plugin::api::plugin_api,
         config: &CStr,
     ) -> anyhow::Result<SinspPlugin> {
         let plugin = unsafe {
             self.driver
                 .as_mut()
                 .unwrap()
-                .register_plugin(api, config.as_ptr())?
+                .register_plugin(api as *const _, config.as_ptr())?
         };
         Ok(SinspPlugin { plugin })
     }

@@ -79,7 +79,7 @@ mod tests {
     use falco_plugin_tests::{init_plugin, instantiate_sinsp_tests, TestDriver};
 
     fn test_with_plugin<D: TestDriver>() {
-        init_plugin::<D>(super::PARSE_API, c"").unwrap_err();
+        init_plugin::<D>(&super::PARSE_API, c"").unwrap_err();
     }
 
     instantiate_sinsp_tests!(test_with_plugin);

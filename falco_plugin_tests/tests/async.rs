@@ -111,7 +111,7 @@ mod tests {
     use falco_plugin_tests::{init_plugin, instantiate_tests, CapturingTestDriver, TestDriver};
 
     fn test_async<D: TestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
         let mut nevts = 0;

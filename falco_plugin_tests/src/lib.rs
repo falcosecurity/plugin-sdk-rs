@@ -13,11 +13,11 @@ pub mod common;
 pub use common::*;
 
 pub fn init_plugin<D: TestDriver>(
-    api: falco_plugin::api::plugin_api,
+    api: &'static falco_plugin::api::plugin_api,
     config: &CStr,
 ) -> anyhow::Result<(D, D::Plugin)> {
     let mut driver = D::new()?;
-    let plugin = driver.register_plugin(&Api(api), config)?;
+    let plugin = driver.register_plugin(api, config)?;
 
     Ok((driver, plugin))
 }
