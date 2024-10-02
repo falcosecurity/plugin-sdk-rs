@@ -1,5 +1,5 @@
 use super::ScapStatus;
-use crate::common::{Api, CaptureNotStarted, CaptureStarted};
+use crate::common::{Api, CaptureNotStarted, CaptureStarted, SinspMetric};
 use cxx;
 use cxx::UniquePtr;
 use std::ffi::CStr;
@@ -70,11 +70,6 @@ mod ffi {
 
 pub struct SinspEvent {
     event: ffi::SinspEvent,
-}
-
-pub struct SinspMetric {
-    pub name: String,
-    pub value: u64,
 }
 
 pub struct SinspPlugin {

@@ -1,14 +1,9 @@
-use crate::{Api, CaptureNotStarted, CaptureStarted, ScapStatus};
+use crate::{Api, CaptureNotStarted, CaptureStarted, ScapStatus, SinspMetric};
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
 use std::marker::PhantomData;
 
 pub struct SinspEvent;
-
-pub struct SinspMetric {
-    pub name: String,
-    pub value: u64,
-}
 
 pub struct SinspPlugin;
 

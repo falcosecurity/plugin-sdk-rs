@@ -35,3 +35,8 @@ unsafe impl ExternType for Api {
     type Id = type_id!("falco_plugin_api");
     type Kind = cxx::kind::Opaque;
 }
+
+pub struct SinspMetric {
+    pub name: String,
+    pub value: u64,
+}
