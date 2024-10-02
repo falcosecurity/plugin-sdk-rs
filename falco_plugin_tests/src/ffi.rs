@@ -1,4 +1,4 @@
-use super::ScapStatus;
+use super::{CapturingTestDriver, SavefileTestDriver, ScapStatus, TestDriver};
 use crate::common::{Api, CaptureNotStarted, CaptureStarted, SinspMetric};
 use cxx;
 use cxx::UniquePtr;
@@ -93,8 +93,20 @@ impl<S> Debug for SinspTestDriver<S> {
     }
 }
 
-impl SinspTestDriver<CaptureNotStarted> {
-    pub fn register_plugin(&mut self, api: &Api, config: &CStr) -> anyhow::Result<SinspPlugin> {
+impl TestDriver for SinspTestDriver<CaptureNotStarted> {
+    type Capturing = SinspTestDriver<CaptureStarted>;
+    type Plugin = SinspPlugin;
+
+    fn new() -> anyhow::Result<Self> {
+        let driver = ffi::new_test_driver();
+        anyhow::ensure!(!driver.is_null(), "null driver");
+        Ok(SinspTestDriver {
+            driver,
+            state: PhantomData,
+        })
+    }
+
+    fn register_plugin(&mut self, api: &Api, config: &CStr) -> anyhow::Result<SinspPlugin> {
         let plugin = unsafe {
             self.driver
                 .as_mut()
@@ -104,10 +116,7 @@ impl SinspTestDriver<CaptureNotStarted> {
         Ok(SinspPlugin { plugin })
     }
 
-    /// # Safety
-    ///
-    /// `plugin` must be a pointer accepted by the sinsp API
-    pub unsafe fn register_plugin_raw(
+    unsafe fn register_plugin_raw(
         &mut self,
         api: *const Api,
         config: &CStr,
@@ -121,7 +130,7 @@ impl SinspTestDriver<CaptureNotStarted> {
         Ok(SinspPlugin { plugin })
     }
 
-    pub fn add_filterchecks(&mut self, plugin: &SinspPlugin, source: &CStr) -> anyhow::Result<()> {
+    fn add_filterchecks(&mut self, plugin: &SinspPlugin, source: &CStr) -> anyhow::Result<()> {
         unsafe {
             Ok(self
                 .driver
@@ -131,24 +140,7 @@ impl SinspTestDriver<CaptureNotStarted> {
         }
     }
 
-    pub fn load_capture_file(
-        mut self,
-        path: &CStr,
-    ) -> anyhow::Result<SinspTestDriver<CaptureStarted>> {
-        unsafe {
-            self.driver
-                .as_mut()
-                .unwrap()
-                .load_capture_file(path.as_ptr())?;
-        }
-
-        Ok(SinspTestDriver::<CaptureStarted> {
-            driver: self.driver,
-            state: PhantomData,
-        })
-    }
-
-    pub fn start_capture(
+    fn start_capture(
         mut self,
         name: &CStr,
         config: &CStr,
@@ -167,8 +159,27 @@ impl SinspTestDriver<CaptureNotStarted> {
     }
 }
 
-impl SinspTestDriver<CaptureStarted> {
-    pub fn next_event(&mut self) -> Result<SinspEvent, ScapStatus> {
+impl SavefileTestDriver for SinspTestDriver<CaptureNotStarted> {
+    fn load_capture_file(mut self, path: &CStr) -> anyhow::Result<SinspTestDriver<CaptureStarted>> {
+        unsafe {
+            self.driver
+                .as_mut()
+                .unwrap()
+                .load_capture_file(path.as_ptr())?;
+        }
+
+        Ok(SinspTestDriver::<CaptureStarted> {
+            driver: self.driver,
+            state: PhantomData,
+        })
+    }
+}
+
+impl CapturingTestDriver for SinspTestDriver<CaptureStarted> {
+    type NonCapturing = SinspTestDriver<CaptureNotStarted>;
+    type Event = SinspEvent;
+
+    fn next_event(&mut self) -> Result<Self::Event, ScapStatus> {
         let event = self.driver.as_mut().unwrap().next();
         match event.rc {
             0 => Ok(SinspEvent { event }),
@@ -180,10 +191,10 @@ impl SinspTestDriver<CaptureStarted> {
         }
     }
 
-    pub fn event_field_as_string(
+    fn event_field_as_string(
         &mut self,
         field_name: &CStr,
-        event: &SinspEvent,
+        event: &Self::Event,
     ) -> anyhow::Result<Option<String>> {
         let event_str = unsafe {
             self.driver
@@ -199,7 +210,7 @@ impl SinspTestDriver<CaptureStarted> {
         }
     }
 
-    pub fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>> {
+    fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>> {
         let mut out = Vec::new();
         let metrics = self.driver.as_mut().unwrap().get_metrics()?;
 
@@ -216,11 +227,4 @@ impl SinspTestDriver<CaptureStarted> {
     }
 }
 
-pub fn new_test_driver() -> anyhow::Result<SinspTestDriver<CaptureNotStarted>> {
-    let driver = ffi::new_test_driver();
-    anyhow::ensure!(!driver.is_null(), "null driver");
-    Ok(SinspTestDriver {
-        driver,
-        state: PhantomData,
-    })
-}
+pub type Driver = SinspTestDriver<CaptureNotStarted>;

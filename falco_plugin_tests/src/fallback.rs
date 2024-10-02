@@ -1,4 +1,7 @@
-use crate::{Api, CaptureNotStarted, CaptureStarted, ScapStatus, SinspMetric};
+use crate::{
+    Api, CaptureNotStarted, CaptureStarted, CapturingTestDriver, ScapStatus, SinspMetric,
+    TestDriver,
+};
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
 use std::marker::PhantomData;
@@ -21,64 +24,54 @@ impl<S> Debug for SinspTestDriver<S> {
     }
 }
 
-impl SinspTestDriver<CaptureNotStarted> {
-    pub fn register_plugin(&mut self, _api: &Api, _config: &CStr) -> anyhow::Result<SinspPlugin> {
+impl TestDriver for SinspTestDriver<CaptureNotStarted> {
+    type Capturing = SinspTestDriver<CaptureStarted>;
+    type Plugin = SinspPlugin;
+
+    fn new() -> anyhow::Result<Self> {
+        Ok(Self(PhantomData))
+    }
+
+    fn register_plugin(&mut self, _api: &Api, _config: &CStr) -> anyhow::Result<Self::Plugin> {
         anyhow::bail!("not implemented")
     }
 
-    /// # Safety
-    ///
-    /// `plugin` must be a pointer accepted by the sinsp API
-    pub unsafe fn register_plugin_raw(
+    unsafe fn register_plugin_raw(
         &mut self,
         _api: *const Api,
         _config: &CStr,
-    ) -> anyhow::Result<SinspPlugin> {
+    ) -> anyhow::Result<Self::Plugin> {
         anyhow::bail!("not implemented")
     }
 
-    pub fn add_filterchecks(
-        &mut self,
-        _plugin: &SinspPlugin,
-        _source: &CStr,
-    ) -> anyhow::Result<()> {
+    fn add_filterchecks(&mut self, _plugin: &Self::Plugin, _source: &CStr) -> anyhow::Result<()> {
         anyhow::bail!("not implemented")
     }
 
-    pub fn load_capture_file(
-        self,
-        _path: &CStr,
-    ) -> anyhow::Result<SinspTestDriver<CaptureStarted>> {
-        anyhow::bail!("not implemented")
-    }
-
-    pub fn start_capture(
-        self,
-        _name: &CStr,
-        _config: &CStr,
-    ) -> anyhow::Result<SinspTestDriver<CaptureStarted>> {
+    fn start_capture(self, _name: &CStr, _config: &CStr) -> anyhow::Result<Self::Capturing> {
         anyhow::bail!("not implemented")
     }
 }
 
-impl SinspTestDriver<CaptureStarted> {
-    pub fn next_event(&mut self) -> Result<SinspEvent, ScapStatus> {
+impl CapturingTestDriver for SinspTestDriver<CaptureStarted> {
+    type NonCapturing = SinspTestDriver<CaptureNotStarted>;
+    type Event = SinspEvent;
+
+    fn next_event(&mut self) -> Result<Self::Event, ScapStatus> {
         Err(ScapStatus::NotSupported)
     }
 
-    pub fn event_field_as_string(
+    fn event_field_as_string(
         &mut self,
         _field_name: &CStr,
-        _event: &SinspEvent,
+        _event: &Self::Event,
     ) -> anyhow::Result<Option<String>> {
         anyhow::bail!("not implemented")
     }
 
-    pub fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>> {
+    fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>> {
         anyhow::bail!("not implemented")
     }
 }
 
-pub fn new_test_driver() -> anyhow::Result<SinspTestDriver<CaptureNotStarted>> {
-    Ok(SinspTestDriver::<CaptureNotStarted>(PhantomData))
-}
+pub type Driver = SinspTestDriver<CaptureNotStarted>;

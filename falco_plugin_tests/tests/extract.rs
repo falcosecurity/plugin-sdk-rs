@@ -2,9 +2,7 @@ use falco_plugin::anyhow::Error;
 use falco_plugin::base::{Metric, MetricLabel, MetricType, MetricValue, Plugin};
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E};
-use falco_plugin::extract::{
-    field, ExtractArgType, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin, ExtractRequest,
-};
+use falco_plugin::extract::{field, ExtractArgType, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin, ExtractRequest};
 use falco_plugin::source::{
     EventBatch, EventInput, PluginEvent, SourcePlugin, SourcePluginInstance,
 };
@@ -218,9 +216,11 @@ static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
-    use falco_plugin_tests::{init_plugin, CaptureStarted, ScapStatus, SinspTestDriver};
+    use falco_plugin_tests::{
+        init_plugin, instantiate_tests, CapturingTestDriver, ScapStatus, TestDriver,
+    };
 
-    fn check_metrics(driver: &mut SinspTestDriver<CaptureStarted>, n: usize) {
+    fn check_metrics<C: CapturingTestDriver>(driver: &mut C, n: usize) {
         let metrics = driver.get_metrics().unwrap();
         let mut metrics = metrics.iter();
 
@@ -232,9 +232,8 @@ mod tests {
         assert!(metrics.next().is_none());
     }
 
-    #[test]
-    fn test_dummy_next() {
-        let (mut driver, plugin) = init_plugin(super::DUMMY_PLUGIN_API, c"").unwrap();
+    fn test_dummy_next<D: TestDriver>() {
+        let (mut driver, plugin) = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"").unwrap();
         driver.add_filterchecks(&plugin, c"dummy").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
@@ -314,4 +313,6 @@ mod tests {
         check_metrics(&mut driver, 2);
         assert!(matches!(event, Err(ScapStatus::Eof)))
     }
+
+    instantiate_tests!(test_dummy_next);
 }

@@ -2,9 +2,7 @@ use falco_plugin::anyhow::Error;
 use falco_plugin::base::{Metric, MetricLabel, MetricType, MetricValue, Plugin};
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E};
-use falco_plugin::extract::{
-    field, ExtractArgType, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin, ExtractRequest,
-};
+use falco_plugin::extract::{field, ExtractArgType, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin, ExtractRequest};
 use falco_plugin::parse::{ParseInput, ParsePlugin};
 use falco_plugin::source::{
     EventBatch, EventInput, PluginEvent, SourcePlugin, SourcePluginInstance,
@@ -357,11 +355,13 @@ static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
-    use falco_plugin_tests::{init_plugin, Api, ScapStatus};
+    use falco_plugin_tests::{
+        init_plugin, instantiate_tests, Api, CapturingTestDriver,
+        ScapStatus, TestDriver,
+    };
 
-    #[test]
-    fn test_dummy_next() {
-        let (mut driver, _plugin) = init_plugin(super::DUMMY_PLUGIN_API, c"").unwrap();
+    fn test_dummy_next<D: TestDriver>() {
+        let (mut driver, _plugin) = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"").unwrap();
         let extract_plugin = driver
             .register_plugin(&Api(super::DUMMY_EXTRACT_API), c"")
             .unwrap();
@@ -472,4 +472,6 @@ mod tests {
         let event = driver.next_event();
         assert!(matches!(event, Err(ScapStatus::Eof)))
     }
+
+    instantiate_tests!(test_dummy_next);
 }

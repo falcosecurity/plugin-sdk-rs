@@ -73,16 +73,16 @@ static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
-    use falco_plugin_tests::{init_plugin, ScapStatus};
+    use falco_plugin_tests::{
+        init_plugin, instantiate_tests, CapturingTestDriver, ScapStatus, TestDriver,
+    };
 
-    #[test]
-    fn test_dummy_init() {
-        init_plugin(super::DUMMY_PLUGIN_API, c"{\"five\": 5}").unwrap();
+    fn test_dummy_init<D: TestDriver>() {
+        init_plugin::<D>(super::DUMMY_PLUGIN_API, c"{\"five\": 5}").unwrap();
     }
 
-    #[test]
-    fn test_dummy_init_bad_config_schema() {
-        let res = init_plugin(super::DUMMY_PLUGIN_API, c"{\"six\": 6}");
+    fn test_dummy_init_bad_config_schema<D: TestDriver>() {
+        let res = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"{\"six\": 6}");
 
         assert!(res
             .unwrap_err()
@@ -90,19 +90,25 @@ mod tests {
             .contains("Missing required property 'five'"));
     }
 
-    #[test]
-    fn test_dummy_init_bad_config_value() {
-        let res = init_plugin(super::DUMMY_PLUGIN_API, c"{\"five\": 6}");
+    fn test_dummy_init_bad_config_value<D: TestDriver>() {
+        let res = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"{\"five\": 6}");
 
         assert!(res.unwrap_err().to_string().contains("I wanted five"));
     }
 
-    #[test]
-    fn test_dummy_next() {
-        let (driver, _plugin) = init_plugin(super::DUMMY_PLUGIN_API, c"{\"five\": 5}").unwrap();
+    fn test_dummy_next<D: TestDriver>() {
+        let (driver, _plugin) =
+            init_plugin::<D>(super::DUMMY_PLUGIN_API, c"{\"five\": 5}").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
         let event = driver.next_event();
         assert!(matches!(event, Err(ScapStatus::Eof)))
     }
+
+    instantiate_tests!(
+        test_dummy_init;
+        test_dummy_init_bad_config_schema;
+        test_dummy_init_bad_config_value;
+        test_dummy_next
+    );
 }

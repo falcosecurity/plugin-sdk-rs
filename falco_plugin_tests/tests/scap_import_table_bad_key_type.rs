@@ -74,11 +74,13 @@ impl ParsePlugin for DummyPlugin {
 static_plugin!(PARSE_API = DummyPlugin);
 
 #[cfg(test)]
+#[cfg_attr(not(have_libsinsp), allow(dead_code))]
 mod tests {
-    use falco_plugin_tests::init_plugin;
+    use falco_plugin_tests::{init_plugin, instantiate_sinsp_tests, TestDriver};
 
-    #[test]
-    fn test_with_plugin() {
-        init_plugin(super::PARSE_API, c"").unwrap_err();
+    fn test_with_plugin<D: TestDriver>() {
+        init_plugin::<D>(super::PARSE_API, c"").unwrap_err();
     }
+
+    instantiate_sinsp_tests!(test_with_plugin);
 }

@@ -1,5 +1,7 @@
+use anyhow::Context;
 use cxx::{type_id, ExternType};
-use std::fmt::{Display, Formatter};
+use std::ffi::CStr;
+use std::fmt::{Debug, Display, Formatter};
 
 #[derive(Debug)]
 pub enum ScapStatus {
@@ -39,4 +41,52 @@ unsafe impl ExternType for Api {
 pub struct SinspMetric {
     pub name: String,
     pub value: u64,
+}
+
+pub trait TestDriver: Debug + Sized {
+    type Capturing: CapturingTestDriver<NonCapturing = Self>;
+    type Plugin: Debug;
+
+    fn new() -> anyhow::Result<Self>;
+
+    fn register_plugin(&mut self, api: &Api, config: &CStr) -> anyhow::Result<Self::Plugin>;
+
+    /// # Safety
+    /// `api` must be a valid pointer (or null, to be caught by the framework)
+    unsafe fn register_plugin_raw(
+        &mut self,
+        api: *const Api,
+        config: &CStr,
+    ) -> anyhow::Result<Self::Plugin>;
+
+    fn add_filterchecks(&mut self, plugin: &Self::Plugin, source: &CStr) -> anyhow::Result<()>;
+
+    fn start_capture(self, name: &CStr, config: &CStr) -> anyhow::Result<Self::Capturing>;
+}
+
+pub trait SavefileTestDriver: TestDriver {
+    fn load_capture_file(self, path: &CStr) -> anyhow::Result<Self::Capturing>;
+}
+
+pub trait CapturingTestDriver {
+    type NonCapturing: TestDriver<Capturing = Self>;
+    type Event;
+
+    fn next_event(&mut self) -> Result<Self::Event, ScapStatus>;
+
+    fn event_field_as_string(
+        &mut self,
+        field_name: &CStr,
+        event: &Self::Event,
+    ) -> anyhow::Result<Option<String>>;
+
+    fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>>;
+
+    fn next_event_as_str(&mut self) -> anyhow::Result<Option<String>> {
+        let event = match self.next_event() {
+            Ok(event) => event,
+            Err(e) => return Err(anyhow::anyhow!("{:?}", e)).context(e),
+        };
+        self.event_field_as_string(c"evt.plugininfo", &event)
+    }
 }

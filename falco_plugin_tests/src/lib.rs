@@ -3,54 +3,80 @@
 //! This crate isn't really intended for public use, except maybe as a collection of sample plugins.
 
 #[cfg(have_libsinsp)]
-mod ffi;
+pub mod ffi;
 
-use anyhow::Context;
-#[cfg(have_libsinsp)]
-pub use ffi::*;
 use std::ffi::CStr;
 
-#[cfg(not(have_libsinsp))]
-mod fallback;
-
-#[cfg(not(have_libsinsp))]
-pub use fallback::*;
+pub mod fallback;
 
 pub mod common;
 pub use common::*;
 
-pub fn init_plugin(
+pub fn init_plugin<D: TestDriver>(
     api: falco_plugin::api::plugin_api,
     config: &CStr,
-) -> anyhow::Result<(SinspTestDriver<CaptureNotStarted>, SinspPlugin)> {
-    let mut driver = new_test_driver()?;
+) -> anyhow::Result<(D, D::Plugin)> {
+    let mut driver = D::new()?;
     let plugin = driver.register_plugin(&Api(api), config)?;
 
     Ok((driver, plugin))
 }
 
-impl SinspTestDriver<CaptureStarted> {
-    pub fn next_event_as_str(&mut self) -> anyhow::Result<Option<String>> {
-        let event = match self.next_event() {
-            Ok(event) => event,
-            Err(e) => return Err(anyhow::anyhow!("{:?}", e)).context(e),
-        };
-        self.event_field_as_string(c"evt.plugininfo", &event)
-    }
+#[macro_export]
+macro_rules! instantiate_tests {
+    ($($func:ident);*) => {
+        mod fallback {
+            $(
+            #[test]
+            fn $func() {
+                super::$func::<$crate::fallback::Driver>()
+            }
+            )*
+        }
+
+        #[cfg(have_libsinsp)]
+        mod ffi {
+            $(
+            #[test]
+            fn $func() {
+                super::$func::<$crate::ffi::Driver>()
+            }
+            )*
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! instantiate_sinsp_tests {
+    ($($func:ident);*) => {
+        #[cfg(have_libsinsp)]
+        mod ffi {
+            $(
+            #[test]
+            fn $func() {
+                super::$func::<$crate::ffi::Driver>()
+            }
+            )*
+        }
+    };
 }
 
 #[cfg(test)]
 mod tests {
-    #[test]
-    fn compile_test() {
-        let _ = super::new_test_driver();
+    use crate::TestDriver;
+
+    fn compile_test<D: TestDriver>() {
+        let _ = D::new();
     }
 
-    #[test]
-    fn register_null_plugin() {
-        let mut driver = super::new_test_driver();
-        let driver = driver.as_mut().unwrap();
+    fn register_null_plugin<D: TestDriver>() {
+        let mut driver = D::new().unwrap();
         let res = unsafe { driver.register_plugin_raw(std::ptr::null(), c"") };
         assert!(res.is_err())
     }
+
+    instantiate_tests!(
+        compile_test;
+        register_null_plugin
+    );
 }

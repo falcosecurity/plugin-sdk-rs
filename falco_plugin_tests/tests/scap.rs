@@ -58,18 +58,17 @@ impl ParsePlugin for DummyPlugin {
 static_plugin!(PARSE_API = DummyPlugin);
 
 #[cfg(test)]
+#[cfg_attr(not(have_libsinsp), allow(dead_code))]
 mod tests {
     use falco_plugin_tests::{
-        init_plugin, CaptureNotStarted, CaptureStarted, ScapStatus, SinspTestDriver,
+        init_plugin, instantiate_sinsp_tests, CapturingTestDriver, SavefileTestDriver, ScapStatus,
     };
     use std::ffi::CString;
     use std::os::unix::ffi::OsStrExt;
     use std::path::PathBuf;
     use std::sync::atomic::Ordering;
 
-    fn open_capture_file(
-        driver: SinspTestDriver<CaptureNotStarted>,
-    ) -> anyhow::Result<SinspTestDriver<CaptureStarted>> {
+    fn open_capture_file<D: SavefileTestDriver>(driver: D) -> anyhow::Result<D::Capturing> {
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
         let scap_file = PathBuf::from(manifest_dir).join("tests/scap/kexec_x86.scap");
         let scap_file = CString::new(scap_file.as_os_str().as_bytes())?;
@@ -77,15 +76,13 @@ mod tests {
         driver.load_capture_file(scap_file.as_c_str())
     }
 
-    #[test]
-    fn test_capture_open() {
-        let (driver, _plugin) = init_plugin(super::PARSE_API, c"").unwrap();
+    fn test_capture_open<D: SavefileTestDriver>() {
+        let (driver, _plugin) = init_plugin::<D>(super::PARSE_API, c"").unwrap();
         open_capture_file(driver).unwrap();
     }
 
-    #[test]
-    fn test_count_events() {
-        let (driver, _plugin) = init_plugin(super::PARSE_API, c"").unwrap();
+    fn test_count_events<D: SavefileTestDriver>() {
+        let (driver, _plugin) = init_plugin::<D>(super::PARSE_API, c"").unwrap();
         let mut driver = open_capture_file(driver).unwrap();
 
         let mut counter = 0;
@@ -102,9 +99,8 @@ mod tests {
         assert_eq!(counter, 523412);
     }
 
-    #[test]
-    fn test_with_plugin() {
-        let (driver, _plugin) = init_plugin(super::PARSE_API, c"").unwrap();
+    fn test_with_plugin<D: SavefileTestDriver>() {
+        let (driver, _plugin) = init_plugin::<D>(super::PARSE_API, c"").unwrap();
         let mut driver = open_capture_file(driver).unwrap();
 
         let mut counter = 0;
@@ -126,4 +122,10 @@ mod tests {
         let parsed_events = super::PARSED_EVENTS.with(|e| e.load(Ordering::Relaxed));
         assert_eq!(got_events, parsed_events);
     }
+
+    instantiate_sinsp_tests!(
+        test_capture_open;
+        test_count_events;
+        test_with_plugin
+    );
 }

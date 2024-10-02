@@ -258,11 +258,10 @@ static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
-    use falco_plugin_tests::init_plugin;
+    use falco_plugin_tests::{init_plugin, instantiate_tests, CapturingTestDriver, TestDriver};
 
-    #[test]
-    fn test_dummy_next() {
-        let (mut driver, plugin) = init_plugin(super::DUMMY_PLUGIN_API, c"").unwrap();
+    fn test_dummy_next<D: TestDriver>() {
+        let (mut driver, plugin) = init_plugin::<D>(super::DUMMY_PLUGIN_API, c"").unwrap();
         driver.add_filterchecks(&plugin, c"dummy").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
@@ -380,4 +379,6 @@ mod tests {
             "(<IPNET>,<IPNET>)"
         );
     }
+
+    instantiate_tests!(test_dummy_next);
 }
