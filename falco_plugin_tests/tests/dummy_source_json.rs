@@ -83,11 +83,12 @@ mod tests {
 
     fn test_dummy_init_bad_config_schema<D: TestDriver>() {
         let res = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"{\"six\": 6}");
+        let res = res.unwrap_err().to_string();
 
-        assert!(res
-            .unwrap_err()
-            .to_string()
-            .contains("Missing required property 'five'"));
+        assert!(
+            res.contains("Missing required property 'five'")
+                || res.contains("missing field `five`")
+        );
     }
 
     fn test_dummy_init_bad_config_value<D: TestDriver>() {

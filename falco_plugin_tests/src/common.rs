@@ -19,7 +19,7 @@ unsafe impl ExternType for Api {
 
 pub struct SinspMetric {
     pub name: String,
-    pub value: u64,
+    pub value: u64, // TODO: this is... taking shortcuts
 }
 
 pub trait TestDriver: Debug + Sized {

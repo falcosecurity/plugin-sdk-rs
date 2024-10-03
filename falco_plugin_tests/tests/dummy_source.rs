@@ -75,10 +75,8 @@ mod tests {
 
     fn test_dummy_init_bad_config<D: TestDriver>() {
         let res = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"not testing");
-        assert!(res
-            .unwrap_err()
-            .to_string()
-            .contains("I only accept \"testing\" as the config string"));
+        let res = res.unwrap_err().to_string();
+        assert!(res.contains("I only accept \"testing\" as the config string"));
     }
 
     fn test_dummy_next<D: TestDriver>() {

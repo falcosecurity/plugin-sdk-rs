@@ -1,3 +1,4 @@
+use anyhow::Context;
 use falco_plugin::anyhow::Error;
 use falco_plugin::base::{Metric, MetricLabel, MetricType, MetricValue, Plugin};
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
@@ -186,7 +187,7 @@ impl DummyPlugin {
         };
 
         let first_char = &buf[0..1];
-        let first_char = std::str::from_utf8(first_char)?;
+        let first_char = std::str::from_utf8(first_char).context(format!("buf={buf:?}"))?;
         let remaining = first_char.parse()?;
         Ok(remaining)
     }

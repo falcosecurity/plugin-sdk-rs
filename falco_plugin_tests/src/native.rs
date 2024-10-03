@@ -1,5 +1,5 @@
 use crate::{CapturingTestDriver, ScapStatus, SinspMetric, TestDriver};
-use falco_plugin_runner::{CapturingPluginRunner, PluginRunner};
+use falco_plugin_runner::{CapturingPluginRunner, MetricValue, PluginRunner};
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
 
@@ -95,7 +95,26 @@ impl CapturingTestDriver for NativeCapturingTestDriver {
     }
 
     fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>> {
-        anyhow::bail!("not implemented")
+        let metrics = self.0.get_metrics();
+        Ok(metrics
+            .into_iter()
+            .flat_map(|m| {
+                let value = match m.value {
+                    MetricValue::S32(v) => v as u64,
+                    MetricValue::U32(v) => v as u64,
+                    MetricValue::U64(v) => v,
+                    MetricValue::I64(v) => v as u64,
+                    MetricValue::Double(v) => v as u64,
+                    MetricValue::Float(v) => v as u64,
+                    MetricValue::Int(v) => v as u64,
+                };
+
+                Some(SinspMetric {
+                    name: m.name,
+                    value,
+                })
+            })
+            .collect())
     }
 }
 
