@@ -1,3 +1,5 @@
+use falco_plugin_api::ss_plugin_byte_buffer;
+
 /// # Storage for extracted fields
 ///
 /// Since we only pass pointers across the FFI boundary, we need to hold on to the underlying
@@ -11,22 +13,26 @@
 pub struct FieldStorage {
     byte_storage: Vec<Vec<u8>>,
     pointer_storage: Vec<Vec<*const u8>>,
+    buffer_storage: Vec<Vec<ss_plugin_byte_buffer>>,
 }
 
 #[derive(Debug)]
 pub struct FieldStorageSession<'a> {
     byte_storage: &'a mut Vec<Vec<u8>>,
     pointer_storage: &'a mut Vec<Vec<*const u8>>,
+    buffer_storage: &'a mut Vec<Vec<ss_plugin_byte_buffer>>,
 }
 
 impl FieldStorage {
     pub(crate) fn start(&mut self) -> FieldStorageSession {
         self.byte_storage.clear();
         self.pointer_storage.clear();
+        self.buffer_storage.clear();
 
         FieldStorageSession {
             byte_storage: &mut self.byte_storage,
             pointer_storage: &mut self.pointer_storage,
+            buffer_storage: &mut self.buffer_storage,
         }
     }
 }
@@ -43,6 +49,17 @@ impl FieldStorageSession<'_> {
         (
             self.byte_storage.last_mut().unwrap(),
             self.pointer_storage.last_mut().unwrap(),
+        )
+    }
+
+    pub(crate) fn get_byte_and_buffer_storage(
+        &mut self,
+    ) -> (&mut Vec<u8>, &mut Vec<ss_plugin_byte_buffer>) {
+        self.byte_storage.push(Vec::new());
+        self.buffer_storage.push(Vec::new());
+        (
+            self.byte_storage.last_mut().unwrap(),
+            self.buffer_storage.last_mut().unwrap(),
         )
     }
 }

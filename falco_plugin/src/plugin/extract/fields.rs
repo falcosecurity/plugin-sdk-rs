@@ -1,13 +1,16 @@
 use crate::plugin::storage::FieldStorageSession;
+use falco_event::fields::types::PT_IPNET;
 use falco_event::fields::ToBytes;
 use falco_plugin_api::{
-    ss_plugin_extract_field, ss_plugin_field_type_FTYPE_ABSTIME, ss_plugin_field_type_FTYPE_BOOL,
-    ss_plugin_field_type_FTYPE_IPADDR, ss_plugin_field_type_FTYPE_IPNET,
-    ss_plugin_field_type_FTYPE_RELTIME, ss_plugin_field_type_FTYPE_STRING,
-    ss_plugin_field_type_FTYPE_UINT64,
+    ss_plugin_byte_buffer, ss_plugin_extract_field, ss_plugin_field_type_FTYPE_ABSTIME,
+    ss_plugin_field_type_FTYPE_BOOL, ss_plugin_field_type_FTYPE_IPADDR,
+    ss_plugin_field_type_FTYPE_IPNET, ss_plugin_field_type_FTYPE_RELTIME,
+    ss_plugin_field_type_FTYPE_STRING, ss_plugin_field_type_FTYPE_UINT64,
 };
 use num_derive::FromPrimitive;
 use std::ffi::{c_void, CString};
+use std::net::IpAddr;
+use std::time::{Duration, SystemTime};
 
 #[non_exhaustive]
 #[repr(u32)]
@@ -42,58 +45,104 @@ pub trait Extract {
     ) -> Result<(), std::io::Error>;
 }
 
-fn extract_direct_one<T: ToBytes>(
-    val: &T,
-    mut storage: FieldStorageSession<'_>,
-) -> Result<(*mut c_void, u64), std::io::Error> {
-    let buf = storage.get_byte_storage();
-    val.write(&mut *buf)?;
-    Ok((buf.as_mut_ptr().cast(), 1))
-}
+mod direct {
+    use super::*;
 
-fn extract_direct_many<T: ToBytes>(
-    val: &[T],
-    mut storage: FieldStorageSession<'_>,
-) -> Result<(*mut c_void, u64), std::io::Error> {
-    let buf = storage.get_byte_storage();
-    for item in val.iter() {
-        item.write(&mut *buf)?;
-    }
-    Ok((buf.as_mut_ptr().cast(), val.len() as u64))
-}
-
-fn extract_indirect_one<T: ToBytes>(
-    val: &T,
-    mut storage: FieldStorageSession<'_>,
-) -> Result<(*mut c_void, u64), std::io::Error> {
-    let (buf, ptr_buf) = storage.get_byte_and_pointer_storage();
-    val.write(&mut *buf)?;
-
-    ptr_buf.push(buf.as_ptr());
-    Ok((ptr_buf.as_mut_ptr().cast(), 1))
-}
-
-fn extract_indirect_many<T: ToBytes>(
-    val: &[T],
-    mut storage: FieldStorageSession<'_>,
-) -> Result<(*mut c_void, u64), std::io::Error> {
-    let mut sizes = Vec::new();
-    let (buf, ptr_buf) = storage.get_byte_and_pointer_storage();
-    for item in val.iter() {
-        item.write(&mut *buf)?;
-        sizes.push(item.binary_size());
+    pub(super) fn extract_one<T: ToBytes>(
+        val: &T,
+        mut storage: FieldStorageSession<'_>,
+    ) -> Result<(*mut c_void, u64), std::io::Error> {
+        let buf = storage.get_byte_storage();
+        val.write(&mut *buf)?;
+        Ok((buf.as_mut_ptr().cast(), 1))
     }
 
-    let mut ptr = buf.as_ptr();
-    for size in sizes {
-        ptr_buf.push(ptr);
-        ptr = unsafe { ptr.add(size) };
+    pub(super) fn extract_many<T: ToBytes>(
+        val: &[T],
+        mut storage: FieldStorageSession<'_>,
+    ) -> Result<(*mut c_void, u64), std::io::Error> {
+        let buf = storage.get_byte_storage();
+        for item in val.iter() {
+            item.write(&mut *buf)?;
+        }
+        Ok((buf.as_mut_ptr().cast(), val.len() as u64))
     }
-    Ok((ptr_buf.as_mut_ptr().cast(), val.len() as u64))
 }
 
-macro_rules! extract_direct {
-    ($ty:ty => $type_id:expr) => {
+mod by_pointer {
+    use super::*;
+
+    pub(super) fn extract_one<T: ToBytes>(
+        val: &T,
+        mut storage: FieldStorageSession<'_>,
+    ) -> Result<(*mut c_void, u64), std::io::Error> {
+        let (buf, ptr_buf) = storage.get_byte_and_pointer_storage();
+        val.write(&mut *buf)?;
+
+        ptr_buf.push(buf.as_ptr());
+        Ok((ptr_buf.as_mut_ptr().cast(), 1))
+    }
+
+    pub(super) fn extract_many<T: ToBytes>(
+        val: &[T],
+        mut storage: FieldStorageSession<'_>,
+    ) -> Result<(*mut c_void, u64), std::io::Error> {
+        let mut sizes = Vec::new();
+        let (buf, ptr_buf) = storage.get_byte_and_pointer_storage();
+        for item in val.iter() {
+            item.write(&mut *buf)?;
+            sizes.push(item.binary_size());
+        }
+
+        let mut ptr = buf.as_ptr();
+        for size in sizes {
+            ptr_buf.push(ptr);
+            ptr = unsafe { ptr.add(size) };
+        }
+        Ok((ptr_buf.as_mut_ptr().cast(), val.len() as u64))
+    }
+}
+
+mod by_bytebuf {
+    use super::*;
+
+    pub(super) fn extract_one<T: ToBytes>(
+        val: &T,
+        mut storage: FieldStorageSession<'_>,
+    ) -> Result<(*mut c_void, u64), std::io::Error> {
+        let (buf, bb_buf) = storage.get_byte_and_buffer_storage();
+        val.write(&mut *buf)?;
+        bb_buf.push(ss_plugin_byte_buffer {
+            len: val.binary_size() as u32,
+            ptr: buf.as_ptr().cast(),
+        });
+        Ok((bb_buf.as_mut_ptr().cast(), 1))
+    }
+
+    pub(super) fn extract_many<T: ToBytes>(
+        val: &[T],
+        mut storage: FieldStorageSession<'_>,
+    ) -> Result<(*mut c_void, u64), std::io::Error> {
+        let mut sizes = Vec::new();
+        let (buf, bb_buf) = storage.get_byte_and_buffer_storage();
+        for item in val.iter() {
+            item.write(&mut *buf)?;
+            sizes.push(item.binary_size());
+        }
+        let mut ptr = buf.as_ptr();
+        for size in sizes {
+            bb_buf.push(ss_plugin_byte_buffer {
+                len: size as u32,
+                ptr: ptr.cast(),
+            });
+            ptr = unsafe { ptr.add(size) };
+        }
+        Ok((bb_buf.as_mut_ptr().cast(), val.len() as u64))
+    }
+}
+
+macro_rules! extract {
+    ($ty:ty : $strategy_mod:ident => $type_id:expr) => {
         impl Extract for $ty {
             const IS_LIST: bool = false;
             const TYPE_ID: ExtractFieldTypeId = $type_id;
@@ -103,7 +152,7 @@ macro_rules! extract_direct {
                 req: &mut ss_plugin_extract_field,
                 storage: FieldStorageSession,
             ) -> Result<(), std::io::Error> {
-                let (buf, len) = extract_direct_one(self, storage)?;
+                let (buf, len) = $strategy_mod::extract_one(self, storage)?;
                 req.res.u64_ = buf as *mut _;
                 req.res_len = len;
                 Ok(())
@@ -119,7 +168,7 @@ macro_rules! extract_direct {
                 req: &mut ss_plugin_extract_field,
                 storage: FieldStorageSession,
             ) -> Result<(), std::io::Error> {
-                let (buf, len) = extract_direct_many(self.as_slice(), storage)?;
+                let (buf, len) = $strategy_mod::extract_many(self.as_slice(), storage)?;
                 req.res.u64_ = buf as *mut _;
                 req.res_len = len;
                 Ok(())
@@ -128,35 +177,10 @@ macro_rules! extract_direct {
     };
 }
 
-extract_direct!(u64 => ExtractFieldTypeId::U64);
-
-impl Extract for CString {
-    const IS_LIST: bool = false;
-    const TYPE_ID: ExtractFieldTypeId = ExtractFieldTypeId::String;
-
-    fn extract_to(
-        &self,
-        req: &mut ss_plugin_extract_field,
-        storage: FieldStorageSession,
-    ) -> Result<(), std::io::Error> {
-        let (buf, len) = extract_indirect_one(self, storage)?;
-        req.res.u64_ = buf as *mut _;
-        req.res_len = len;
-        Ok(())
-    }
-}
-impl Extract for Vec<CString> {
-    const IS_LIST: bool = true;
-    const TYPE_ID: ExtractFieldTypeId = ExtractFieldTypeId::String;
-
-    fn extract_to(
-        &self,
-        req: &mut ss_plugin_extract_field,
-        storage: FieldStorageSession,
-    ) -> Result<(), std::io::Error> {
-        let (buf, len) = extract_indirect_many(self, storage)?;
-        req.res.u64_ = buf as *mut _;
-        req.res_len = len;
-        Ok(())
-    }
-}
+extract!(u64: direct => ExtractFieldTypeId::U64);
+extract!(Duration: direct => ExtractFieldTypeId::RelTime);
+extract!(SystemTime: direct => ExtractFieldTypeId::AbsTime);
+extract!(bool: direct => ExtractFieldTypeId::Bool);
+extract!(CString: by_pointer => ExtractFieldTypeId::String);
+extract!(IpAddr: by_bytebuf => ExtractFieldTypeId::IpAddr);
+extract!(PT_IPNET: by_bytebuf => ExtractFieldTypeId::IpNet);

@@ -179,10 +179,13 @@ where
     ///
     /// ```
     /// where `R` is one of the following types or a [`Vec`] of them:
-    /// - [`u32`]
     /// - [`u64`]
     /// - [`bool`]
     /// - [`CString`]
+    /// - [`std::time::SystemTime`]
+    /// - [`std::time::Duration`]
+    /// - [`std::net::IpAddr`]
+    /// - [`falco_event::fields::types::PT_IPNET`]
     ///
     /// `req` is the extraction request ([`ExtractRequest`]), containing the context in which
     /// the plugin is doing the work.
