@@ -121,7 +121,6 @@ pub mod extract {
     pub use crate::plugin::extract::ExtractFieldRequestArg;
     pub use crate::plugin::extract::ExtractPlugin;
     pub use crate::plugin::extract::ExtractRequest;
-    pub use crate::plugin::storage::FieldStorage;
 }
 
 /// # Event parsing support

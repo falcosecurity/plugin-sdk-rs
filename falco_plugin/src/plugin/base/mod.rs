@@ -1,4 +1,3 @@
-use crate::extract::FieldStorage;
 use crate::plugin::base::metrics::Metric;
 use crate::plugin::error::last_error::LastError;
 use crate::plugin::schema::ConfigSchema;
@@ -26,7 +25,7 @@ pub(crate) struct ActualPlugin<P: Plugin> {
 pub struct PluginWrapper<P: Plugin> {
     pub(crate) plugin: Option<ActualPlugin<P>>,
     pub(crate) error_buf: CString,
-    pub(crate) field_storage: FieldStorage,
+    pub(crate) field_storage: bumpalo::Bump,
     pub(crate) string_storage: CString,
     pub(crate) metric_storage: Vec<ss_plugin_metric>,
 }
@@ -36,7 +35,7 @@ impl<P: Plugin> PluginWrapper<P> {
         Self {
             plugin: Some(ActualPlugin { plugin, last_error }),
             error_buf: Default::default(),
-            field_storage: Default::default(),
+            field_storage: bumpalo::Bump::new(),
             string_storage: Default::default(),
             metric_storage: Default::default(),
         }
@@ -46,7 +45,7 @@ impl<P: Plugin> PluginWrapper<P> {
         let mut plugin = Self {
             plugin: None,
             error_buf: Default::default(),
-            field_storage: Default::default(),
+            field_storage: bumpalo::Bump::new(),
             string_storage: Default::default(),
             metric_storage: vec![],
         };

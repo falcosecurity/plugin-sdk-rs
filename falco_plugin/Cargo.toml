@@ -32,3 +32,4 @@ phf = { version = "0.11.2", features = ["macros"] }
 lock_api = { version = "0.4.12", features = ["arc_lock"] }
 refcell-lock-api = "0.1.0"
 parking_lot = { version = "0.12.3", optional = true, features = ["arc_lock"] }
+bumpalo = { version = "3.16.0", features = ["collections", "std"] }

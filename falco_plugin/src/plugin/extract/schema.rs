@@ -1,7 +1,6 @@
 use crate::extract::ExtractFieldRequestArg;
 use crate::plugin::extract::fields::{Extract, ExtractFieldTypeId};
 use crate::plugin::extract::{ExtractField, ExtractPlugin, ExtractRequest};
-use crate::plugin::storage::FieldStorageSession;
 use anyhow::Error;
 use falco_plugin_api::ss_plugin_extract_field;
 use serde::ser::SerializeStruct;
@@ -82,7 +81,7 @@ pub trait Extractor<P: ExtractPlugin> {
         field: &mut ss_plugin_extract_field,
         request: ExtractRequest<'a, '_, '_, P>,
         arg_type: ExtractArgType,
-        storage: FieldStorageSession<'a>,
+        storage: &'a mut bumpalo::Bump,
     ) -> Result<(), Error>;
 }
 
@@ -98,7 +97,7 @@ where
         field: &mut ss_plugin_extract_field,
         request: ExtractRequest<'a, '_, '_, P>,
         arg_type: ExtractArgType,
-        storage: FieldStorageSession<'a>,
+        storage: &'a mut bumpalo::Bump,
     ) -> Result<(), Error> {
         let result = self(plugin, request, unsafe { field.key(arg_type) }?)?;
         Ok(result.extract_to(field, storage)?)

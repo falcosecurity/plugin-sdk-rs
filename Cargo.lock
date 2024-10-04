@@ -186,6 +186,7 @@ name = "falco_plugin"
 version = "0.3.0"
 dependencies = [
  "anyhow",
+ "bumpalo",
  "falco_event",
  "falco_plugin_api",
  "falco_plugin_derive",

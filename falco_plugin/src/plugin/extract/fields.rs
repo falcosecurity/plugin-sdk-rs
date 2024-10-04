@@ -1,4 +1,3 @@
-use crate::plugin::storage::FieldStorageSession;
 use falco_event::fields::types::PT_IPNET;
 use falco_event::fields::ToBytes;
 use falco_plugin_api::{
@@ -41,7 +40,7 @@ pub trait Extract {
     fn extract_to(
         &self,
         req: &mut ss_plugin_extract_field,
-        storage: FieldStorageSession,
+        storage: &mut bumpalo::Bump,
     ) -> Result<(), std::io::Error>;
 }
 
@@ -50,20 +49,20 @@ mod direct {
 
     pub(super) fn extract_one<T: ToBytes>(
         val: &T,
-        mut storage: FieldStorageSession<'_>,
+        storage: &mut bumpalo::Bump,
     ) -> Result<(*mut c_void, u64), std::io::Error> {
-        let buf = storage.get_byte_storage();
-        val.write(&mut *buf)?;
+        let mut buf = bumpalo::collections::Vec::new_in(storage);
+        val.write(&mut buf)?;
         Ok((buf.as_mut_ptr().cast(), 1))
     }
 
     pub(super) fn extract_many<T: ToBytes>(
         val: &[T],
-        mut storage: FieldStorageSession<'_>,
+        storage: &mut bumpalo::Bump,
     ) -> Result<(*mut c_void, u64), std::io::Error> {
-        let buf = storage.get_byte_storage();
+        let mut buf = bumpalo::collections::Vec::new_in(storage);
         for item in val.iter() {
-            item.write(&mut *buf)?;
+            item.write(&mut buf)?;
         }
         Ok((buf.as_mut_ptr().cast(), val.len() as u64))
     }
@@ -74,26 +73,30 @@ mod by_pointer {
 
     pub(super) fn extract_one<T: ToBytes>(
         val: &T,
-        mut storage: FieldStorageSession<'_>,
+        storage: &mut bumpalo::Bump,
     ) -> Result<(*mut c_void, u64), std::io::Error> {
-        let (buf, ptr_buf) = storage.get_byte_and_pointer_storage();
-        val.write(&mut *buf)?;
+        let mut buf = bumpalo::collections::Vec::new_in(storage);
+        val.write(&mut buf)?;
 
-        ptr_buf.push(buf.as_ptr());
-        Ok((ptr_buf.as_mut_ptr().cast(), 1))
+        let ptr_buf = storage.alloc(buf.as_ptr());
+        Ok((ptr_buf as *mut _ as *mut _, 1))
     }
 
     pub(super) fn extract_many<T: ToBytes>(
         val: &[T],
-        mut storage: FieldStorageSession<'_>,
+        storage: &mut bumpalo::Bump,
     ) -> Result<(*mut c_void, u64), std::io::Error> {
-        let mut sizes = Vec::new();
-        let (buf, ptr_buf) = storage.get_byte_and_pointer_storage();
+        let mut sizes = bumpalo::collections::Vec::new_in(storage);
+        sizes.reserve(val.len());
+
+        let mut buf = bumpalo::collections::Vec::new_in(storage);
         for item in val.iter() {
-            item.write(&mut *buf)?;
+            item.write(&mut buf)?;
             sizes.push(item.binary_size());
         }
 
+        let mut ptr_buf = bumpalo::collections::Vec::new_in(storage);
+        ptr_buf.reserve(sizes.len());
         let mut ptr = buf.as_ptr();
         for size in sizes {
             ptr_buf.push(ptr);
@@ -108,27 +111,35 @@ mod by_bytebuf {
 
     pub(super) fn extract_one<T: ToBytes>(
         val: &T,
-        mut storage: FieldStorageSession<'_>,
+        storage: &mut bumpalo::Bump,
     ) -> Result<(*mut c_void, u64), std::io::Error> {
-        let (buf, bb_buf) = storage.get_byte_and_buffer_storage();
-        val.write(&mut *buf)?;
-        bb_buf.push(ss_plugin_byte_buffer {
+        let mut buf = bumpalo::collections::Vec::new_in(storage);
+        val.write(&mut buf)?;
+
+        let bb_buf = storage.alloc(ss_plugin_byte_buffer {
             len: val.binary_size() as u32,
             ptr: buf.as_ptr().cast(),
         });
-        Ok((bb_buf.as_mut_ptr().cast(), 1))
+
+        Ok((bb_buf as *mut _ as *mut _, 1))
     }
 
     pub(super) fn extract_many<T: ToBytes>(
         val: &[T],
-        mut storage: FieldStorageSession<'_>,
+        storage: &mut bumpalo::Bump,
     ) -> Result<(*mut c_void, u64), std::io::Error> {
-        let mut sizes = Vec::new();
-        let (buf, bb_buf) = storage.get_byte_and_buffer_storage();
+        let mut sizes = bumpalo::collections::Vec::new_in(storage);
+        sizes.reserve(val.len());
+
+        let mut buf = bumpalo::collections::Vec::new_in(storage);
         for item in val.iter() {
-            item.write(&mut *buf)?;
+            item.write(&mut buf)?;
             sizes.push(item.binary_size());
         }
+
+        let mut bb_buf = bumpalo::collections::Vec::new_in(storage);
+        bb_buf.reserve(sizes.len());
+
         let mut ptr = buf.as_ptr();
         for size in sizes {
             bb_buf.push(ss_plugin_byte_buffer {
@@ -150,7 +161,7 @@ macro_rules! extract {
             fn extract_to(
                 &self,
                 req: &mut ss_plugin_extract_field,
-                storage: FieldStorageSession,
+                storage: &mut bumpalo::Bump,
             ) -> Result<(), std::io::Error> {
                 let (buf, len) = $strategy_mod::extract_one(self, storage)?;
                 req.res.u64_ = buf as *mut _;
@@ -166,7 +177,7 @@ macro_rules! extract {
             fn extract_to(
                 &self,
                 req: &mut ss_plugin_extract_field,
-                storage: FieldStorageSession,
+                storage: &mut bumpalo::Bump,
             ) -> Result<(), std::io::Error> {
                 let (buf, len) = $strategy_mod::extract_many(self.as_slice(), storage)?;
                 req.res.u64_ = buf as *mut _;

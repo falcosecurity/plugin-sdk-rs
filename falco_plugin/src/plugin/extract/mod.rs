@@ -1,7 +1,6 @@
 use crate::extract::{EventInput, ExtractArgType};
 use crate::plugin::base::Plugin;
 use crate::plugin::extract::schema::ExtractFieldInfo;
-use crate::plugin::storage::FieldStorage;
 use crate::tables::TableReader;
 use falco_event::events::types::EventType;
 use falco_plugin_api::ss_plugin_extract_field;
@@ -303,7 +302,7 @@ where
         event_input: &EventInput,
         table_reader: &TableReader,
         fields: &mut [ss_plugin_extract_field],
-        storage: &'a mut FieldStorage,
+        storage: &'a mut bumpalo::Bump,
     ) -> Result<(), anyhow::Error> {
         let mut context = Self::ExtractContext::default();
 
@@ -318,8 +317,7 @@ where
                 table_reader,
             };
 
-            info.func
-                .extract(self, req, request, info.arg, storage.start())?;
+            info.func.extract(self, req, request, info.arg, storage)?;
         }
         Ok(())
     }

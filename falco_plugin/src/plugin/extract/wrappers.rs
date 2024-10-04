@@ -105,6 +105,7 @@ pub unsafe extern "C" fn plugin_extract_fields<T: ExtractPlugin>(
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
 
+        plugin.field_storage.reset();
         actual_plugin
             .plugin
             .extract_fields(

@@ -8,6 +8,5 @@ pub mod listen;
 pub mod parse;
 pub mod schema;
 pub mod source;
-pub(crate) mod storage;
 pub mod tables;
 // TODO(sdk) review all pub
