@@ -8,6 +8,7 @@ use std::net::IpAddr;
 ///
 /// This is a wrapper around [IpAddr] that makes it a distinct type, suitable for storing
 /// IP (v4 or v6) subnets.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct IpNet(pub IpAddr);
 
 impl FromBytes<'_> for IpNet {
