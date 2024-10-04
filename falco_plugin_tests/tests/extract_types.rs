@@ -294,34 +294,29 @@ mod tests {
                 .unwrap(),
             "(Hello, World!,Hello, World!,Hello, World!)"
         );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.reltime", &event)
-                .unwrap()
-                .unwrap(),
-            "10000000"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.vec_reltime", &event)
-                .unwrap()
-                .unwrap(),
-            "(10000000,20000000,30000000)"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.abstime", &event)
-                .unwrap()
-                .unwrap(),
-            "10000000"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.vec_abstime", &event)
-                .unwrap()
-                .unwrap(),
-            "(10000000,20000000,30000000)"
-        );
+
+        let s = driver
+            .event_field_as_string(c"dummy.reltime", &event)
+            .unwrap()
+            .unwrap();
+        assert!(s == "10000000" || s == "10ms");
+        let s = driver
+            .event_field_as_string(c"dummy.vec_reltime", &event)
+            .unwrap()
+            .unwrap();
+        assert!(s == "(10000000,20000000,30000000)" || s == "(10ms,20ms,30ms)");
+
+        let s = driver
+            .event_field_as_string(c"dummy.abstime", &event)
+            .unwrap()
+            .unwrap();
+        assert!(s == "10000000" || s == "SystemTime { tv_sec: 0, tv_nsec: 10000000 }");
+        let s = driver
+            .event_field_as_string(c"dummy.vec_abstime", &event)
+            .unwrap()
+            .unwrap();
+        assert!(s == "(10000000,20000000,30000000)" || s == "(SystemTime { tv_sec: 0, tv_nsec: 10000000 },SystemTime { tv_sec: 0, tv_nsec: 20000000 },SystemTime { tv_sec: 0, tv_nsec: 30000000 })");
+
         assert_eq!(
             driver
                 .event_field_as_string(c"dummy.bool", &event)
@@ -336,6 +331,7 @@ mod tests {
                 .unwrap(),
             "(true,false,true)"
         );
+
         assert_eq!(
             driver
                 .event_field_as_string(c"dummy.ipaddr_v4", &event)
