@@ -1780,7 +1780,7 @@ event_info! {
                                     EF_CREATES_FD | EF_MODIFIES_STATE,
                                     5,
                                     {{"dirfd", PT_FD, PF_DEC},
-                                     {"name", PT_FSRELPATH, PF_NA, 1},
+                                     {"name", PT_FSRELPATH, PF_NA, 0},
                                      {"flags", PT_FLAGS32, PF_HEX, file_flags},
                                      {"mode", PT_UINT32, PF_OCT},
                                      {"resolve", PT_FLAGS32, PF_HEX, openat2_flags}}},
