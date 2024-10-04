@@ -33,6 +33,19 @@ impl EventBatch<'_> {
         Ok(())
     }
 
+    /// # Reserve space for a specific number of events
+    ///
+    /// If your plugin knows it's going to generate a specific number of events
+    /// in a particular batch, it can call this method to preallocate some space
+    /// and save a bit of overhead.
+    ///
+    /// The passed value is only a hint, the actual batch can be smaller or larger
+    /// than the reserved size, but that mostly defeats the purpose of reserving
+    /// space
+    pub fn reserve(&mut self, num_events: usize) {
+        self.pointers.reserve(num_events);
+    }
+
     pub(in crate::plugin::source) fn get_events(&self) -> &[*const u8] {
         self.pointers.as_slice()
     }
