@@ -1,5 +1,4 @@
 use crate::plugin::base::Plugin;
-use crate::plugin::source::event_batch::EventBatchStorage;
 use crate::source::{EventBatch, EventInput};
 use falco_event::events::types::PPME_PLUGINEVENT_E as PluginEvent;
 use falco_event::events::Event;
@@ -92,7 +91,7 @@ pub struct ProgressInfo<'a> {
 
 pub(crate) struct SourcePluginInstanceWrapper<I: SourcePluginInstance> {
     pub(crate) instance: I,
-    pub(crate) batch: EventBatchStorage,
+    pub(crate) batch: bumpalo::Bump,
 }
 
 /// # An open instance of a source plugin

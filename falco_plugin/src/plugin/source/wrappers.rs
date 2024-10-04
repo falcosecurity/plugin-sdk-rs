@@ -1,7 +1,7 @@
 use crate::plugin::base::PluginWrapper;
 use crate::plugin::error::ffi_result::FfiResult;
 use crate::plugin::source::SourcePluginInstanceWrapper;
-use crate::source::{EventInput, SourcePlugin, SourcePluginInstance};
+use crate::source::{EventBatch, EventInput, SourcePlugin, SourcePluginInstance};
 use crate::strings::cstring_writer::WriteIntoCString;
 use crate::strings::from_ptr::try_str_from_ptr;
 use falco_plugin_api::plugin_api__bindgen_ty_1 as source_plugin_api;
@@ -183,15 +183,16 @@ pub unsafe extern "C" fn plugin_next_batch<T: SourcePlugin>(
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
 
-        let mut batch = instance.batch.start();
+        instance.batch.reset();
+        let mut batch = EventBatch::new(&mut instance.batch);
         match instance
             .instance
             .next_batch(&mut actual_plugin.plugin, &mut batch)
         {
             Ok(()) => {
-                let (batch_evts, batch_nevts) = instance.batch.get_raw_pointers();
-                *nevts = batch_nevts as u32;
-                *evts = batch_evts as *mut *mut _;
+                let events = batch.get_events();
+                *nevts = events.len() as u32;
+                *evts = events as *const _ as *mut _;
                 ss_plugin_rc_SS_PLUGIN_SUCCESS
             }
             Err(e) => {

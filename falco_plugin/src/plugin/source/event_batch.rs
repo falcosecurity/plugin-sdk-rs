@@ -1,40 +1,5 @@
 use falco_event::events::EventToBytes;
 
-#[derive(Default, Debug)]
-pub(crate) struct EventBatchStorage {
-    buf: Vec<u8>,
-    offsets: Vec<usize>,
-
-    raw_pointers: Vec<*const u8>,
-}
-
-impl EventBatchStorage {
-    pub fn start(&mut self) -> EventBatch {
-        self.buf.clear();
-        self.offsets.clear();
-
-        EventBatch {
-            buf: &mut self.buf,
-            offsets: &mut self.offsets,
-        }
-    }
-
-    pub fn get_raw_pointers(&mut self) -> (*const *const u8, usize) {
-        if self.offsets.is_empty() {
-            return (std::ptr::null(), 0);
-        }
-
-        self.raw_pointers.clear();
-        self.raw_pointers.reserve(self.offsets.len());
-        let base = self.buf.as_ptr();
-        for offset in self.offsets.iter().copied() {
-            self.raw_pointers.push(unsafe { base.add(offset) });
-        }
-
-        (self.raw_pointers.as_ptr(), self.offsets.len())
-    }
-}
-
 /// # An object that describes a batch of events
 ///
 /// This is only available by reference, not by ownership, since the data needs to outlive
@@ -42,11 +7,16 @@ impl EventBatchStorage {
 /// plugin developers)
 #[derive(Debug)]
 pub struct EventBatch<'a> {
-    buf: &'a mut Vec<u8>,
-    offsets: &'a mut Vec<usize>,
+    alloc: &'a bumpalo::Bump,
+    pointers: bumpalo::collections::Vec<'a, *const u8>,
 }
 
 impl EventBatch<'_> {
+    pub(in crate::plugin::source) fn new(alloc: &mut bumpalo::Bump) -> EventBatch {
+        let pointers = bumpalo::collections::Vec::new_in(alloc);
+        EventBatch { alloc, pointers }
+    }
+
     /// # Add an event to a batch
     ///
     /// The event can be any type, but please note that the framework may have different
@@ -57,10 +27,13 @@ impl EventBatch<'_> {
     /// the [`source::SourcePluginInstance::plugin_event`](`crate::source::SourcePluginInstance::plugin_event`)
     /// helper method.
     pub fn add(&mut self, event: impl EventToBytes) -> std::io::Result<()> {
-        let pos = self.buf.len();
-        event.write(&mut *self.buf)?;
-
-        self.offsets.push(pos);
+        let mut event_buf = bumpalo::collections::Vec::new_in(self.alloc);
+        event.write(&mut event_buf)?;
+        self.pointers.push(event_buf.as_ptr());
         Ok(())
+    }
+
+    pub(in crate::plugin::source) fn get_events(&self) -> &[*const u8] {
+        self.pointers.as_slice()
     }
 }
