@@ -99,7 +99,7 @@ impl Display for ExtractedField {
                 write!(f, "{:?}", t)
             }
             ExtractedField::AbsTime(t) => {
-                write!(f, "{:?}", t)
+                falco_event::format::Format::<falco_event::format::format_type::PF_NA>::format(t, f)
             }
             ExtractedField::IpAddr(addr) => {
                 write!(f, "{:?}", addr)
