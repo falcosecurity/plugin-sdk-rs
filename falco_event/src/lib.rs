@@ -11,6 +11,8 @@ pub mod events;
 pub mod fields;
 mod types;
 
+pub use types::format;
+
 #[allow(dead_code)]
 #[allow(non_snake_case)]
 #[allow(non_camel_case_types)]
