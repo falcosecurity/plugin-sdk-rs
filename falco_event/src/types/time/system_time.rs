@@ -35,6 +35,6 @@ impl ToBytes for SystemTime {
 impl<F> Format<F> for SystemTime {
     fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
         let dt = chrono::DateTime::<Local>::from(*self);
-        fmt.write_str(&dt.to_rfc2822())
+        fmt.write_str(&dt.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, false))
     }
 }
