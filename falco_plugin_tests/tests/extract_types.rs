@@ -261,6 +261,10 @@ mod tests {
     use falco_plugin_tests::{init_plugin, instantiate_tests, CapturingTestDriver, TestDriver};
 
     fn test_dummy_next<D: TestDriver>() {
+        unsafe {
+            std::env::set_var("TZ", "UTC");
+        }
+
         let (mut driver, plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
         driver.add_filterchecks(&plugin, c"dummy").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
@@ -310,12 +314,12 @@ mod tests {
             .event_field_as_string(c"dummy.abstime", &event)
             .unwrap()
             .unwrap();
-        assert!(s == "10000000" || s == "SystemTime { tv_sec: 0, tv_nsec: 10000000 }");
+        assert!(s == "10000000" || s == "1970-01-01T00:00:00.010+00:00");
         let s = driver
             .event_field_as_string(c"dummy.vec_abstime", &event)
             .unwrap()
             .unwrap();
-        assert!(s == "(10000000,20000000,30000000)" || s == "(SystemTime { tv_sec: 0, tv_nsec: 10000000 },SystemTime { tv_sec: 0, tv_nsec: 20000000 },SystemTime { tv_sec: 0, tv_nsec: 30000000 })");
+        assert!(s == "(10000000,20000000,30000000)" || s == "(1970-01-01T00:00:00.010+00:00,1970-01-01T00:00:00.020+00:00,1970-01-01T00:00:00.030+00:00)");
 
         assert_eq!(
             driver
