@@ -211,21 +211,15 @@ impl EventInfo {
             )
         });
         let lifetime = wants_lifetime.then_some(quote!(<'a>));
-        let field_fmts = self.args().enumerate().map(|(i, field)| {
+        let field_fmts = self.args().map(|field| {
             let name = &field.name;
             let ident = field.ident();
             let fmt = &field.field_format;
             let ty = field.final_field_type();
             let (field_ref, field_lifetime) = field.lifetimes();
 
-            let space = if i == 0 {
-                None
-            } else {
-                Some(quote!(fmt.write_char(' ')?;))
-            };
-
             quote!(
-                #space
+                fmt.write_char(' ')?;
                 fmt.write_str(#name)?;
                 fmt.write_char('=')?;
                 <Option<#field_ref crate::event_derive::event_field_type::#ty #field_lifetime> as
@@ -266,10 +260,7 @@ impl EventInfo {
                         crate::event_derive::EventDirection::Exit => fmt.write_str("< ")?,
                     }
                     fmt.write_str(#name)?;
-                    fmt.write_str(" ")?;
-
                     #(#field_fmts)*
-
                     Ok(())
                 }
             }
