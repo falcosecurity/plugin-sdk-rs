@@ -396,8 +396,7 @@ impl Events {
     }
 }
 
-pub fn event_info(input: TokenStream) -> TokenStream {
-    let events = parse_macro_input!(input as Events);
+fn event_info_borrowed(events: &Events) -> proc_macro2::TokenStream {
     let typedefs = events.typedefs();
     let type_variants = events.type_variants();
     let variants = events.enum_variants();
@@ -447,5 +446,9 @@ pub fn event_info(input: TokenStream) -> TokenStream {
             }
         }
     )
-        .into()
+}
+
+pub fn event_info(input: TokenStream) -> TokenStream {
+    let events = parse_macro_input!(input as Events);
+    event_info_borrowed(&events).into()
 }
