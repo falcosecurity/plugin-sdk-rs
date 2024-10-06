@@ -398,23 +398,13 @@ impl Events {
 
 fn event_info_borrowed(events: &Events) -> proc_macro2::TokenStream {
     let typedefs = events.typedefs();
-    let type_variants = events.type_variants();
     let variants = events.enum_variants();
     let variant_fmts = events.variant_fmts();
 
     quote!(
         use falco_event_derive::BinaryPayload;
-        use num_derive::FromPrimitive;
 
         #(#typedefs)*
-
-        #[derive(Debug)]
-        #[derive(FromPrimitive)]
-        #[allow(non_camel_case_types)]
-        #[repr(u16)]
-        pub enum EventType {
-            #(#type_variants,)*
-        }
 
         #[derive(Debug)]
         #[allow(non_camel_case_types)]
@@ -428,6 +418,21 @@ fn event_info_borrowed(events: &Events) -> proc_macro2::TokenStream {
                     #(#variant_fmts)*
                 }
             }
+        }
+    )
+}
+
+fn event_type_enum(events: &Events) -> proc_macro2::TokenStream {
+    let type_variants = events.type_variants();
+
+    quote!(
+        use num_derive::FromPrimitive;
+        #[derive(Debug)]
+        #[derive(FromPrimitive)]
+        #[allow(non_camel_case_types)]
+        #[repr(u16)]
+        pub enum EventType {
+            #(#type_variants,)*
         }
     )
 }
@@ -456,10 +461,12 @@ pub fn event_info(input: TokenStream) -> TokenStream {
     let events = parse_macro_input!(input as Events);
 
     let event_info_borrowed = event_info_borrowed(&events);
+    let event_type_enum = event_type_enum(&events);
     let raw_event_load_any = raw_event_load_any(&events);
 
     quote!(
         #event_info_borrowed
+        #event_type_enum
         #raw_event_load_any
     )
     .into()
