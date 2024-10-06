@@ -400,13 +400,11 @@ fn event_info_borrowed(events: &Events) -> proc_macro2::TokenStream {
     let typedefs = events.typedefs();
     let type_variants = events.type_variants();
     let variants = events.enum_variants();
-    let matches = events.enum_matches();
     let variant_fmts = events.variant_fmts();
 
     quote!(
         use falco_event_derive::BinaryPayload;
         use num_derive::FromPrimitive;
-        use crate::event_derive::RawEvent;
 
         #(#typedefs)*
 
@@ -431,8 +429,14 @@ fn event_info_borrowed(events: &Events) -> proc_macro2::TokenStream {
                 }
             }
         }
+    )
+}
 
-        impl RawEvent<'_> {
+fn raw_event_load_any(events: &Events) -> proc_macro2::TokenStream {
+    let matches = events.enum_matches();
+
+    quote!(
+        impl crate::event_derive::RawEvent<'_> {
             pub fn load_any(&self) -> crate::event_derive::PayloadFromBytesResult<crate::event_derive::Event<AnyEvent>> {
                 let any: AnyEvent = match self.event_type as u32 {
                     #(#matches,)*
@@ -450,5 +454,13 @@ fn event_info_borrowed(events: &Events) -> proc_macro2::TokenStream {
 
 pub fn event_info(input: TokenStream) -> TokenStream {
     let events = parse_macro_input!(input as Events);
-    event_info_borrowed(&events).into()
+
+    let event_info_borrowed = event_info_borrowed(&events);
+    let raw_event_load_any = raw_event_load_any(&events);
+
+    quote!(
+        #event_info_borrowed
+        #raw_event_load_any
+    )
+    .into()
 }
