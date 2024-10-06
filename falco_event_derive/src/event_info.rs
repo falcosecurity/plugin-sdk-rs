@@ -211,39 +211,33 @@ impl EventInfo {
             )
         });
         let lifetime = wants_lifetime.then_some(quote!(<'a>));
+        let field_fmts = self.args().enumerate().map(|(i, field)| {
+            let name = &field.name;
+            let ident = field.ident();
+            let fmt = &field.field_format;
+            let ty = field.final_field_type();
+            let (field_ref, field_lifetime) = field.lifetimes();
 
-        let mut field_fmts = Vec::new();
+            let space = if i == 0 {
+                None
+            } else {
+                Some(quote!(fmt.write_char(' ')?;))
+            };
+
+            quote!(
+                #space
+                fmt.write_str(#name)?;
+                fmt.write_char('=')?;
+                <Option<#field_ref crate::event_derive::event_field_type::#ty #field_lifetime> as
+                    crate::event_derive::Format<
+                        crate::event_derive::format_type::#fmt
+                >>::format(&self.#ident, fmt)?;
+            )
+        });
+
         let mut dirfd_methods = Vec::new();
 
         if let Some((_, _, args)) = self.args.as_ref() {
-            field_fmts = args
-                .iter()
-                .enumerate()
-                .map(|(i, field)| {
-                    let name = &field.name;
-                    let ident = field.ident();
-                    let fmt = &field.field_format;
-                    let ty = field.final_field_type();
-                    let (field_ref, field_lifetime) = field.lifetimes();
-
-                    let space = if i == 0 {
-                        None
-                    } else {
-                        Some(quote!(fmt.write_char(' ')?;))
-                    };
-
-                    quote!(
-                        #space
-                        fmt.write_str(#name)?;
-                        fmt.write_char('=')?;
-                        <Option<#field_ref crate::event_derive::event_field_type::#ty #field_lifetime> as
-                            crate::event_derive::Format<
-                                crate::event_derive::format_type::#fmt
-                        >>::format(&self.#ident, fmt)?;
-                    )
-                })
-                .collect();
-
             dirfd_methods = args.iter().map(|a| a.dirfd_method(self)).collect();
         }
 
