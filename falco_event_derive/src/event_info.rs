@@ -1,8 +1,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
-use quote::{quote, ToTokens};
+use quote::quote;
 use syn::parse::{Parse, ParseStream};
-use syn::spanned::Spanned;
 use syn::{braced, bracketed, parse_macro_input, Token};
 
 pub(crate) enum LifetimeType {
@@ -86,12 +85,21 @@ impl EventArg {
         }
     }
 
+    fn field_definition(&self) -> proc_macro2::TokenStream {
+        let name = self.ident();
+        let field_type = self.final_field_type();
+
+        let (field_ref, field_lifetime) = self.lifetimes();
+        quote!(#[allow(non_snake_case)] pub #name: Option<#field_ref crate::event_derive::event_field_type:: #field_type #field_lifetime>)
+    }
+
     fn dirfd_method(&self, event_info: &EventInfo) -> Option<proc_macro2::TokenStream> {
         if let Some((_, IdentOrNumber::Number(num), _)) = &self.info {
             let num = num.base10_parse().ok()?;
             let (_, _, args) = event_info.args.as_ref()?;
             let dirfd_arg = args.iter().nth(num)?.ident();
-            let method_name = Ident::new(&format!("{}_dirfd", &self.name.value()), self.span());
+            let method_name =
+                Ident::new(&format!("{}_dirfd", &self.name.value()), self.name.span());
 
             Some(quote!(
                 pub fn #method_name(&self) -> std::option::Option<crate::fields::types::PT_FD> {
@@ -128,17 +136,6 @@ impl Parse for EventArg {
                 None
             },
         })
-    }
-}
-
-impl ToTokens for EventArg {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let name = self.ident();
-        let field_type = self.final_field_type();
-
-        let (field_ref, field_lifetime) = self.lifetimes();
-        quote!(#[allow(non_snake_case)] pub #name: Option<#field_ref crate::event_derive::event_field_type:: #field_type #field_lifetime>)
-            .to_tokens(tokens)
     }
 }
 
@@ -205,7 +202,7 @@ impl EventInfo {
         let mut dirfd_methods = Vec::new();
 
         if let Some((_, _, args)) = self.args.as_ref() {
-            fields = args.iter().map(|arg| arg.to_token_stream()).collect();
+            fields = args.iter().map(|arg| arg.field_definition()).collect();
             wants_lifetime = !args.iter().all(|arg| {
                 matches!(
                     lifetime_type(&arg.final_field_type().to_string()),
@@ -240,7 +237,7 @@ impl EventInfo {
                 })
                 .collect();
 
-            dirfd_methods = args.iter().map(|a| a.dirfd_method(&self)).collect();
+            dirfd_methods = args.iter().map(|a| a.dirfd_method(self)).collect();
         }
 
         let lifetime = if wants_lifetime {
