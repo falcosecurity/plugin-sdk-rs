@@ -51,7 +51,7 @@ struct EventArg {
 }
 
 impl EventArg {
-    fn final_field_type(&self) -> Ident {
+    fn final_field_type_name(&self) -> Ident {
         if let Some((_, IdentOrNumber::Ident(info), _)) = &self.info {
             Ident::new(
                 &format!("{}_{}", self.field_type, info),
@@ -73,7 +73,7 @@ impl EventArg {
     }
 
     fn lifetimes(&self) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
-        let field_type = self.final_field_type();
+        let field_type = self.final_field_type_name();
 
         match lifetime_type(&field_type.to_string()) {
             LifetimeType::Ref => (quote!(&'a), proc_macro2::TokenStream::new()),
@@ -85,12 +85,18 @@ impl EventArg {
         }
     }
 
+    fn field_type(&self) -> proc_macro2::TokenStream {
+        let field_type = self.final_field_type_name();
+        let (field_ref, field_lifetime) = self.lifetimes();
+
+        quote!(::std::option::Option<#field_ref crate::event_derive::event_field_type::#field_type #field_lifetime>)
+    }
+
     fn field_definition(&self) -> proc_macro2::TokenStream {
         let name = self.ident();
-        let field_type = self.final_field_type();
 
-        let (field_ref, field_lifetime) = self.lifetimes();
-        quote!(#[allow(non_snake_case)] pub #name: Option<#field_ref crate::event_derive::event_field_type:: #field_type #field_lifetime>)
+        let field_type = self.field_type();
+        quote!(#[allow(non_snake_case)] pub #name: #field_type)
     }
 
     fn dirfd_method(&self, event_info: &EventInfo) -> Option<proc_macro2::TokenStream> {
@@ -206,7 +212,7 @@ impl EventInfo {
         let fields = self.args().map(|arg| arg.field_definition());
         let wants_lifetime = !self.args().all(|arg| {
             matches!(
-                lifetime_type(&arg.final_field_type().to_string()),
+                lifetime_type(&arg.final_field_type_name().to_string()),
                 LifetimeType::None
             )
         });
@@ -215,14 +221,13 @@ impl EventInfo {
             let name = &field.name;
             let ident = field.ident();
             let fmt = &field.field_format;
-            let ty = field.final_field_type();
-            let (field_ref, field_lifetime) = field.lifetimes();
+            let field_type = field.field_type();
 
             quote!(
                 fmt.write_char(' ')?;
                 fmt.write_str(#name)?;
                 fmt.write_char('=')?;
-                <Option<#field_ref crate::event_derive::event_field_type::#ty #field_lifetime> as
+                <#field_type as
                     crate::event_derive::Format<
                         crate::event_derive::format_type::#fmt
                 >>::format(&self.#ident, fmt)?;
@@ -292,7 +297,7 @@ impl EventInfo {
         if let Some((_, _, args)) = self.args.as_ref() {
             wants_lifetime = !args.iter().all(|arg| {
                 matches!(
-                    lifetime_type(&arg.final_field_type().to_string()),
+                    lifetime_type(&arg.final_field_type_name().to_string()),
                     LifetimeType::None
                 )
             })
