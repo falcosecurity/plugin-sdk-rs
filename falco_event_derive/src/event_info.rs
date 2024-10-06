@@ -204,18 +204,18 @@ impl EventInfo {
         );
 
         let fields = self.args().map(|arg| arg.field_definition());
+        let wants_lifetime = !self.args().all(|arg| {
+            matches!(
+                lifetime_type(&arg.final_field_type().to_string()),
+                LifetimeType::None
+            )
+        });
+        let lifetime = wants_lifetime.then_some(quote!(<'a>));
 
-        let mut wants_lifetime = false;
         let mut field_fmts = Vec::new();
         let mut dirfd_methods = Vec::new();
 
         if let Some((_, _, args)) = self.args.as_ref() {
-            wants_lifetime = !args.iter().all(|arg| {
-                matches!(
-                    lifetime_type(&arg.final_field_type().to_string()),
-                    LifetimeType::None
-                )
-            });
             field_fmts = args
                 .iter()
                 .enumerate()
@@ -247,11 +247,6 @@ impl EventInfo {
             dirfd_methods = args.iter().map(|a| a.dirfd_method(self)).collect();
         }
 
-        let lifetime = if wants_lifetime {
-            quote!(<'a>)
-        } else {
-            proc_macro2::TokenStream::new()
-        };
         let is_large = self.flags.iter().any(|flag| *flag == "EF_LARGE_PAYLOAD");
         let name = &self.name;
 
