@@ -189,6 +189,13 @@ impl Parse for EventInfo {
 }
 
 impl EventInfo {
+    fn args(&self) -> impl Iterator<Item = &EventArg> {
+        self.args
+            .as_ref()
+            .into_iter()
+            .flat_map(|(_, _, args)| args.into_iter())
+    }
+
     fn typedef(&self) -> proc_macro2::TokenStream {
         let event_code = &self.event_code;
         let event_type = Ident::new(
@@ -196,13 +203,13 @@ impl EventInfo {
             event_code.span(),
         );
 
-        let mut fields = Vec::new();
+        let fields = self.args().map(|arg| arg.field_definition());
+
         let mut wants_lifetime = false;
         let mut field_fmts = Vec::new();
         let mut dirfd_methods = Vec::new();
 
         if let Some((_, _, args)) = self.args.as_ref() {
-            fields = args.iter().map(|arg| arg.field_definition()).collect();
             wants_lifetime = !args.iter().all(|arg| {
                 matches!(
                     lifetime_type(&arg.final_field_type().to_string()),
