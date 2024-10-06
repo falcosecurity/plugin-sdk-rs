@@ -234,12 +234,7 @@ impl EventInfo {
                 >>::format(&self.#ident, fmt)?;
             )
         });
-
-        let mut dirfd_methods = Vec::new();
-
-        if let Some((_, _, args)) = self.args.as_ref() {
-            dirfd_methods = args.iter().map(|a| a.dirfd_method(self)).collect();
-        }
+        let dirfd_methods = self.args().map(|a| a.dirfd_method(self));
 
         let is_large = self.flags.iter().any(|flag| *flag == "EF_LARGE_PAYLOAD");
         let name = &self.name;
