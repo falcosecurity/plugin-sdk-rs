@@ -4,7 +4,7 @@ This crate provides a framework for writing [Falco](https://github.com/falcosecu
 plugins. There are several types of plugins available. Learn more about Falco plugins
 and plugin types in the [Falco plugin documentation](https://falco.org/docs/plugins/).
 
-All plugins must implement the base plugin trait (see [`base`]) and at least one of the plugin
+All plugins must implement the base plugin trait (see [`base::Plugin`]) and at least one of the plugin
 capabilities.
 
 ## Linking
