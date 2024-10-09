@@ -35,3 +35,24 @@ impl<F> Format<F> for bool {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_serde_bool_true() {
+        let json = serde_json::to_string(&true).unwrap();
+        assert_eq!(json, r#"true"#);
+
+        let true2: bool = serde_json::from_str(&json).unwrap();
+        assert!(true2);
+    }
+
+    #[test]
+    fn test_serde_bool_false() {
+        let json = serde_json::to_string(&false).unwrap();
+        assert_eq!(json, r#"false"#);
+
+        let false2: bool = serde_json::from_str(&json).unwrap();
+        assert!(!false2);
+    }
+}

@@ -324,4 +324,72 @@ mod tests {
 
         assert_eq!(binary, binary2.as_slice(),);
     }
+
+    #[test]
+    fn test_serde_socktuple_unix() {
+        let path = Path::new("/path/to/unix");
+        let sockaddr = SockTuple::Unix {
+            source_ptr: 1,
+            dest_ptr: 2,
+            path,
+        };
+
+        let json = serde_json::to_string(&sockaddr).unwrap();
+        assert_eq!(
+            json,
+            r#"{"unix":{"source_ptr":1,"dest_ptr":2,"path":"/path/to/unix"}}"#
+        );
+        let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
+
+        let json2 = serde_json::to_string(&sockaddr2).unwrap();
+        assert_eq!(json, json2);
+    }
+
+    #[test]
+    fn test_serde_socktuple_v4() {
+        let sockaddr = SockTuple::V4 {
+            source: (Ipv4Addr::LOCALHOST, Port(8080)),
+            dest: (Ipv4Addr::new(192, 168, 0, 1), Port(8081)),
+        };
+
+        let json = serde_json::to_string(&sockaddr).unwrap();
+        assert_eq!(
+            json,
+            r#"{"v4":{"source":["127.0.0.1",8080],"dest":["192.168.0.1",8081]}}"#
+        );
+        let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
+
+        let json2 = serde_json::to_string(&sockaddr2).unwrap();
+        assert_eq!(json, json2);
+    }
+
+    #[test]
+    fn test_serde_sockaddr_v6() {
+        let sockaddr = SockTuple::V6 {
+            source: (Ipv6Addr::LOCALHOST, Port(8080)),
+            dest: (Ipv6Addr::from_str("::2").unwrap(), Port(8081)),
+        };
+
+        let json = serde_json::to_string(&sockaddr).unwrap();
+        assert_eq!(
+            json,
+            r#"{"v6":{"source":["::1",8080],"dest":["::2",8081]}}"#
+        );
+        let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
+
+        let json2 = serde_json::to_string(&sockaddr2).unwrap();
+        assert_eq!(json, json2);
+    }
+
+    #[test]
+    fn test_serde_socktuple_other() {
+        let sockaddr = SockTuple::Other(123, b"foo");
+
+        let json = serde_json::to_string(&sockaddr).unwrap();
+        assert_eq!(json, r#"{"other":[123,[102,111,111]]}"#);
+        let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
+
+        let json2 = serde_json::to_string(&sockaddr2).unwrap();
+        assert_eq!(json, json2);
+    }
 }

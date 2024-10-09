@@ -37,3 +37,19 @@ impl<F> Format<F> for Ipv4Net {
         write!(fmt, "{}", self.0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::net::Ipv4Addr;
+
+    #[test]
+    fn test_serde_ipv4net() {
+        let endpoint = super::Ipv4Net(Ipv4Addr::LOCALHOST);
+
+        let json = serde_json::to_string(&endpoint).unwrap();
+        assert_eq!(json, "\"127.0.0.1\"");
+
+        let endpoint2: super::Ipv4Net = serde_json::from_str(&json).unwrap();
+        assert_eq!(endpoint, endpoint2);
+    }
+}

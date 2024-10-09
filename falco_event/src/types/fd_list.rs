@@ -92,4 +92,18 @@ mod tests {
 
         assert_eq!(fdlist, fdlist2)
     }
+
+    #[test]
+    fn test_serde_fd_list() {
+        let fd_list = FdList(vec![
+            (13, PT_FLAGS16_file_flags::O_RDONLY),
+            (15, PT_FLAGS16_file_flags::O_WRONLY),
+        ]);
+        let json = serde_json::to_string(&fd_list).unwrap();
+
+        assert_eq!(json, r#"[[13,"O_RDONLY"],[15,"O_WRONLY"]]"#);
+        let fd_list2: FdList = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(fd_list, fd_list2)
+    }
 }

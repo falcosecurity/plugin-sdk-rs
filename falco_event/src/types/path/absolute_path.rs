@@ -74,4 +74,18 @@ mod tests {
         let path = <&Path>::from_bytes(&mut buf).unwrap();
         assert_eq!(path.to_str().unwrap(), "/foo");
     }
+
+    #[test]
+    fn test_serde_absolute_path() {
+        let path = Path::new("/foo");
+
+        let json = serde_json::to_string(&path).unwrap();
+        assert_eq!(json, "\"/foo\"");
+
+        let path2: PathBuf = serde_json::from_str(&json).unwrap();
+        assert_eq!(path2, path);
+
+        let json2 = serde_json::to_string(&path2).unwrap();
+        assert_eq!(json, json2);
+    }
 }

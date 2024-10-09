@@ -39,3 +39,30 @@ where
         self.0.format(fmt)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
+
+    #[test]
+    fn test_serde_ipv4() {
+        let endpoint = super::IpNet(IpAddr::V4(Ipv4Addr::LOCALHOST));
+
+        let json = serde_json::to_string(&endpoint).unwrap();
+        assert_eq!(json, "\"127.0.0.1\"");
+
+        let endpoint2: super::IpNet = serde_json::from_str(&json).unwrap();
+        assert_eq!(endpoint, endpoint2);
+    }
+
+    #[test]
+    fn test_serde_ipv6() {
+        let endpoint = super::IpNet(IpAddr::V6(Ipv6Addr::LOCALHOST));
+
+        let json = serde_json::to_string(&endpoint).unwrap();
+        assert_eq!(json, "\"::1\"");
+
+        let endpoint2: super::IpNet = serde_json::from_str(&json).unwrap();
+        assert_eq!(endpoint, endpoint2);
+    }
+}

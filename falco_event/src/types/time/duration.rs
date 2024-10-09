@@ -46,3 +46,18 @@ impl BorrowDeref for Duration {
         *self
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    #[test]
+    fn test_serde_duration() {
+        let duration = Duration::from_nanos(1_234_567_890);
+        let json = serde_json::to_string(&duration).unwrap();
+        assert_eq!(json, r#"{"secs":1,"nanos":234567890}"#);
+
+        let duration2: Duration = serde_json::from_str(&json).unwrap();
+        assert_eq!(duration, duration2);
+    }
+}

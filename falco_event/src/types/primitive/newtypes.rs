@@ -254,3 +254,18 @@ impl<F> Format<F> for Bool {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::types::SyscallResult;
+
+    #[test]
+    fn test_serde_newtype() {
+        let val = SyscallResult(-2);
+        let json = serde_json::to_string(&val).unwrap();
+
+        assert_eq!(json, "-2");
+        let val2: SyscallResult = serde_json::from_str(&json).unwrap();
+        assert_eq!(val, val2);
+    }
+}

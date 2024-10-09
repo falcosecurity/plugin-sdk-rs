@@ -138,3 +138,60 @@ impl Borrow for OwnedSockAddr {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::types::{OwnedSockAddr, Port, SockAddr};
+    use std::net::{Ipv4Addr, Ipv6Addr};
+    use std::path::Path;
+
+    #[test]
+    fn test_serde_sockaddr_unix() {
+        let path = Path::new("/path/to/unix");
+        let sockaddr = SockAddr::Unix(path);
+
+        let json = serde_json::to_string(&sockaddr).unwrap();
+        assert_eq!(json, r#"{"unix":"/path/to/unix"}"#);
+        let sockaddr2: OwnedSockAddr = serde_json::from_str(&json).unwrap();
+
+        let json2 = serde_json::to_string(&sockaddr2).unwrap();
+        assert_eq!(json, json2);
+    }
+
+    #[test]
+    fn test_serde_sockaddr_v4() {
+        let sockaddr = SockAddr::V4((Ipv4Addr::LOCALHOST, Port(8080)));
+
+        let json = serde_json::to_string(&sockaddr).unwrap();
+        assert_eq!(json, r#"{"v4":["127.0.0.1",8080]}"#);
+        let sockaddr2: OwnedSockAddr = serde_json::from_str(&json).unwrap();
+
+        let json2 = serde_json::to_string(&sockaddr2).unwrap();
+        assert_eq!(json, json2);
+    }
+
+    #[test]
+    fn test_serde_sockaddr_v6() {
+        let sockaddr = SockAddr::V6((Ipv6Addr::LOCALHOST, Port(8080)));
+
+        let json = serde_json::to_string(&sockaddr).unwrap();
+        assert_eq!(json, r#"{"v6":["::1",8080]}"#);
+        let sockaddr2: OwnedSockAddr = serde_json::from_str(&json).unwrap();
+
+        let json2 = serde_json::to_string(&sockaddr2).unwrap();
+        assert_eq!(json, json2);
+    }
+
+    #[test]
+    fn test_serde_sockaddr_other() {
+        let sockaddr = SockAddr::Other(123, b"foo");
+
+        let json = serde_json::to_string(&sockaddr).unwrap();
+        // TODO eventually we want to serialize byte buffers as strings if possible
+        assert_eq!(json, r#"{"other":[123,[102,111,111]]}"#);
+        let sockaddr2: OwnedSockAddr = serde_json::from_str(&json).unwrap();
+
+        let json2 = serde_json::to_string(&sockaddr2).unwrap();
+        assert_eq!(json, json2);
+    }
+}

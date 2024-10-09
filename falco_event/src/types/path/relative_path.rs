@@ -68,11 +68,12 @@ impl Borrow for OwnedRelativePath {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
     use std::str::FromStr;
 
     use crate::event_derive::{FromBytes, ToBytes};
     use crate::types::path::relative_path::RelativePath;
+    use crate::types::OwnedRelativePath;
 
     #[test]
     fn test_relative_path() {
@@ -88,5 +89,17 @@ mod tests {
         let mut buf = binary.as_slice();
         let path = RelativePath::from_bytes(&mut buf).unwrap();
         assert_eq!(path.0.to_str().unwrap(), "/foo");
+    }
+
+    #[test]
+    fn test_serde_relative_path() {
+        let path = RelativePath(Path::new("/foo"));
+
+        let json = serde_json::to_string(&path).unwrap();
+        assert_eq!(json, "\"/foo\"");
+
+        let path2: OwnedRelativePath = serde_json::from_str(&json).unwrap();
+        let json2 = serde_json::to_string(&path2).unwrap();
+        assert_eq!(json, json2);
     }
 }

@@ -37,3 +37,19 @@ impl<F> Format<F> for Ipv6Net {
         write!(fmt, "{}", self.0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::net::Ipv6Addr;
+
+    #[test]
+    fn test_serde_ipv6net() {
+        let endpoint = super::Ipv6Net(Ipv6Addr::LOCALHOST);
+
+        let json = serde_json::to_string(&endpoint).unwrap();
+        assert_eq!(json, "\"::1\"");
+
+        let endpoint2: super::Ipv6Net = serde_json::from_str(&json).unwrap();
+        assert_eq!(endpoint, endpoint2);
+    }
+}
