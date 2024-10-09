@@ -41,7 +41,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_ipv6_addr() {
+    fn test_ipv4_addr() {
         let ip = Ipv4Addr::from_str("169.254.169.123").unwrap();
 
         let mut binary = Vec::new();
