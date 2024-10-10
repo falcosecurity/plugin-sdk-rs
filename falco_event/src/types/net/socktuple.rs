@@ -41,7 +41,7 @@ pub enum SockTuple<'a> {
     },
 
     /// Unknown/other socket family: `PPM_AF_*` id and a raw byte buffer
-    Other(u8, &'a [u8]),
+    Other(u8, #[serde(with = "crate::types::serde::bytebuf")] &'a [u8]),
 }
 
 impl Display for SockTuple<'_> {
@@ -203,7 +203,7 @@ pub enum OwnedSockTuple {
     },
 
     /// Unknown/other socket family: `PPM_AF_*` id and a raw byte buffer
-    Other(u8, Vec<u8>),
+    Other(u8, #[serde(with = "crate::types::serde::bytebuf")] Vec<u8>),
 }
 
 impl<'a> Borrowed for SockTuple<'a> {
@@ -386,7 +386,7 @@ mod tests {
         let sockaddr = SockTuple::Other(123, b"foo");
 
         let json = serde_json::to_string(&sockaddr).unwrap();
-        assert_eq!(json, r#"{"other":[123,[102,111,111]]}"#);
+        assert_eq!(json, r#"{"other":[123,"foo"]}"#);
         let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
 
         let json2 = serde_json::to_string(&sockaddr2).unwrap();

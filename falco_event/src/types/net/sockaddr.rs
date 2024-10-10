@@ -24,7 +24,7 @@ pub enum SockAddr<'a> {
     V6(EndpointV6),
 
     /// any other address family is represented as the number (`PPM_AF_*` constant) and the raw data
-    Other(u8, &'a [u8]),
+    Other(u8, #[serde(with = "crate::types::serde::bytebuf")] &'a [u8]),
 }
 
 impl ToBytes for SockAddr<'_> {
@@ -119,7 +119,7 @@ pub enum OwnedSockAddr {
     V6(EndpointV6),
 
     /// any other address family is represented as the number (`PPM_AF_*` constant) and the raw data
-    Other(u8, Vec<u8>),
+    Other(u8, #[serde(with = "crate::types::serde::bytebuf")] Vec<u8>),
 }
 
 impl<'a> Borrowed for SockAddr<'a> {
@@ -187,8 +187,7 @@ mod tests {
         let sockaddr = SockAddr::Other(123, b"foo");
 
         let json = serde_json::to_string(&sockaddr).unwrap();
-        // TODO eventually we want to serialize byte buffers as strings if possible
-        assert_eq!(json, r#"{"other":[123,[102,111,111]]}"#);
+        assert_eq!(json, r#"{"other":[123,"foo"]}"#);
         let sockaddr2: OwnedSockAddr = serde_json::from_str(&json).unwrap();
 
         let json2 = serde_json::to_string(&sockaddr2).unwrap();

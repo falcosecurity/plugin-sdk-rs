@@ -1,4 +1,5 @@
 use crate::event_info::{lifetime_type, LifetimeType};
+use crate::serde_custom::serde_with_tag;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
@@ -72,14 +73,17 @@ impl DynamicParamVariant {
 
     fn variant_definition(&self) -> proc_macro2::TokenStream {
         let (disc, ty, field_ref, field_lifetime, _) = self.unpack();
+        let serde_tag = serde_with_tag(ty);
 
-        quote!(#disc(#field_ref crate::event_derive::event_field_type::#ty #field_lifetime))
+        quote!(#disc(#serde_tag #field_ref crate::event_derive::event_field_type::#ty #field_lifetime))
     }
 
     fn owned_variant_definition(&self) -> proc_macro2::TokenStream {
         let (disc, ty, _, _, static_field_lifetime) = self.unpack();
+        let serde_tag = serde_with_tag(ty);
 
         quote!(#disc(
+            #serde_tag
             <crate::event_derive::event_field_type::#ty #static_field_lifetime as crate::event_derive::Borrowed>::Owned
         ))
     }

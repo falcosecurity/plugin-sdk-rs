@@ -80,6 +80,114 @@ impl Borrow for Vec<(CString, CString)> {
     }
 }
 
+pub mod serde {
+    #[allow(dead_code)]
+    pub mod cstr_pair_array {
+        use crate::types::utf_chunked::UtfChunked;
+        use serde::{Serialize, Serializer};
+        use std::ffi::CStr;
+
+        pub fn serialize<S: Serializer>(arr: &[(&CStr, &CStr)], ser: S) -> Result<S::Ok, S::Error> {
+            if ser.is_human_readable() {
+                let chunks: Vec<_> = arr
+                    .iter()
+                    .map(|(k, v)| {
+                        (
+                            UtfChunked::from(k.to_bytes()),
+                            UtfChunked::from(v.to_bytes()),
+                        )
+                    })
+                    .collect();
+                chunks.serialize(ser)
+            } else {
+                arr.serialize(ser)
+            }
+        }
+    }
+
+    pub mod cstr_pair_array_option {
+        use crate::types::utf_chunked::UtfChunked;
+        use serde::{Serialize, Serializer};
+        use std::ffi::CStr;
+
+        pub fn serialize<S: Serializer>(
+            arr: &Option<Vec<(&CStr, &CStr)>>,
+            ser: S,
+        ) -> Result<S::Ok, S::Error> {
+            if ser.is_human_readable() {
+                let chunks: Option<Vec<_>> = arr.as_ref().map(|arr| {
+                    arr.iter()
+                        .map(|(k, v)| {
+                            (
+                                UtfChunked::from(k.to_bytes()),
+                                UtfChunked::from(v.to_bytes()),
+                            )
+                        })
+                        .collect()
+                });
+                chunks.serialize(ser)
+            } else {
+                arr.serialize(ser)
+            }
+        }
+    }
+
+    pub mod cstr_pair_array_option_owned {
+        use crate::types::utf_chunked::{OwnedUtfChunked, UtfChunked};
+        use serde::de::Error;
+        use serde::{Deserialize, Deserializer, Serialize, Serializer};
+        use std::ffi::CString;
+
+        pub fn serialize<S: Serializer>(
+            arr: &Option<Vec<(CString, CString)>>,
+            ser: S,
+        ) -> Result<S::Ok, S::Error> {
+            if ser.is_human_readable() {
+                let chunks: Option<Vec<_>> = arr.as_ref().map(|arr| {
+                    arr.iter()
+                        .map(|(k, v)| {
+                            (
+                                UtfChunked::from(k.to_bytes()),
+                                UtfChunked::from(v.to_bytes()),
+                            )
+                        })
+                        .collect()
+                });
+                chunks.serialize(ser)
+            } else {
+                arr.serialize(ser)
+            }
+        }
+
+        pub fn deserialize<'de, D: Deserializer<'de>>(
+            de: D,
+        ) -> Result<Option<Vec<(CString, CString)>>, D::Error> {
+            let chunks: Option<Vec<(OwnedUtfChunked, OwnedUtfChunked)>> =
+                Deserialize::deserialize(de)?;
+            let s: Result<Option<Vec<(CString, CString)>>, D::Error> = chunks
+                .map(|chunks| {
+                    chunks
+                        .into_iter()
+                        .map(|(k, v)| {
+                            match (
+                                CString::new(k.into_vec())
+                                    .map_err(|e| D::Error::custom(e.to_string())),
+                                CString::new(v.into_vec())
+                                    .map_err(|e| D::Error::custom(e.to_string())),
+                            ) {
+                                (Ok(k), Ok(v)) => Ok((k, v)),
+                                (Err(e), _) => Err(e),
+                                (_, Err(e)) => Err(e),
+                            }
+                        })
+                        .collect()
+                })
+                .transpose();
+            s
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::event_derive::{FromBytes, ToBytes};

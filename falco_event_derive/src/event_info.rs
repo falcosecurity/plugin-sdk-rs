@@ -1,3 +1,4 @@
+use crate::serde_custom::{serde_with_option_tag, serde_with_option_tag_owned};
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
@@ -112,9 +113,13 @@ impl EventArg {
 
     fn field_definition(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
         let name = self.ident();
+        let serde_tag = match variant {
+            CodegenVariant::Borrowed => serde_with_option_tag(&self.field_type),
+            CodegenVariant::Owned => serde_with_option_tag_owned(&self.field_type),
+        };
 
         let field_type = self.field_type(variant);
-        quote!(#[allow(non_snake_case)] pub #name: #field_type)
+        quote!(#[allow(non_snake_case)] #serde_tag pub #name: #field_type)
     }
 
     fn dirfd_method(&self, event_info: &EventInfo) -> Option<proc_macro2::TokenStream> {

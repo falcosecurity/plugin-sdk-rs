@@ -4,6 +4,7 @@ mod binary_payload;
 mod dynamic_params;
 mod event_flags;
 mod event_info;
+mod serde_custom;
 
 #[proc_macro_derive(ToBytes)]
 pub fn derive_to_bytes(input: TokenStream) -> TokenStream {

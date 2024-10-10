@@ -6,6 +6,12 @@ mod path;
 mod primitive;
 mod string;
 mod time;
+mod utf_chunked;
+
+pub mod serde {
+    pub use super::bytebuf::serde::*;
+    pub use super::string::serde::*;
+}
 
 /// Falco-style formatting for fields and events
 ///
