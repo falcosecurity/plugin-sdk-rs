@@ -72,16 +72,18 @@ impl EventArg {
         name
     }
 
-    fn lifetimes(&self) -> (proc_macro2::TokenStream, proc_macro2::TokenStream) {
+    fn lifetimes(
+        &self,
+    ) -> (
+        Option<proc_macro2::TokenStream>,
+        Option<proc_macro2::TokenStream>,
+    ) {
         let field_type = self.final_field_type_name();
 
         match lifetime_type(&field_type.to_string()) {
-            LifetimeType::Ref => (quote!(&'a), proc_macro2::TokenStream::new()),
-            LifetimeType::Generic => (proc_macro2::TokenStream::new(), quote!(<'a>)),
-            LifetimeType::None => (
-                proc_macro2::TokenStream::new(),
-                proc_macro2::TokenStream::new(),
-            ),
+            LifetimeType::Ref => (Some(quote!(&'a)), None),
+            LifetimeType::Generic => (None, Some(quote!(<'a>))),
+            LifetimeType::None => (None, None),
         }
     }
 
@@ -305,9 +307,9 @@ impl EventInfo {
         }
 
         let lifetime = if wants_lifetime {
-            quote!(<'a>)
+            Some(quote!(<'a>))
         } else {
-            proc_macro2::TokenStream::new()
+            None
         };
 
         quote!(#event_type(#event_code #lifetime))
