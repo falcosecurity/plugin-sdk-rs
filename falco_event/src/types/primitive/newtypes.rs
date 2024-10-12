@@ -1,6 +1,7 @@
 use crate::event_derive::format_type;
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::Format;
+use crate::types::{BorrowDeref, Borrowed};
 use std::fmt::{Debug, Formatter};
 
 macro_rules! default_format {
@@ -42,6 +43,18 @@ macro_rules! newtype {
 
             fn default_repr() -> impl ToBytes {
                 <$repr>::default_repr()
+            }
+        }
+
+        impl Borrowed for $name {
+            type Owned = Self;
+        }
+
+        impl BorrowDeref for $name {
+            type Target<'a> = $name;
+
+            fn borrow_deref(&self) -> Self::Target<'_> {
+                *self
             }
         }
     };

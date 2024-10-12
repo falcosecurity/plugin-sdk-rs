@@ -1,5 +1,6 @@
 use crate::event_derive::{FromBytes, FromBytesError, FromBytesResult, ToBytes};
 use crate::types::format::Format;
+use crate::types::{Borrow, Borrowed};
 use std::ffi::{CStr, CString};
 use std::fmt::Formatter;
 use std::io::Write;
@@ -37,27 +38,15 @@ where
     }
 }
 
-impl ToBytes for CString {
-    fn binary_size(&self) -> usize {
-        self.as_c_str().binary_size()
-    }
-
-    fn write<W: Write>(&self, writer: W) -> std::io::Result<()> {
-        self.as_c_str().write(writer)
-    }
-
-    fn default_repr() -> impl ToBytes {
-        0u8
-    }
+impl Borrowed for CStr {
+    type Owned = CString;
 }
 
-impl<F> Format<F> for CString
-where
-    for<'a> &'a [u8]: Format<F>,
-{
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
-        let bytes = self.as_bytes();
-        bytes.format(fmt)
+impl Borrow for CString {
+    type Borrowed<'a> = &'a CStr;
+
+    fn borrow(&self) -> Self::Borrowed<'_> {
+        self.as_c_str()
     }
 }
 

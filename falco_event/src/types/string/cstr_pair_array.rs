@@ -1,6 +1,7 @@
 use crate::event_derive::{FromBytes, FromBytesError, FromBytesResult, ToBytes};
 use crate::types::format::Format;
-use std::ffi::CStr;
+use crate::types::{Borrow, Borrowed};
+use std::ffi::{CStr, CString};
 use std::fmt::{Formatter, Write as _};
 use std::io::Write;
 
@@ -60,6 +61,22 @@ where
         }
 
         Ok(())
+    }
+}
+
+impl<'a> Borrowed for Vec<(&'a CStr, &'a CStr)> {
+    type Owned = Vec<(CString, CString)>;
+}
+
+impl Borrow for Vec<(CString, CString)> {
+    type Borrowed<'a> = Vec<(&'a CStr, &'a CStr)>
+    where
+        Self: 'a;
+
+    fn borrow(&self) -> Self::Borrowed<'_> {
+        self.iter()
+            .map(|(k, v)| (k.as_c_str(), v.as_c_str()))
+            .collect()
     }
 }
 

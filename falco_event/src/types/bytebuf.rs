@@ -1,5 +1,6 @@
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::{format_type, Format};
+use crate::types::{Borrow, BorrowDeref, Borrowed};
 use std::fmt::{Formatter, Write as _};
 use std::io::Write;
 
@@ -58,6 +59,28 @@ impl Format<format_type::PF_HEX> for &[u8] {
         }
 
         Ok(())
+    }
+}
+
+impl Borrowed for [u8] {
+    type Owned = Vec<u8>;
+}
+
+impl Borrow for Vec<u8> {
+    type Borrowed<'a> = &'a [u8];
+
+    fn borrow(&self) -> Self::Borrowed<'_> {
+        self.as_slice()
+    }
+}
+
+impl BorrowDeref for Vec<u8> {
+    type Target<'c> = &'c [u8]
+    where
+        Self: 'c;
+
+    fn borrow_deref(&self) -> Self::Target<'_> {
+        self.as_slice()
     }
 }
 

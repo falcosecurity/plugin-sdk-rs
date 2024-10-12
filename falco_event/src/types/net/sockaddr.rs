@@ -1,13 +1,13 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL, PPM_AF_UNSPEC};
 use crate::types::format::Format;
-use crate::types::{EndpointV4, EndpointV6};
+use crate::types::{Borrow, Borrowed, EndpointV4, EndpointV6};
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use std::ffi::OsStr;
 use std::fmt::Formatter;
 use std::io::Write;
 use std::os::unix::ffi::OsStrExt;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// A socket address
 #[derive(Debug)]
@@ -99,6 +99,39 @@ where
             SockAddr::V4(v4) => v4.format(fmt),
             SockAddr::V6(v6) => v6.format(fmt),
             SockAddr::Other(af, raw) => write!(fmt, "<af={}>{:02x?}", af, raw),
+        }
+    }
+}
+
+#[derive(Debug)]
+/// A socket address (owned)
+pub enum OwnedSockAddr {
+    /// Unix sockets
+    Unix(PathBuf),
+
+    /// IPv4 sockets
+    V4(EndpointV4),
+
+    /// IPv6 socket
+    V6(EndpointV6),
+
+    /// any other address family is represented as the number (`PPM_AF_*` constant) and the raw data
+    Other(u8, Vec<u8>),
+}
+
+impl<'a> Borrowed for SockAddr<'a> {
+    type Owned = OwnedSockAddr;
+}
+
+impl Borrow for OwnedSockAddr {
+    type Borrowed<'b> = SockAddr<'b>;
+
+    fn borrow(&self) -> Self::Borrowed<'_> {
+        match self {
+            OwnedSockAddr::Unix(u) => SockAddr::Unix(u),
+            OwnedSockAddr::V4(v4) => SockAddr::V4(*v4),
+            OwnedSockAddr::V6(v6) => SockAddr::V6(*v6),
+            OwnedSockAddr::Other(af, raw) => SockAddr::Other(*af, raw),
         }
     }
 }

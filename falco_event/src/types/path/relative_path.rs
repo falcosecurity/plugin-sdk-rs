@@ -1,10 +1,10 @@
+use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::types::format::Format;
+use crate::types::{Borrow, Borrowed};
 use std::fmt::Formatter;
 use std::io::Write;
 use std::os::unix::ffi::OsStrExt;
-use std::path::Path;
-
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::format::Format;
+use std::path::{Path, PathBuf};
 
 /// A relative path
 ///
@@ -43,6 +43,25 @@ where
 
         let bytes = self.0.as_os_str().as_bytes();
         bytes.format(fmt)
+    }
+}
+/// A relative path
+///
+/// Events containing a parameter of this type will have an extra method available, derived
+/// from the field name. For example, if the field is called `name`, the event type will have
+/// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
+#[derive(Debug)]
+pub struct OwnedRelativePath(pub PathBuf);
+
+impl<'a> Borrowed for RelativePath<'a> {
+    type Owned = OwnedRelativePath;
+}
+
+impl Borrow for OwnedRelativePath {
+    type Borrowed<'b> = RelativePath<'b>;
+
+    fn borrow(&self) -> Self::Borrowed<'_> {
+        RelativePath(self.0.as_path())
     }
 }
 

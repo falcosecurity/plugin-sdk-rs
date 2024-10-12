@@ -1,11 +1,10 @@
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 
-use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
-
 use crate::fields::event_flags::PT_FLAGS16_file_flags;
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::Format;
+use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 
 /// A list of file descriptors with flags
 #[derive(Debug, Eq, PartialEq)]

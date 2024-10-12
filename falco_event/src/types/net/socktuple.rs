@@ -1,13 +1,13 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::io::Write;
-use std::path::Path;
-
-use byteorder::{ReadBytesExt, WriteBytesExt};
+use std::path::{Path, PathBuf};
 
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL};
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::Format;
 use crate::types::net::endpoint::{EndpointV4, EndpointV6};
+use crate::types::{Borrow, Borrowed};
+use byteorder::{ReadBytesExt, WriteBytesExt};
 
 /// Socket tuple: describing both endpoints of a connection
 #[derive(Debug, Eq, PartialEq)]
@@ -166,6 +166,70 @@ where
                 dest.format(fmt)
             }
             SockTuple::Other(af, raw) => write!(fmt, "<af={}>{:02x?}", af, raw),
+        }
+    }
+}
+
+/// Socket tuple: describing both endpoints of a connection (owned)
+#[derive(Debug)]
+pub enum OwnedSockTuple {
+    /// Unix socket connection
+    Unix {
+        /// source socket kernel pointer
+        source_ptr: u64,
+        /// destination socket kernel pointer
+        dest_ptr: u64,
+        /// filesystem path to the socket
+        path: PathBuf,
+    },
+
+    /// IPv4 connection
+    V4 {
+        /// source address and port
+        source: EndpointV4,
+        /// destination address and port
+        dest: EndpointV4,
+    },
+
+    /// IPv6 connection
+    V6 {
+        /// source address and port
+        source: EndpointV6,
+        /// destination address and port
+        dest: EndpointV6,
+    },
+
+    /// Unknown/other socket family: `PPM_AF_*` id and a raw byte buffer
+    Other(u8, Vec<u8>),
+}
+
+impl<'a> Borrowed for SockTuple<'a> {
+    type Owned = OwnedSockTuple;
+}
+
+impl Borrow for OwnedSockTuple {
+    type Borrowed<'b> = SockTuple<'b>;
+
+    fn borrow(&self) -> Self::Borrowed<'_> {
+        match self {
+            OwnedSockTuple::Unix {
+                source_ptr,
+                dest_ptr,
+                path,
+            } => SockTuple::Unix {
+                source_ptr: *source_ptr,
+                dest_ptr: *dest_ptr,
+                path: path.as_path(),
+            },
+            OwnedSockTuple::V4 { source, dest } => SockTuple::V4 {
+                source: *source,
+                dest: *dest,
+            },
+            OwnedSockTuple::V6 { source, dest } => SockTuple::V6 {
+                source: *source,
+                dest: *dest,
+            },
+            OwnedSockTuple::Other(af, raw) => SockTuple::Other(*af, raw.as_slice()),
         }
     }
 }

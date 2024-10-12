@@ -1,5 +1,6 @@
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::{format_type, Format};
+use crate::types::{BorrowDeref, Borrowed};
 use byteorder::{ReadBytesExt, WriteBytesExt};
 
 macro_rules! impl_format {
@@ -25,6 +26,22 @@ macro_rules! impl_format {
         impl Format<format_type::PF_OCT> for $ty {
             fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                 write!(fmt, "{:#o}", self)
+            }
+        }
+    };
+}
+
+macro_rules! impl_borrow_deref {
+    ($ty:ty) => {
+        impl Borrowed for $ty {
+            type Owned = Self;
+        }
+
+        impl BorrowDeref for $ty {
+            type Target<'a> = Self;
+
+            fn borrow_deref(&self) -> Self::Target<'_> {
+                *self
             }
         }
     };
@@ -57,6 +74,7 @@ macro_rules! impl_int_type {
         }
 
         impl_format!($ty);
+        impl_borrow_deref!($ty);
     };
 }
 
@@ -87,6 +105,7 @@ macro_rules! impl_uint_type {
         }
 
         impl_format!($ty);
+        impl_borrow_deref!($ty);
     };
 }
 

@@ -1,3 +1,4 @@
+use crate::types::Borrow;
 use std::fmt::Formatter;
 
 /// Get a Falco-style string representation of a field or an event
@@ -17,6 +18,16 @@ where
             Some(inner) => inner.format(fmt),
             None => fmt.write_str("NULL"),
         }
+    }
+}
+
+impl<T, F> Format<F> for T
+where
+    T: Borrow,
+    for<'a> <T as Borrow>::Borrowed<'a>: Format<F>,
+{
+    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+        self.borrow().format(fmt)
     }
 }
 
