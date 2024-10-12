@@ -3,7 +3,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput, Fields};
 
-pub fn derive_payload(input: TokenStream) -> TokenStream {
+pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
     // Parse it as a proc macro
     let input = parse_macro_input!(input as DeriveInput);
 
@@ -20,25 +20,6 @@ pub fn derive_payload(input: TokenStream) -> TokenStream {
             let field_writes = fields.named.iter().map(|field| {
                 let name = &field.ident;
                 quote!(self.#name.write(&mut writer)?;)
-            });
-
-            let field_reads = fields.named.iter().map(|field| {
-                let name = &field.ident;
-                let name_str = name.as_ref().map(|i| i.to_string());
-                quote!(
-                    let mut maybe_next_field = params.next().transpose()
-                        .map_err(|e| PayloadFromBytesError::NamedField(#name_str, e))?;
-                    let #name = FromBytes::from_maybe_bytes(maybe_next_field.as_mut())
-                        .map_err(|e| PayloadFromBytesError::NamedField(#name_str, e))?;
-                    if let Some(buf) = maybe_next_field {
-                        debug_assert!(buf.is_empty());
-                    }
-                )
-            });
-
-            let field_names = fields.named.iter().map(|field| {
-                let name = &field.ident;
-                quote!(#name)
             });
 
             let name = input.ident;
@@ -74,7 +55,49 @@ pub fn derive_payload(input: TokenStream) -> TokenStream {
                     Ok(())
                 }
             }
+            ));
+        }
+    }
 
+    TokenStream::from(
+        syn::Error::new(
+            input.ident.span(),
+            "Only structs with named fields can derive `ToBytes`",
+        )
+        .to_compile_error(),
+    )
+}
+pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
+    // Parse it as a proc macro
+    let input = parse_macro_input!(input as DeriveInput);
+
+    let crate_path: syn::Path = syn::parse(quote!(crate::event_derive).into()).unwrap();
+    let (_, ty_generics, where_clause) = input.generics.split_for_impl();
+
+    if let syn::Data::Struct(ref data) = input.data {
+        if let Fields::Named(ref fields) = data.fields {
+            let field_reads = fields.named.iter().map(|field| {
+                let name = &field.ident;
+                let name_str = name.as_ref().map(|i| i.to_string());
+                quote!(
+                    let mut maybe_next_field = params.next().transpose()
+                        .map_err(|e| PayloadFromBytesError::NamedField(#name_str, e))?;
+                    let #name = FromBytes::from_maybe_bytes(maybe_next_field.as_mut())
+                        .map_err(|e| PayloadFromBytesError::NamedField(#name_str, e))?;
+                    if let Some(buf) = maybe_next_field {
+                        debug_assert!(buf.is_empty());
+                    }
+                )
+            });
+
+            let field_names = fields.named.iter().map(|field| {
+                let name = &field.ident;
+                quote!(#name)
+            });
+
+            let name = input.ident;
+
+            return TokenStream::from(quote!(
             impl<'a> #crate_path::PayloadFromBytes<'a> for #name #ty_generics #where_clause {
                 fn read(mut params: impl Iterator<Item=#crate_path::FromBytesResult<&'a [u8]>>) -> #crate_path::PayloadFromBytesResult<Self> {
                     use #crate_path::*;
@@ -92,7 +115,7 @@ pub fn derive_payload(input: TokenStream) -> TokenStream {
     TokenStream::from(
         syn::Error::new(
             input.ident.span(),
-            "Only structs with named fields can derive `BinaryPayload`",
+            "Only structs with named fields can derive `FromBytes`",
         )
         .to_compile_error(),
     )

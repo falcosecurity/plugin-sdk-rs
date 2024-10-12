@@ -240,7 +240,8 @@ impl EventInfo {
 
         quote!(
             #[allow(non_camel_case_types)]
-            #[derive(BinaryPayload)]
+            #[derive(falco_event_derive::FromBytes)]
+            #[derive(falco_event_derive::ToBytes)]
             #[derive(Debug)]
             pub struct #event_code #lifetime {
                 #(#fields,)*
@@ -389,8 +390,6 @@ fn event_info_borrowed(events: &Events) -> proc_macro2::TokenStream {
     let variant_fmts = events.variant_fmts();
 
     quote!(
-        use falco_event_derive::BinaryPayload;
-
         #(#typedefs)*
 
         #[derive(Debug)]

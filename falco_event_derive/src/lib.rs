@@ -5,9 +5,14 @@ mod dynamic_params;
 mod event_flags;
 mod event_info;
 
-#[proc_macro_derive(BinaryPayload)]
-pub fn derive_payload(input: TokenStream) -> TokenStream {
-    binary_payload::derive_payload(input)
+#[proc_macro_derive(ToBytes)]
+pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
+    binary_payload::derive_to_bytes(input)
+}
+
+#[proc_macro_derive(FromBytes)]
+pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
+    binary_payload::derive_from_bytes(input)
 }
 
 #[proc_macro]
