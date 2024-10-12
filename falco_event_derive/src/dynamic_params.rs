@@ -85,13 +85,13 @@ impl DynamicParamVariant {
     }
 
     fn variant_binary_size(&self) -> proc_macro2::TokenStream {
-        let (disc, _, _, _) = self.unpack();
+        let disc = &self.discriminant;
 
         quote!(Self:: #disc (val) => 1 + val.binary_size())
     }
 
     fn variant_write(&self) -> proc_macro2::TokenStream {
-        let (disc, _, _, _) = self.unpack();
+        let disc = &self.discriminant;
 
         quote!(Self:: #disc(val) => {
             writer.write_u8(crate::ffi::#disc as u8)?;
