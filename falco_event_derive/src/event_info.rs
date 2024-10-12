@@ -295,16 +295,12 @@ impl EventInfo {
             &event_code.to_string().replace("PPME_", ""),
             event_code.span(),
         );
-        let mut wants_lifetime = false;
-
-        if let Some((_, _, args)) = self.args.as_ref() {
-            wants_lifetime = !args.iter().all(|arg| {
-                matches!(
-                    lifetime_type(&arg.final_field_type_name().to_string()),
-                    LifetimeType::None
-                )
-            })
-        }
+        let wants_lifetime = !self.args().all(|arg| {
+            matches!(
+                lifetime_type(&arg.final_field_type_name().to_string()),
+                LifetimeType::None
+            )
+        });
 
         let lifetime = if wants_lifetime {
             Some(quote!(<'a>))
