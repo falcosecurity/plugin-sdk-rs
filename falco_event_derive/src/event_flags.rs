@@ -186,6 +186,10 @@ fn render_enum(
             }
         }
 
+        impl crate::event_derive::Borrowed for #name {
+            type Owned = Self;
+        }
+
         impl<F> crate::event_derive::Format<F> for #name
         where
             #repr_type: crate::event_derive::Format<F>,
@@ -211,7 +215,7 @@ fn render_bitflags(
     quote!(
         bitflags::bitflags! {
             #[allow(non_camel_case_types)]
-            #[derive(Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+            #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
             pub struct #name: #repr_type {
                 #(#items;)*
                 const _ = !0;
@@ -241,6 +245,10 @@ fn render_bitflags(
                 let val = Self::from_bits_retain(repr);
                 Ok(val)
             }
+        }
+
+        impl crate::event_derive::Borrowed for #name {
+            type Owned = Self;
         }
 
         impl<F> crate::event_derive::Format<F> for #name {

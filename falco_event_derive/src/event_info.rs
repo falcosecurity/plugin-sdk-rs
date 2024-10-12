@@ -10,6 +10,12 @@ pub(crate) enum LifetimeType {
     Generic,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+enum CodegenVariant {
+    Borrowed,
+    Owned,
+}
+
 pub(crate) fn lifetime_type(name: &str) -> LifetimeType {
     match name {
         "PT_CHARBUF" | "PT_BYTEBUF" | "PT_FSPATH" => LifetimeType::Ref,
@@ -77,27 +83,37 @@ impl EventArg {
     ) -> (
         Option<proc_macro2::TokenStream>,
         Option<proc_macro2::TokenStream>,
+        Option<proc_macro2::TokenStream>,
     ) {
         let field_type = self.final_field_type_name();
 
         match lifetime_type(&field_type.to_string()) {
-            LifetimeType::Ref => (Some(quote!(&'a)), None),
-            LifetimeType::Generic => (None, Some(quote!(<'a>))),
-            LifetimeType::None => (None, None),
+            LifetimeType::Ref => (Some(quote!(&'a)), None, None),
+            LifetimeType::Generic => (None, Some(quote!(<'a>)), Some(quote!(<'static>))),
+            LifetimeType::None => (None, None, None),
         }
     }
 
-    fn field_type(&self) -> proc_macro2::TokenStream {
+    fn field_type(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
         let field_type = self.final_field_type_name();
-        let (field_ref, field_lifetime) = self.lifetimes();
+        let (field_ref, field_lifetime, static_field_lifetime) = self.lifetimes();
 
-        quote!(::std::option::Option<#field_ref crate::event_derive::event_field_type::#field_type #field_lifetime>)
+        match variant {
+            CodegenVariant::Borrowed => {
+                quote!(::std::option::Option<#field_ref crate::event_derive::event_field_type::#field_type #field_lifetime>)
+            }
+            CodegenVariant::Owned => {
+                quote!(::std::option::Option<
+                    <crate::event_derive::event_field_type::#field_type #static_field_lifetime as
+                    crate::event_derive::Borrowed>::Owned>)
+            }
+        }
     }
 
-    fn field_definition(&self) -> proc_macro2::TokenStream {
+    fn field_definition(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
         let name = self.ident();
 
-        let field_type = self.field_type();
+        let field_type = self.field_type(variant);
         quote!(#[allow(non_snake_case)] pub #name: #field_type)
     }
 
@@ -204,26 +220,32 @@ impl EventInfo {
             .flat_map(|(_, _, args)| args.into_iter())
     }
 
-    fn typedef(&self) -> proc_macro2::TokenStream {
+    fn typedef(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
         let event_code = &self.event_code;
         let event_type = Ident::new(
             &event_code.to_string().replace("PPME_", ""),
             event_code.span(),
         );
 
-        let fields = self.args().map(|arg| arg.field_definition());
+        let fields = self.args().map(|arg| arg.field_definition(variant));
         let wants_lifetime = !self.args().all(|arg| {
             matches!(
                 lifetime_type(&arg.final_field_type_name().to_string()),
                 LifetimeType::None
             )
         });
-        let lifetime = wants_lifetime.then_some(quote!(<'a>));
+
+        if variant == CodegenVariant::Owned && !wants_lifetime {
+            return quote!(pub use super::#event_code;);
+        }
+
+        let lifetime =
+            (variant == CodegenVariant::Borrowed && wants_lifetime).then_some(quote!(<'a>));
         let field_fmts = self.args().map(|field| {
             let name = &field.name;
             let ident = field.ident();
             let fmt = &field.field_format;
-            let field_type = field.field_type();
+            let field_type = field.field_type(variant);
 
             quote!(
                 fmt.write_char(' ')?;
@@ -240,10 +262,19 @@ impl EventInfo {
         let is_large = self.flags.iter().any(|flag| *flag == "EF_LARGE_PAYLOAD");
         let name = &self.name;
 
+        let derives = match variant {
+            CodegenVariant::Borrowed => quote!(
+                #[derive(falco_event_derive::FromBytes)]
+                #[derive(falco_event_derive::ToBytes)]
+            ),
+            CodegenVariant::Owned => quote!(
+                #[derive(falco_event_derive::ToBytes)]
+            ),
+        };
+
         quote!(
             #[allow(non_camel_case_types)]
-            #[derive(falco_event_derive::FromBytes)]
-            #[derive(falco_event_derive::ToBytes)]
+            #derives
             #[derive(Debug)]
             pub struct #event_code #lifetime {
                 #(#fields,)*
@@ -289,18 +320,19 @@ impl EventInfo {
         quote!(#event_type = crate::ffi::#raw_ident as u16)
     }
 
-    fn enum_variant(&self) -> proc_macro2::TokenStream {
+    fn enum_variant(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
         let event_code = &self.event_code;
         let event_type = Ident::new(
             &event_code.to_string().replace("PPME_", ""),
             event_code.span(),
         );
-        let wants_lifetime = !self.args().all(|arg| {
-            matches!(
-                lifetime_type(&arg.final_field_type_name().to_string()),
-                LifetimeType::None
-            )
-        });
+        let wants_lifetime = variant == CodegenVariant::Borrowed
+            && !self.args().all(|arg| {
+                matches!(
+                    lifetime_type(&arg.final_field_type_name().to_string()),
+                    LifetimeType::None
+                )
+            });
 
         let lifetime = if wants_lifetime {
             Some(quote!(<'a>))
@@ -361,16 +393,22 @@ impl Parse for Events {
 }
 
 impl Events {
-    fn typedefs(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
-        self.events.iter().map(|e| e.typedef())
+    fn typedefs(
+        &self,
+        variant: CodegenVariant,
+    ) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
+        self.events.iter().map(move |e| e.typedef(variant))
     }
 
     fn type_variants(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
         self.events.iter().map(|e| e.type_variant())
     }
 
-    fn enum_variants(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
-        self.events.iter().map(|e| e.enum_variant())
+    fn enum_variants(
+        &self,
+        variant: CodegenVariant,
+    ) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
+        self.events.iter().map(move |e| e.enum_variant(variant))
     }
 
     fn enum_matches(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
@@ -382,21 +420,25 @@ impl Events {
     }
 }
 
-fn event_info_borrowed(events: &Events) -> proc_macro2::TokenStream {
-    let typedefs = events.typedefs();
-    let variants = events.enum_variants();
+fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::TokenStream {
+    let typedefs = events.typedefs(variant);
+    let variants = events.enum_variants(variant);
     let variant_fmts = events.variant_fmts();
+    let lifetime = match variant {
+        CodegenVariant::Borrowed => Some(quote!(<'a>)),
+        CodegenVariant::Owned => None,
+    };
 
     quote!(
         #(#typedefs)*
 
         #[derive(Debug)]
         #[allow(non_camel_case_types)]
-        pub enum AnyEvent<'a> {
+        pub enum AnyEvent #lifetime {
             #(#variants,)*
         }
 
-        impl<'a> crate::event_derive::Format<crate::event_derive::format_type::PF_NA> for AnyEvent<'a> {
+        impl #lifetime crate::event_derive::Format<crate::event_derive::format_type::PF_NA> for AnyEvent #lifetime {
             fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                 match self {
                     #(#variant_fmts)*
@@ -444,7 +486,8 @@ fn raw_event_load_any(events: &Events) -> proc_macro2::TokenStream {
 pub fn event_info(input: TokenStream) -> TokenStream {
     let events = parse_macro_input!(input as Events);
 
-    let event_info_borrowed = event_info_borrowed(&events);
+    let event_info_borrowed = event_info_variant(&events, CodegenVariant::Borrowed);
+    let event_info_owned = event_info_variant(&events, CodegenVariant::Owned);
     let event_type_enum = event_type_enum(&events);
     let raw_event_load_any = raw_event_load_any(&events);
 
@@ -452,6 +495,13 @@ pub fn event_info(input: TokenStream) -> TokenStream {
         #event_info_borrowed
         #event_type_enum
         #raw_event_load_any
+
+        pub mod owned
+        {
+            use super::EventType;
+
+            #event_info_owned
+        }
     )
     .into()
 }

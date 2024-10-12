@@ -56,26 +56,36 @@ impl DynamicParamVariant {
         &Ident,
         Option<proc_macro2::TokenStream>,
         Option<proc_macro2::TokenStream>,
+        Option<proc_macro2::TokenStream>,
     ) {
         let disc = &self.discriminant;
         let ty = &self.field_type;
-        let (field_ref, field_lifetime) = match lifetime_type(&self.field_type.to_string()) {
-            LifetimeType::Ref => (Some(quote!(&'a)), None),
-            LifetimeType::Generic => (None, Some(quote!(<'a>))),
-            LifetimeType::None => (None, None),
-        };
+        let (field_ref, field_lifetime, static_field_lifetime) =
+            match lifetime_type(&self.field_type.to_string()) {
+                LifetimeType::Ref => (Some(quote!(&'a)), None, None),
+                LifetimeType::Generic => (None, Some(quote!(<'a>)), Some(quote!(<'static>))),
+                LifetimeType::None => (None, None, None),
+            };
 
-        (disc, ty, field_ref, field_lifetime)
+        (disc, ty, field_ref, field_lifetime, static_field_lifetime)
     }
 
     fn variant_definition(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, field_ref, field_lifetime) = self.unpack();
+        let (disc, ty, field_ref, field_lifetime, _) = self.unpack();
 
         quote!(#disc(#field_ref crate::event_derive::event_field_type::#ty #field_lifetime))
     }
 
+    fn owned_variant_definition(&self) -> proc_macro2::TokenStream {
+        let (disc, ty, _, _, static_field_lifetime) = self.unpack();
+
+        quote!(#disc(
+            <crate::event_derive::event_field_type::#ty #static_field_lifetime as crate::event_derive::Borrowed>::Owned
+        ))
+    }
+
     fn variant_read(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, field_ref, field_lifetime) = self.unpack();
+        let (disc, ty, field_ref, field_lifetime, _) = self.unpack();
 
         quote!(crate::ffi:: #disc => {
             Ok(Self:: #disc(
@@ -100,7 +110,7 @@ impl DynamicParamVariant {
     }
 
     fn variant_fmt(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, field_ref, field_lifetime) = self.unpack();
+        let (disc, ty, field_ref, field_lifetime, _) = self.unpack();
         let mut disc_str = disc.to_string();
         if let Some(idx_pos) = disc_str.find("_IDX_") {
             let substr = &disc_str.as_str()[idx_pos + 5..];
@@ -113,6 +123,12 @@ impl DynamicParamVariant {
 
             <#field_ref crate::event_derive::event_field_type::#ty #field_lifetime as crate::event_derive::Format<crate::event_derive::format_type::PF_NA>>::format(val, fmt)
         })
+    }
+
+    fn variant_borrow(&self) -> proc_macro2::TokenStream {
+        let disc = &self.discriminant;
+
+        quote!(Self::#disc(val) => #disc(val.borrow_deref()),)
     }
 }
 
@@ -171,13 +187,32 @@ impl DynamicParam {
         } else {
             quote!(<F>)
         };
+        let derives = if wants_lifetime {
+            quote!()
+        } else {
+            quote!(
+                #[derive(Clone)]
+            )
+        };
+        let to_owned = if wants_lifetime {
+            Some(quote!(
+                impl #lifetime crate::event_derive::Borrowed for #name #lifetime {
+                    type Owned = owned::#name;
+                }
+            ))
+        } else {
+            None
+        };
 
         quote!(
             #[allow(non_camel_case_types)]
             #[derive(Debug)]
+            #derives
             pub enum #name #lifetime {
                 #(#variant_definitions,)*
             }
+
+            #to_owned
 
             impl #lifetime crate::event_derive::ToBytes for #name #lifetime {
                 fn binary_size(&self) -> usize {
@@ -219,6 +254,44 @@ impl DynamicParam {
             }
         )
     }
+
+    fn owned(&self) -> proc_macro2::TokenStream {
+        let name = Ident::new(&format!("PT_DYN_{}", self.name), self.name.span());
+        let variant_definitions = self.items.iter().map(|v| v.owned_variant_definition());
+        let variant_borrows = self.items.iter().map(|v| v.variant_borrow());
+
+        let wants_lifetime = !self.items.iter().all(|arg| {
+            matches!(
+                lifetime_type(&arg.field_type.to_string()),
+                LifetimeType::None
+            )
+        });
+
+        if wants_lifetime {
+            quote!(
+                #[allow(non_camel_case_types)]
+                #[derive(Debug)]
+                pub enum #name {
+                    #(#variant_definitions,)*
+                }
+
+                impl crate::event_derive::Borrow for #name {
+                    type Borrowed<'a> = super::#name<'a>;
+
+                    fn borrow(&self) -> Self::Borrowed<'_> {
+                        use crate::event_derive::BorrowDeref;
+                        use super::#name::*;
+
+                        match self {
+                            #(#variant_borrows)*
+                        }
+                    }
+                }
+            )
+        } else {
+            quote!(pub use super::#name;)
+        }
+    }
 }
 
 struct DynamicParams {
@@ -235,10 +308,15 @@ impl Parse for DynamicParams {
 
 pub fn dynamic_params(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DynamicParams);
-    let borrowed = input.params.iter().map(|param| param.borrowed());
 
+    let borrowed = input.params.iter().map(|param| param.borrowed());
+    let owned = input.params.iter().map(|param| param.owned());
     quote!(
         #(#borrowed)*
+
+        pub mod owned {
+            #(#owned)*
+        }
     )
     .into()
 }
