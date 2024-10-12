@@ -8,9 +8,11 @@ use crate::types::format::Format;
 use crate::types::net::endpoint::{EndpointV4, EndpointV6};
 use crate::types::{Borrow, Borrowed};
 use byteorder::{ReadBytesExt, WriteBytesExt};
+use serde::{Deserialize, Serialize};
 
 /// Socket tuple: describing both endpoints of a connection
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum SockTuple<'a> {
     /// Unix socket connection
     Unix {
@@ -171,7 +173,8 @@ where
 }
 
 /// Socket tuple: describing both endpoints of a connection (owned)
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum OwnedSockTuple {
     /// Unix socket connection
     Unix {

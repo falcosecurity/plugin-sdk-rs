@@ -138,6 +138,8 @@ fn render_enum(
         #[allow(non_camel_case_types)]
         #[non_exhaustive]
         #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+        #[derive(serde::Deserialize)]
+        #[derive(serde::Serialize)]
         pub enum #name {
             #(#tags,)*
             Unknown(usize),
@@ -216,6 +218,8 @@ fn render_bitflags(
         bitflags::bitflags! {
             #[allow(non_camel_case_types)]
             #[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd, Hash)]
+            #[derive(serde::Deserialize)]
+            #[derive(serde::Serialize)]
             pub struct #name: #repr_type {
                 #(#items;)*
                 const _ = !0;

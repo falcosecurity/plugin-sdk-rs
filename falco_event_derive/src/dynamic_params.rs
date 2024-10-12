@@ -188,10 +188,12 @@ impl DynamicParam {
             quote!(<F>)
         };
         let derives = if wants_lifetime {
-            quote!()
+            quote!(#[derive(serde::Serialize)])
         } else {
             quote!(
                 #[derive(Clone)]
+                #[derive(serde::Deserialize)]
+                #[derive(serde::Serialize)]
             )
         };
         let to_owned = if wants_lifetime {
@@ -271,6 +273,8 @@ impl DynamicParam {
             quote!(
                 #[allow(non_camel_case_types)]
                 #[derive(Debug)]
+                #[derive(serde::Deserialize)]
+                #[derive(serde::Serialize)]
                 pub enum #name {
                     #(#variant_definitions,)*
                 }

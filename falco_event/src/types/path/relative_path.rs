@@ -1,6 +1,7 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::Format;
 use crate::types::{Borrow, Borrowed};
+use serde::{Deserialize, Serialize};
 use std::fmt::Formatter;
 use std::io::Write;
 use std::os::unix::ffi::OsStrExt;
@@ -11,7 +12,7 @@ use std::path::{Path, PathBuf};
 /// Events containing a parameter of this type will have an extra method available, derived
 /// from the field name. For example, if the field is called `name`, the event type will have
 /// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct RelativePath<'a>(pub &'a Path);
 
 impl<'a> ToBytes for RelativePath<'a> {
@@ -50,7 +51,7 @@ where
 /// Events containing a parameter of this type will have an extra method available, derived
 /// from the field name. For example, if the field is called `name`, the event type will have
 /// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct OwnedRelativePath(pub PathBuf);
 
 impl<'a> Borrowed for RelativePath<'a> {

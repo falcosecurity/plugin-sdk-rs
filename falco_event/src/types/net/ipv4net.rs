@@ -9,6 +9,7 @@ use crate::types::format::Format;
 ///
 /// This is a wrapper around [Ipv4Addr] that makes it a distinct type, suitable for storing
 /// IPv4 subnets.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
 pub struct Ipv4Net(pub Ipv4Addr);
 
 impl FromBytes<'_> for Ipv4Net {

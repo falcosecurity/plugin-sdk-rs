@@ -262,13 +262,22 @@ impl EventInfo {
         let is_large = self.flags.iter().any(|flag| *flag == "EF_LARGE_PAYLOAD");
         let name = &self.name;
 
-        let derives = match variant {
-            CodegenVariant::Borrowed => quote!(
+        let derives = match (variant, wants_lifetime) {
+            (CodegenVariant::Borrowed, true) => quote!(
                 #[derive(falco_event_derive::FromBytes)]
                 #[derive(falco_event_derive::ToBytes)]
+                #[derive(serde::Serialize)]
             ),
-            CodegenVariant::Owned => quote!(
+            (CodegenVariant::Borrowed, false) => quote!(
+                #[derive(falco_event_derive::FromBytes)]
                 #[derive(falco_event_derive::ToBytes)]
+                #[derive(serde::Serialize)]
+                #[derive(serde::Deserialize)]
+            ),
+            (CodegenVariant::Owned, _) => quote!(
+                #[derive(falco_event_derive::ToBytes)]
+                #[derive(serde::Deserialize)]
+                #[derive(serde::Serialize)]
             ),
         };
 
@@ -429,10 +438,21 @@ fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::
         CodegenVariant::Owned => None,
     };
 
+    let derives = match variant {
+        CodegenVariant::Borrowed => quote!(
+            #[derive(serde::Serialize)]
+        ),
+        CodegenVariant::Owned => quote!(
+            #[derive(serde::Serialize)]
+            #[derive(serde::Deserialize)]
+        ),
+    };
+
     quote!(
         #(#typedefs)*
 
         #[derive(Debug)]
+        #derives
         #[allow(non_camel_case_types)]
         pub enum AnyEvent #lifetime {
             #(#variants,)*

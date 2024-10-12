@@ -21,6 +21,9 @@ macro_rules! newtype {
     ($(#[$attr:meta])* $name:ident($repr:ty)) => {
         $(#[$attr])*
         #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
+        #[derive(serde::Deserialize)]
+        #[derive(serde::Serialize)]
+        #[serde(transparent)]
         pub struct $name(pub $repr);
 
         impl FromBytes<'_> for $name {

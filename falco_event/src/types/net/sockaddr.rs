@@ -3,6 +3,7 @@ use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL, PPM_AF_UNSPEC};
 use crate::types::format::Format;
 use crate::types::{Borrow, Borrowed, EndpointV4, EndpointV6};
 use byteorder::{ReadBytesExt, WriteBytesExt};
+use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::fmt::Formatter;
 use std::io::Write;
@@ -10,7 +11,8 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
 /// A socket address
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum SockAddr<'a> {
     /// Unix sockets
     Unix(&'a Path),
@@ -103,8 +105,9 @@ where
     }
 }
 
-#[derive(Debug)]
 /// A socket address (owned)
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum OwnedSockAddr {
     /// Unix sockets
     Unix(PathBuf),
