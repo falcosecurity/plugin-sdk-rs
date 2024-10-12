@@ -1,7 +1,7 @@
 use crate::event_info::{lifetime_type, LifetimeType};
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
-use quote::{quote, ToTokens};
+use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::{Brace, Bracket};
@@ -146,8 +146,8 @@ impl Parse for DynamicParam {
     }
 }
 
-impl ToTokens for DynamicParam {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
+impl DynamicParam {
+    fn borrowed(&self) -> proc_macro2::TokenStream {
         let name = Ident::new(&format!("PT_DYN_{}", self.name), self.name.span());
         let variant_definitions = self.items.iter().map(|v| v.variant_definition());
         let variant_reads = self.items.iter().map(|v| v.variant_read());
@@ -218,7 +218,6 @@ impl ToTokens for DynamicParam {
                 }
             }
         )
-            .to_tokens(tokens);
     }
 }
 
@@ -234,15 +233,12 @@ impl Parse for DynamicParams {
     }
 }
 
-impl ToTokens for DynamicParams {
-    fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        for param in &self.params {
-            param.to_tokens(tokens);
-        }
-    }
-}
-
 pub fn dynamic_params(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DynamicParams);
-    input.into_token_stream().into()
+    let borrowed = input.params.iter().map(|param| param.borrowed());
+
+    quote!(
+        #(#borrowed)*
+    )
+    .into()
 }
