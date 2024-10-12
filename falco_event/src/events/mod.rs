@@ -11,6 +11,8 @@ mod event;
 mod metadata;
 pub(crate) mod payload;
 mod raw_event;
+#[cfg(test)]
+mod serde_tests;
 mod to_bytes;
 
 /// # Event types
