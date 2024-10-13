@@ -1,9 +1,21 @@
-use crate::serde_custom::{serde_with_option_tag, serde_with_option_tag_owned};
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::{braced, bracketed, parse_macro_input, Token};
+
+#[cfg(feature = "serde")]
+use crate::serde_custom::{serde_with_option_tag, serde_with_option_tag_owned};
+
+#[cfg(not(feature = "serde"))]
+fn serde_with_option_tag(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
+    None
+}
+
+#[cfg(not(feature = "serde"))]
+fn serde_with_option_tag_owned(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
+    None
+}
 
 pub(crate) enum LifetimeType {
     None,
@@ -267,22 +279,37 @@ impl EventInfo {
         let is_large = self.flags.iter().any(|flag| *flag == "EF_LARGE_PAYLOAD");
         let name = &self.name;
 
+        #[cfg(feature = "serde")]
+        let derive_serde = quote!(
+            #[derive(serde::Deserialize)]
+            #[derive(serde::Serialize)]
+        );
+
+        #[cfg(not(feature = "serde"))]
+        let derive_serde = quote!();
+
+        #[cfg(feature = "serde")]
+        let derive_ser = quote!(
+            #[derive(serde::Serialize)]
+        );
+
+        #[cfg(not(feature = "serde"))]
+        let derive_ser = quote!();
+
         let derives = match (variant, wants_lifetime) {
             (CodegenVariant::Borrowed, true) => quote!(
                 #[derive(falco_event_derive::FromBytes)]
                 #[derive(falco_event_derive::ToBytes)]
-                #[derive(serde::Serialize)]
+                #derive_ser
             ),
             (CodegenVariant::Borrowed, false) => quote!(
                 #[derive(falco_event_derive::FromBytes)]
                 #[derive(falco_event_derive::ToBytes)]
-                #[derive(serde::Serialize)]
-                #[derive(serde::Deserialize)]
+                #derive_serde
             ),
             (CodegenVariant::Owned, _) => quote!(
                 #[derive(falco_event_derive::ToBytes)]
-                #[derive(serde::Deserialize)]
-                #[derive(serde::Serialize)]
+                #derive_serde
             ),
         };
 
@@ -443,6 +470,7 @@ fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::
         CodegenVariant::Owned => None,
     };
 
+    #[cfg(feature = "serde")]
     let derives = match variant {
         CodegenVariant::Borrowed => quote!(
             #[derive(serde::Serialize)]
@@ -452,6 +480,9 @@ fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::
             #[derive(serde::Deserialize)]
         ),
     };
+
+    #[cfg(not(feature = "serde"))]
+    let derives = quote!();
 
     quote!(
         #(#typedefs)*

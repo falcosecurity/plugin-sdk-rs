@@ -48,5 +48,6 @@ mod event_derive {
     pub use crate::types::BorrowDeref;
     pub use crate::types::Borrowed;
 
+    #[cfg(feature = "serde")]
     pub use crate::types::serde;
 }

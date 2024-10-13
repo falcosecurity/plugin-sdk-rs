@@ -1,15 +1,15 @@
+use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::types::format::Format;
 use std::fmt::Formatter;
 use std::io::Write;
 use std::net::Ipv4Addr;
-
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::format::Format;
 
 /// An IPv4 network
 ///
 /// This is a wrapper around [Ipv4Addr] that makes it a distinct type, suitable for storing
 /// IPv4 subnets.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Ipv4Net(pub Ipv4Addr);
 
 impl FromBytes<'_> for Ipv4Net {
@@ -38,8 +38,8 @@ impl<F> Format<F> for Ipv4Net {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
     use std::net::Ipv4Addr;
 
     #[test]

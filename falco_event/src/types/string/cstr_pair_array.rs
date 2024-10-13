@@ -80,6 +80,7 @@ impl Borrow for Vec<(CString, CString)> {
     }
 }
 
+#[cfg(feature = "serde")]
 pub mod serde {
     #[allow(dead_code)]
     pub mod cstr_pair_array {

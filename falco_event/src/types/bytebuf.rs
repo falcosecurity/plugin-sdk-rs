@@ -84,6 +84,7 @@ impl BorrowDeref for Vec<u8> {
     }
 }
 
+#[cfg(feature = "serde")]
 pub mod serde {
     pub mod bytebuf {
         use crate::types::utf_chunked::{OwnedUtfChunked, UtfChunked};

@@ -10,6 +10,9 @@ readme = "README.md"
 keywords = ["falco", "security"]
 categories = ["api-bindings"]
 
+[features]
+serde = ["dep:serde", "bitflags/serde", "falco_event_derive/serde"]
+
 [dependencies]
 byteorder = "1.5.0"
 falco_event_derive = { path = "../falco_event_derive", version = "0.4.0" }
@@ -17,10 +20,10 @@ memchr = "2.7.1"
 num-derive = "0.4.2"
 num-traits = "0.2.17"
 thiserror = "1.0.58"
-bitflags = { version = "2.4.2", features = ["serde"] }
+bitflags = { version = "2.4.2" }
 anyhow = "1.0.81"
 chrono = "0.4.38"
-serde = { version = "1.0.210", features = ["derive"] }
+serde = { version = "1.0.210", features = ["derive"], optional = true }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 nix = { version = "0.29.0", features = ["signal"] }

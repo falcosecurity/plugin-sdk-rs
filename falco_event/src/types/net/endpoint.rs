@@ -65,8 +65,8 @@ impl<F> Format<F> for EndpointV6 {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
     use super::Port;
     use std::net::{Ipv4Addr, Ipv6Addr};
 

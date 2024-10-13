@@ -1,5 +1,4 @@
 use crate::event_info::{lifetime_type, LifetimeType};
-use crate::serde_custom::serde_with_tag;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
@@ -7,6 +6,14 @@ use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::{Brace, Bracket};
 use syn::{braced, bracketed, parse_macro_input, LitInt, Token};
+
+#[cfg(feature = "serde")]
+use crate::serde_custom::serde_with_tag;
+
+#[cfg(not(feature = "serde"))]
+fn serde_with_tag(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
+    None
+}
 
 struct DynamicParamVariant {
     _brackets: syn::token::Bracket,
@@ -191,6 +198,8 @@ impl DynamicParam {
         } else {
             quote!(<F>)
         };
+
+        #[cfg(feature = "serde")]
         let derives = if wants_lifetime {
             quote!(#[derive(serde::Serialize)])
         } else {
@@ -200,6 +209,14 @@ impl DynamicParam {
                 #[derive(serde::Serialize)]
             )
         };
+
+        #[cfg(not(feature = "serde"))]
+        let derives = if wants_lifetime {
+            None
+        } else {
+            Some(quote!(#[derive(Clone)]))
+        };
+
         let to_owned = if wants_lifetime {
             Some(quote!(
                 impl #lifetime crate::event_derive::Borrowed for #name #lifetime {
@@ -273,12 +290,20 @@ impl DynamicParam {
             )
         });
 
+        #[cfg(feature = "serde")]
+        let serde_derives = quote!(
+            #[derive(serde::Deserialize)]
+            #[derive(serde::Serialize)]
+        );
+
+        #[cfg(not(feature = "serde"))]
+        let serde_derives = quote!();
+
         if wants_lifetime {
             quote!(
                 #[allow(non_camel_case_types)]
                 #[derive(Debug)]
-                #[derive(serde::Deserialize)]
-                #[derive(serde::Serialize)]
+                #serde_derives
                 pub enum #name {
                     #(#variant_definitions,)*
                 }

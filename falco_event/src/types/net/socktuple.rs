@@ -8,11 +8,11 @@ use crate::types::format::Format;
 use crate::types::net::endpoint::{EndpointV4, EndpointV6};
 use crate::types::{Borrow, Borrowed};
 use byteorder::{ReadBytesExt, WriteBytesExt};
-use serde::{Deserialize, Serialize};
 
 /// Socket tuple: describing both endpoints of a connection
-#[derive(Debug, Eq, PartialEq, Serialize)]
-#[serde(rename_all = "lowercase")]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+#[derive(Debug, Eq, PartialEq)]
 pub enum SockTuple<'a> {
     /// Unix socket connection
     Unix {
@@ -41,7 +41,10 @@ pub enum SockTuple<'a> {
     },
 
     /// Unknown/other socket family: `PPM_AF_*` id and a raw byte buffer
-    Other(u8, #[serde(with = "crate::types::serde::bytebuf")] &'a [u8]),
+    Other(
+        u8,
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::bytebuf"))] &'a [u8],
+    ),
 }
 
 impl Display for SockTuple<'_> {
@@ -173,8 +176,9 @@ where
 }
 
 /// Socket tuple: describing both endpoints of a connection (owned)
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+#[derive(Debug)]
 pub enum OwnedSockTuple {
     /// Unix socket connection
     Unix {
@@ -203,7 +207,10 @@ pub enum OwnedSockTuple {
     },
 
     /// Unknown/other socket family: `PPM_AF_*` id and a raw byte buffer
-    Other(u8, #[serde(with = "crate::types::serde::bytebuf")] Vec<u8>),
+    Other(
+        u8,
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::bytebuf"))] Vec<u8>,
+    ),
 }
 
 impl<'a> Borrowed for SockTuple<'a> {
@@ -324,6 +331,14 @@ mod tests {
 
         assert_eq!(binary, binary2.as_slice(),);
     }
+}
+
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
+    use crate::types::{OwnedSockTuple, Port, SockTuple};
+    use std::net::{Ipv4Addr, Ipv6Addr};
+    use std::path::Path;
+    use std::str::FromStr;
 
     #[test]
     fn test_serde_socktuple_unix() {

@@ -5,10 +5,10 @@ use crate::fields::event_flags::PT_FLAGS16_file_flags;
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::Format;
 use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
-use serde::{Deserialize, Serialize};
 
 /// A list of file descriptors with flags
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FdList(pub Vec<(u64, PT_FLAGS16_file_flags)>);
 
 impl<F> Format<F> for FdList
@@ -92,6 +92,11 @@ mod tests {
 
         assert_eq!(fdlist, fdlist2)
     }
+}
+
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
+    use super::*;
 
     #[test]
     fn test_serde_fd_list() {

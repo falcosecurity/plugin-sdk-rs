@@ -50,6 +50,7 @@ impl Borrow for CString {
     }
 }
 
+#[cfg(feature = "serde")]
 pub mod serde {
     #[allow(dead_code)]
     pub mod cstr {

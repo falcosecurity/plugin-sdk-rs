@@ -8,7 +8,8 @@ use std::net::IpAddr;
 ///
 /// This is a wrapper around [IpAddr] that makes it a distinct type, suitable for storing
 /// IP (v4 or v6) subnets.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct IpNet(pub IpAddr);
 
 impl FromBytes<'_> for IpNet {
@@ -40,8 +41,8 @@ where
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
     use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 
     #[test]

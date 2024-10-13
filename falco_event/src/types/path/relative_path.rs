@@ -1,7 +1,6 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::format::Format;
 use crate::types::{Borrow, Borrowed};
-use serde::{Deserialize, Serialize};
 use std::fmt::Formatter;
 use std::io::Write;
 use std::os::unix::ffi::OsStrExt;
@@ -12,7 +11,8 @@ use std::path::{Path, PathBuf};
 /// Events containing a parameter of this type will have an extra method available, derived
 /// from the field name. For example, if the field is called `name`, the event type will have
 /// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
-#[derive(Debug, Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[derive(Debug)]
 pub struct RelativePath<'a>(pub &'a Path);
 
 impl<'a> ToBytes for RelativePath<'a> {
@@ -51,7 +51,8 @@ where
 /// Events containing a parameter of this type will have an extra method available, derived
 /// from the field name. For example, if the field is called `name`, the event type will have
 /// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
-#[derive(Debug, Deserialize, Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Debug)]
 pub struct OwnedRelativePath(pub PathBuf);
 
 impl<'a> Borrowed for RelativePath<'a> {
@@ -68,12 +69,16 @@ impl Borrow for OwnedRelativePath {
 
 #[cfg(test)]
 mod tests {
-    use std::path::{Path, PathBuf};
+    use std::path::PathBuf;
     use std::str::FromStr;
 
     use crate::event_derive::{FromBytes, ToBytes};
     use crate::types::path::relative_path::RelativePath;
+
+    #[cfg(feature = "serde")]
     use crate::types::OwnedRelativePath;
+    #[cfg(feature = "serde")]
+    use std::path::Path;
 
     #[test]
     fn test_relative_path() {
@@ -91,6 +96,7 @@ mod tests {
         assert_eq!(path.0.to_str().unwrap(), "/foo");
     }
 
+    #[cfg(feature = "serde")]
     #[test]
     fn test_serde_relative_path() {
         let path = RelativePath(Path::new("/foo"));

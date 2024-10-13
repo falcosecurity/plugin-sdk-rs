@@ -11,7 +11,7 @@ mod event;
 mod metadata;
 pub(crate) mod payload;
 mod raw_event;
-#[cfg(test)]
+#[cfg(all(test, feature = "serde"))]
 mod serde_tests;
 mod to_bytes;
 
@@ -51,12 +51,15 @@ mod to_bytes;
 /// |-----------------------------------------------------------|-----------------|--------------|
 /// | Loading from a [RawEvent](`crate::events::RawEvent`)      | supported       | ^1           |
 /// | [writing to a byte buffer](`crate::events::EventToBytes`) | supported       | supported    |
-/// | [arbitrary serialization](`serde::Serialize`)             | supported       | supported    |
-/// | [arbitrary deserialization](`serde::Deserialize`)         |                 | supported    |
+/// | [arbitrary serialization](`serde::Serialize`) ^2          | supported       | supported    |
+/// | [arbitrary deserialization](`serde::Deserialize`) ^2      |                 | supported    |
 ///
 /// **Footnotes**:
 ///
 /// 1. Loading an owned event from a raw event is technically possible but has no benefits over
 /// loading a borrowed event and incurs extra allocations and copies, so to avoid the confusion
 /// it's explicitly not supported.
+///
+/// 2. Arbitrary serialization and deserialization with [`serde`] is only supported when
+/// the `serde` feature of the crate is enabled.
 pub mod types;

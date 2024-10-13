@@ -21,9 +21,8 @@ macro_rules! newtype {
     ($(#[$attr:meta])* $name:ident($repr:ty)) => {
         $(#[$attr])*
         #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
-        #[derive(serde::Deserialize)]
-        #[derive(serde::Serialize)]
-        #[serde(transparent)]
+        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+        #[cfg_attr(feature = "serde", serde(transparent))]
         pub struct $name(pub $repr);
 
         impl FromBytes<'_> for $name {
@@ -255,8 +254,8 @@ impl<F> Format<F> for Bool {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
     use crate::types::SyscallResult;
 
     #[test]

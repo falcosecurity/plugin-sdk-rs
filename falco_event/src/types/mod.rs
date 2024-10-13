@@ -6,8 +6,10 @@ mod path;
 mod primitive;
 mod string;
 mod time;
+#[cfg(feature = "serde")]
 mod utf_chunked;
 
+#[cfg(feature = "serde")]
 pub mod serde {
     pub use super::bytebuf::serde::*;
     pub use super::string::serde::*;

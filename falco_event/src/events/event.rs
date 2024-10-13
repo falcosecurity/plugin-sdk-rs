@@ -41,6 +41,7 @@ where
     }
 }
 
+#[cfg(feature = "serde")]
 mod serde_event {
     use super::*;
     use crate::events::types::AnyEvent;

@@ -1,9 +1,9 @@
 use crate::event_derive::Format;
-use serde::{Deserialize, Serialize};
 use std::fmt::{Debug, Formatter};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-#[derive(Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Clone)]
 pub struct EventMetadata {
     pub ts: u64,
     pub tid: i64,

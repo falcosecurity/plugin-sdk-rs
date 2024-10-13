@@ -3,7 +3,6 @@ use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL, PPM_AF_UNSPEC};
 use crate::types::format::Format;
 use crate::types::{Borrow, Borrowed, EndpointV4, EndpointV6};
 use byteorder::{ReadBytesExt, WriteBytesExt};
-use serde::{Deserialize, Serialize};
 use std::ffi::OsStr;
 use std::fmt::Formatter;
 use std::io::Write;
@@ -11,8 +10,9 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
 /// A socket address
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "lowercase")]
+#[cfg_attr(feature = "serde", derive(serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+#[derive(Debug)]
 pub enum SockAddr<'a> {
     /// Unix sockets
     Unix(&'a Path),
@@ -24,7 +24,10 @@ pub enum SockAddr<'a> {
     V6(EndpointV6),
 
     /// any other address family is represented as the number (`PPM_AF_*` constant) and the raw data
-    Other(u8, #[serde(with = "crate::types::serde::bytebuf")] &'a [u8]),
+    Other(
+        u8,
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::bytebuf"))] &'a [u8],
+    ),
 }
 
 impl ToBytes for SockAddr<'_> {
@@ -106,8 +109,9 @@ where
 }
 
 /// A socket address (owned)
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+#[derive(Debug)]
 pub enum OwnedSockAddr {
     /// Unix sockets
     Unix(PathBuf),
@@ -119,7 +123,10 @@ pub enum OwnedSockAddr {
     V6(EndpointV6),
 
     /// any other address family is represented as the number (`PPM_AF_*` constant) and the raw data
-    Other(u8, #[serde(with = "crate::types::serde::bytebuf")] Vec<u8>),
+    Other(
+        u8,
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::bytebuf"))] Vec<u8>,
+    ),
 }
 
 impl<'a> Borrowed for SockAddr<'a> {
@@ -139,7 +146,7 @@ impl Borrow for OwnedSockAddr {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "serde"))]
 mod tests {
     use crate::types::{OwnedSockAddr, Port, SockAddr};
     use std::net::{Ipv4Addr, Ipv6Addr};

@@ -1,15 +1,15 @@
+use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::types::format::Format;
 use std::fmt::Formatter;
 use std::io::Write;
 use std::net::Ipv6Addr;
-
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::format::Format;
 
 /// An IPv6 network
 ///
 /// This is a wrapper around [Ipv6Addr] that makes it a distinct type, suitable for storing
 /// IPv6 subnets.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Ipv6Net(pub Ipv6Addr);
 
 impl FromBytes<'_> for Ipv6Net {
@@ -38,8 +38,8 @@ impl<F> Format<F> for Ipv6Net {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
     use std::net::Ipv6Addr;
 
     #[test]
