@@ -14,7 +14,7 @@ capabilities.
 The typical way to distribute a Falco plugin is to build a shared library. To build a plugin as a shared
 library, you need to:
 
-1. Specify `crate_type = ["dylib"]` in the `[lib]` section of `Cargo.toml`,
+1. Specify `crate_type = ["cdylib"]` in the `[lib]` section of `Cargo.toml`,
 2. Invoke [`plugin!`] and all the macros corresponding to the capabilities your plugin implements.
 
 The most basic `Cargo.toml` file for a dynamically linked plugin without any dependencies could be:
@@ -26,7 +26,7 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["dylib"]
+crate-type = ["cdylib"]
 
 [dependencies]
 falco_plugin = "0.3.0"
