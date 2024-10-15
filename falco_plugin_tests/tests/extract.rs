@@ -102,7 +102,7 @@ impl DummyPlugin {
         let payload = event
             .params
             .event_data
-            .ok_or(anyhow::anyhow!("no payload in event"))?;
+            .ok_or_else(|| anyhow::anyhow!("no payload in event"))?;
 
         let mut out = CString::default();
         out.write_into(|w| w.write_all(payload))?;
@@ -123,7 +123,7 @@ impl DummyPlugin {
         let payload = event
             .params
             .event_data
-            .ok_or(anyhow::anyhow!("no payload in event"))?;
+            .ok_or_else(|| anyhow::anyhow!("no payload in event"))?;
 
         let mut out = CString::default();
         out.write_into(|w| w.write_all(payload))?;
@@ -140,7 +140,7 @@ impl DummyPlugin {
         let payload = event
             .params
             .event_data
-            .ok_or(anyhow::anyhow!("no payload in event"))?;
+            .ok_or_else(|| anyhow::anyhow!("no payload in event"))?;
 
         let first_char = &payload[0..1];
         let first_char = std::str::from_utf8(first_char)?;
@@ -162,7 +162,7 @@ impl DummyPlugin {
         let payload = event
             .params
             .event_data
-            .ok_or(anyhow::anyhow!("no payload in event"))?;
+            .ok_or_else(|| anyhow::anyhow!("no payload in event"))?;
 
         let first_char = &payload[0..1];
         let first_char = std::str::from_utf8(first_char)?;
@@ -184,7 +184,7 @@ impl DummyPlugin {
             ExtractFieldRequestArg::None => event
                 .params
                 .event_data
-                .ok_or(anyhow::anyhow!("no payload in event"))?,
+                .ok_or_else(|| anyhow::anyhow!("no payload in event"))?,
         };
 
         let first_char = &buf[0..1];

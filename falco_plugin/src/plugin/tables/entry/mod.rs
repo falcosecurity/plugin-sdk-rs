@@ -53,7 +53,7 @@ impl<M> Entry<M> {
         unsafe {
             self.raw_entry
                 .read_field_with_assoc::<V>(reader, field.field.field, &field.field.assoc_data)
-                .ok_or(anyhow::anyhow!("Could not read field value"))
+                .ok_or_else(|| anyhow::anyhow!("Could not read field value"))
                 .with_last_error(&reader.last_error)
         }
     }

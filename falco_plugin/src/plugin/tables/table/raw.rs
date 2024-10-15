@@ -61,7 +61,7 @@ impl RawTable {
             );
             field
                 .as_mut()
-                .ok_or(anyhow::anyhow!("Failed to get table field {:?}", name))
+                .ok_or_else(|| anyhow::anyhow!("Failed to get table field {:?}", name))
                 .with_last_error(&tables_input.last_error)?;
             field
         };
@@ -93,7 +93,7 @@ impl RawTable {
             );
             field
                 .as_mut()
-                .ok_or(anyhow::anyhow!("Failed to add table field {:?}", name))
+                .ok_or_else(|| anyhow::anyhow!("Failed to add table field {:?}", name))
                 .with_last_error(&tables_input.last_error)?;
             field
         };

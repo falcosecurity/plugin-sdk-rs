@@ -44,7 +44,7 @@ impl CaptureListenInput {
         let input = unsafe {
             value
                 .as_ref()
-                .ok_or(anyhow::anyhow!("Got null event parse input"))?
+                .ok_or_else(|| anyhow::anyhow!("Got null event parse input"))?
         };
 
         let thread_pool = ThreadPool::try_from(input.owner, input.routine, last_error.clone())?;
@@ -53,13 +53,13 @@ impl CaptureListenInput {
             input
                 .table_reader_ext
                 .as_ref()
-                .ok_or(anyhow::anyhow!("Got null reader vtable"))?
+                .ok_or_else(|| anyhow::anyhow!("Got null reader vtable"))?
         };
         let writer = unsafe {
             input
                 .table_writer_ext
                 .as_ref()
-                .ok_or(anyhow::anyhow!("Got null writer vtable"))?
+                .ok_or_else(|| anyhow::anyhow!("Got null writer vtable"))?
         };
 
         let reader = TableReader::try_from(reader, last_error.clone())?;

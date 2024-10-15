@@ -58,8 +58,8 @@ pub unsafe extern "C" fn plugin_init<P: Plugin>(
     rc: *mut ss_plugin_rc,
 ) -> *mut falco_plugin_api::ss_plugin_t {
     let res = (|| -> Result<*mut PluginWrapper<P>, anyhow::Error> {
-        let init_input =
-            unsafe { init_input.as_ref() }.ok_or(anyhow::anyhow!("Got empty init_input"))?;
+        let init_input = unsafe { init_input.as_ref() }
+            .ok_or_else(|| anyhow::anyhow!("Got empty init_input"))?;
 
         let init_config =
             try_str_from_ptr(&init_input.config).context("Failed to get config string")?;

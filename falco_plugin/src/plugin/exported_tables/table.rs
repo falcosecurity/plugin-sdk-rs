@@ -190,10 +190,9 @@ where
         let (type_id, index) = { (field.type_id, field.index) };
 
         let value = unsafe {
-            DynamicFieldValue::from_data(value, type_id).ok_or(anyhow::anyhow!(
-                "Cannot store {:?} data (unsupported type)",
-                type_id
-            ))?
+            DynamicFieldValue::from_data(value, type_id).ok_or_else(|| {
+                anyhow::anyhow!("Cannot store {:?} data (unsupported type)", type_id)
+            })?
         };
 
         entry.set(index, value)
