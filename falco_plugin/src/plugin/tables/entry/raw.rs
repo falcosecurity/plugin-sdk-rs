@@ -1,5 +1,6 @@
 use crate::plugin::tables::data::Value;
-use crate::plugin::tables::vtable::{TableReader, TableWriter};
+use crate::plugin::tables::vtable::reader::TableReader;
+use crate::plugin::tables::vtable::writer::TableWriter;
 use falco_plugin_api::{
     ss_plugin_rc, ss_plugin_rc_SS_PLUGIN_NOT_SUPPORTED, ss_plugin_rc_SS_PLUGIN_SUCCESS,
     ss_plugin_state_data, ss_plugin_table_entry_t, ss_plugin_table_field_t, ss_plugin_table_t,

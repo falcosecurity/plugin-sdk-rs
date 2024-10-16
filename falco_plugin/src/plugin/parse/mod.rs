@@ -1,7 +1,8 @@
 use crate::parse::EventInput;
 use crate::plugin::base::Plugin;
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::tables::vtable::{TableReader, TableWriter};
+use crate::plugin::tables::vtable::reader::TableReader;
+use crate::plugin::tables::vtable::writer::TableWriter;
 use falco_event::events::types::EventType;
 use falco_plugin_api::ss_plugin_event_parse_input;
 

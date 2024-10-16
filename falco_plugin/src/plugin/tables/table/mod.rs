@@ -4,9 +4,10 @@ use crate::plugin::tables::runtime::NoMetadata;
 use crate::plugin::tables::runtime_table_validator::RuntimeTableValidator;
 use crate::plugin::tables::table::raw::{RawTable, TableNameError};
 use crate::plugin::tables::traits::{Entry, TableAccess, TableMetadata};
-use crate::plugin::tables::vtable::{
-    TableError, TableFields, TableReader, TableWriter, TablesInput,
-};
+use crate::plugin::tables::vtable::fields::TableFields;
+use crate::plugin::tables::vtable::reader::TableReader;
+use crate::plugin::tables::vtable::writer::TableWriter;
+use crate::plugin::tables::vtable::{TableError, TablesInput};
 use anyhow::Error;
 use falco_plugin_api::{ss_plugin_state_data, ss_plugin_table_field_t, ss_plugin_table_fieldinfo};
 use std::ffi::CStr;

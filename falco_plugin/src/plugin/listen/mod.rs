@@ -5,7 +5,8 @@ pub mod wrappers;
 use crate::base::Plugin;
 use crate::listen::ThreadPool;
 use crate::plugin::error::last_error::LastError;
-use crate::tables::{TableReader, TableWriter};
+use crate::plugin::tables::vtable::writer::TableWriter;
+use crate::tables::TableReader;
 use falco_plugin_api::ss_plugin_capture_listen_input;
 
 /// Support for capture listening plugins

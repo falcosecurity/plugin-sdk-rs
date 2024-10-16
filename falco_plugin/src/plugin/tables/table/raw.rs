@@ -3,8 +3,11 @@ use crate::plugin::tables::data::{FieldTypeId, Key, Value};
 use crate::plugin::tables::entry::raw::RawEntry;
 use crate::plugin::tables::field::raw::RawField;
 use crate::plugin::tables::traits::TableMetadata;
-use crate::plugin::tables::vtable::{TableError, TableFields};
-use crate::plugin::tables::vtable::{TableReader, TableWriter, TablesInput};
+use crate::plugin::tables::vtable::fields::TableFields;
+use crate::plugin::tables::vtable::reader::TableReader;
+use crate::plugin::tables::vtable::writer::TableWriter;
+use crate::plugin::tables::vtable::TableError;
+use crate::plugin::tables::vtable::TablesInput;
 use crate::strings::from_ptr::{try_str_from_ptr_with_lifetime, FromPtrError};
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_state_data, ss_plugin_state_type,

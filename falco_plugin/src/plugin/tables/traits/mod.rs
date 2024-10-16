@@ -1,7 +1,9 @@
 use crate::plugin::tables::data::{Key, Value};
 use crate::plugin::tables::entry::raw::RawEntry;
 use crate::plugin::tables::table::raw::RawTable;
-use crate::plugin::tables::vtable::{TableReader, TableWriter, TablesInput};
+use crate::plugin::tables::vtable::reader::TableReader;
+use crate::plugin::tables::vtable::writer::TableWriter;
+use crate::plugin::tables::vtable::TablesInput;
 use falco_plugin_api::ss_plugin_table_t;
 use std::sync::Arc;
 

@@ -2,10 +2,11 @@ use crate::plugin::error::as_result::{AsResult, WithLastError};
 use crate::plugin::tables::data::Value;
 use crate::plugin::tables::field::Field;
 use crate::plugin::tables::traits::{EntryWrite, TableMetadata};
-use crate::plugin::tables::vtable::{TableReader, TableWriter};
+use crate::plugin::tables::vtable::reader::TableReader;
 use falco_plugin_api::ss_plugin_table_t;
 
 pub(in crate::plugin::tables) mod raw;
+use crate::plugin::tables::vtable::writer::TableWriter;
 use raw::RawEntry;
 
 /// # An entry in a Falco plugin table
