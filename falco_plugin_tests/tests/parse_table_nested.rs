@@ -238,7 +238,7 @@ impl ParsePlugin for DummyParsePlugin {
             c.set_is_final(writer, &is_final).ok();
 
             ControlFlow::Continue(())
-        });
+        })?;
 
         Ok(())
     }

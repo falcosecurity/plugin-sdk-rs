@@ -124,7 +124,7 @@ impl ParsePlugin for DummyPlugin {
 
                 fd_map.insert(fd_num, fd_type);
                 ControlFlow::Continue(())
-            });
+            })?;
 
             if fd_map.len() != 33 {
                 anyhow::bail!("fd table length mismatch, got {}", fd_map.len());

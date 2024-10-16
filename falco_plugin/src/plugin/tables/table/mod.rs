@@ -2,10 +2,11 @@ use crate::plugin::tables::data::{seal, FieldTypeId, Key, TableData, Value};
 use crate::plugin::tables::field::Field;
 use crate::plugin::tables::runtime::NoMetadata;
 use crate::plugin::tables::runtime_table_validator::RuntimeTableValidator;
-use crate::plugin::tables::table::raw::RawTable;
+use crate::plugin::tables::table::raw::{RawTable, TableNameError};
 use crate::plugin::tables::traits::{Entry, TableAccess, TableMetadata};
-use crate::plugin::tables::vtable::{TableFields, TableReader, TableWriter, TablesInput};
-use crate::strings::from_ptr::FromPtrError;
+use crate::plugin::tables::vtable::{
+    TableError, TableFields, TableReader, TableWriter, TablesInput,
+};
 use anyhow::Error;
 use falco_plugin_api::{ss_plugin_state_data, ss_plugin_table_field_t, ss_plugin_table_fieldinfo};
 use std::ffi::CStr;
@@ -238,14 +239,14 @@ where
     /// # Get the table name
     ///
     /// This method returns an error if the name cannot be represented as UTF-8
-    pub fn get_name(&self, reader_vtable: &TableReader) -> Result<&str, FromPtrError> {
+    pub fn get_name(&self, reader_vtable: &TableReader) -> Result<&str, TableNameError> {
         self.raw_table.get_name(reader_vtable)
     }
 
     /// # Get the table size
     ///
     /// Return the number of entries in the table
-    pub fn get_size(&self, reader_vtable: &TableReader) -> usize {
+    pub fn get_size(&self, reader_vtable: &TableReader) -> Result<usize, TableError> {
         self.raw_table.get_size(reader_vtable)
     }
 
@@ -256,7 +257,11 @@ where
     ///
     /// The iteration stops when either all entries have been processed or the closure returns
     /// [`ControlFlow::Break`].
-    pub fn iter_entries_mut<F>(&self, reader_vtable: &TableReader, mut func: F) -> ControlFlow<()>
+    pub fn iter_entries_mut<F>(
+        &self,
+        reader_vtable: &TableReader,
+        mut func: F,
+    ) -> Result<ControlFlow<()>, TableError>
     where
         F: FnMut(&mut E) -> ControlFlow<()>,
     {

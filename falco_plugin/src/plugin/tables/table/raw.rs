@@ -3,7 +3,7 @@ use crate::plugin::tables::data::{FieldTypeId, Key, Value};
 use crate::plugin::tables::entry::raw::RawEntry;
 use crate::plugin::tables::field::raw::RawField;
 use crate::plugin::tables::traits::TableMetadata;
-use crate::plugin::tables::vtable::TableFields;
+use crate::plugin::tables::vtable::{TableError, TableFields};
 use crate::plugin::tables::vtable::{TableReader, TableWriter, TablesInput};
 use crate::strings::from_ptr::{try_str_from_ptr_with_lifetime, FromPtrError};
 use falco_plugin_api::{
@@ -14,6 +14,15 @@ use falco_plugin_api::{
 use num_traits::FromPrimitive;
 use std::ffi::CStr;
 use std::ops::ControlFlow;
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum TableNameError {
+    #[error(transparent)]
+    TableError(#[from] TableError),
+    #[error(transparent)]
+    PtrError(#[from] FromPtrError),
+}
 
 /// # A low-level representation of a table
 ///
@@ -120,8 +129,7 @@ impl RawTable {
             );
         }
 
-        let entry =
-            unsafe { (reader_vtable.get_table_entry)(self.table, &key.to_data() as *const _) };
+        let entry = reader_vtable.get_table_entry(self.table, &key.to_data() as *const _)?;
 
         if entry.is_null() {
             Err(anyhow::anyhow!("table entry not found"))
@@ -129,7 +137,7 @@ impl RawTable {
             Ok(RawEntry {
                 table: self.table,
                 entry: entry as *mut _,
-                destructor: Some(reader_vtable.release_table_entry),
+                destructor: reader_vtable.release_table_entry_fn(),
             })
         }
     }
@@ -192,7 +200,7 @@ impl RawTable {
             Ok(RawEntry {
                 table: self.table,
                 entry: ret,
-                destructor: Some(reader_vtable.release_table_entry),
+                destructor: reader_vtable.release_table_entry_fn(),
             })
         }
     }
@@ -200,15 +208,20 @@ impl RawTable {
     /// # Get the table name
     ///
     /// This method returns an error if the name cannot be represented as UTF-8
-    pub fn get_name(&self, reader_vtable: &TableReader) -> Result<&str, FromPtrError> {
-        unsafe { try_str_from_ptr_with_lifetime((reader_vtable.get_table_name)(self.table), self) }
+    pub fn get_name(&self, reader_vtable: &TableReader) -> Result<&str, TableNameError> {
+        unsafe {
+            Ok(try_str_from_ptr_with_lifetime(
+                reader_vtable.get_table_name(self.table)?,
+                self,
+            )?)
+        }
     }
 
     /// # Get the table size
     ///
     /// Return the number of entries in the table
-    pub fn get_size(&self, reader_vtable: &TableReader) -> usize {
-        unsafe { (reader_vtable.get_table_size)(self.table) as usize }
+    pub fn get_size(&self, reader_vtable: &TableReader) -> Result<usize, TableError> {
+        Ok(reader_vtable.get_table_size(self.table)? as usize)
     }
 
     /// # Iterate over all entries in a table with mutable access
@@ -218,13 +231,17 @@ impl RawTable {
     ///
     /// The iteration stops when either all entries have been processed or the closure returns
     /// [`ControlFlow::Break`].
-    pub fn iter_entries_mut<F>(&self, reader_vtable: &TableReader, mut func: F) -> ControlFlow<()>
+    pub fn iter_entries_mut<F>(
+        &self,
+        reader_vtable: &TableReader,
+        mut func: F,
+    ) -> Result<ControlFlow<()>, TableError>
     where
         F: FnMut(RawEntry) -> ControlFlow<()>,
     {
-        iter_inner(
+        Ok(iter_inner(
             self.table,
-            reader_vtable.iterate_entries,
+            reader_vtable.iterate_entries_fn()?,
             move |s: *mut ss_plugin_table_entry_t| {
                 // Do not call the destructor on TableEntryReader: we do not have
                 // our own refcount for it, just borrowing
@@ -235,7 +252,7 @@ impl RawTable {
                 };
                 func(raw_entry).is_continue()
             },
-        )
+        ))
     }
 
     /// # Clear the table
@@ -261,9 +278,12 @@ impl RawTable {
         }
 
         let mut val = ss_plugin_state_data { u64_: 0 };
-        let rc = unsafe {
-            (tables_input.reader_ext.read_entry_field)(self.table, entry, field, &mut val as *mut _)
-        };
+        let rc = tables_input.reader_ext.read_entry_field(
+            self.table,
+            entry,
+            field,
+            &mut val as *mut _,
+        )?;
 
         if rc != ss_plugin_rc_SS_PLUGIN_SUCCESS {
             anyhow::bail!("Failed to get field value for temporary table entry")

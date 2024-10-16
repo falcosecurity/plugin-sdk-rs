@@ -30,30 +30,26 @@ pub enum TableError {
 /// It's used as a token to prove you're allowed to read tables in a particular context
 #[derive(Debug)]
 pub struct TableReader {
-    pub(in crate::plugin::tables) get_table_name:
+    get_table_name:
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
-    pub(in crate::plugin::tables) get_table_size:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64,
-    pub(in crate::plugin::tables) get_table_entry:
-        unsafe extern "C-unwind" fn(
-            t: *mut ss_plugin_table_t,
-            key: *const ss_plugin_state_data,
-        ) -> *mut ss_plugin_table_entry_t,
-    pub(in crate::plugin::tables) read_entry_field: unsafe extern "C-unwind" fn(
+    get_table_size: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64,
+    get_table_entry: unsafe extern "C-unwind" fn(
+        t: *mut ss_plugin_table_t,
+        key: *const ss_plugin_state_data,
+    ) -> *mut ss_plugin_table_entry_t,
+    read_entry_field: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         e: *mut ss_plugin_table_entry_t,
         f: *const ss_plugin_table_field_t,
         out: *mut ss_plugin_state_data,
-    )
-        -> ss_plugin_rc,
-    pub(in crate::plugin::tables) release_table_entry:
+    ) -> ss_plugin_rc,
+    release_table_entry:
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    pub(in crate::plugin::tables) iterate_entries: unsafe extern "C-unwind" fn(
+    iterate_entries: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         it: ss_plugin_table_iterator_func_t,
         s: *mut ss_plugin_table_iterator_state_t,
-    )
-        -> ss_plugin_bool,
+    ) -> ss_plugin_bool,
 
     pub(in crate::plugin::tables) last_error: LastError,
 }
@@ -84,6 +80,59 @@ impl TableReader {
                 .ok_or(TableError::BadVtable("iterate_entries"))?,
             last_error,
         })
+    }
+
+    pub(in crate::plugin::tables) fn get_table_name(
+        &self,
+        t: *mut ss_plugin_table_t,
+    ) -> Result<*const ::std::os::raw::c_char, TableError> {
+        Ok(unsafe { (self.get_table_name)(t) })
+    }
+
+    pub(in crate::plugin::tables) fn get_table_size(
+        &self,
+        t: *mut ss_plugin_table_t,
+    ) -> Result<u64, TableError> {
+        Ok(unsafe { (self.get_table_size)(t) })
+    }
+
+    pub(in crate::plugin::tables) fn get_table_entry(
+        &self,
+        t: *mut ss_plugin_table_t,
+        key: *const ss_plugin_state_data,
+    ) -> Result<*mut ss_plugin_table_entry_t, TableError> {
+        Ok(unsafe { (self.get_table_entry)(t, key) })
+    }
+
+    pub(in crate::plugin::tables) fn read_entry_field(
+        &self,
+        t: *mut ss_plugin_table_t,
+        e: *mut ss_plugin_table_entry_t,
+        f: *const ss_plugin_table_field_t,
+        out: *mut ss_plugin_state_data,
+    ) -> Result<ss_plugin_rc, TableError> {
+        Ok(unsafe { (self.read_entry_field)(t, e, f, out) })
+    }
+
+    pub(in crate::plugin::tables) fn release_table_entry_fn(
+        &self,
+    ) -> Option<
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+    > {
+        Some(self.release_table_entry)
+    }
+
+    pub(in crate::plugin::tables) fn iterate_entries_fn(
+        &self,
+    ) -> Result<
+        unsafe extern "C-unwind" fn(
+            t: *mut ss_plugin_table_t,
+            it: ss_plugin_table_iterator_func_t,
+            s: *mut ss_plugin_table_iterator_state_t,
+        ) -> ss_plugin_bool,
+        TableError,
+    > {
+        Ok(self.iterate_entries)
     }
 }
 
