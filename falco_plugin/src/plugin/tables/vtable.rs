@@ -257,7 +257,7 @@ impl<'t> TableWriter<'t> {
 }
 
 #[derive(Debug)]
-pub struct TableFields {
+pub struct TableFields<'t> {
     list_table_fields: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         nfields: *mut u32,
@@ -272,10 +272,12 @@ pub struct TableFields {
         name: *const ::std::os::raw::c_char,
         data_type: ss_plugin_state_type,
     ) -> *mut ss_plugin_table_field_t,
+
+    lifetime: PhantomData<&'t ()>,
 }
 
-impl TableFields {
-    fn try_from(fields_ext: &ss_plugin_table_fields_vtable_ext) -> Result<Self, TableError> {
+impl<'t> TableFields<'t> {
+    fn try_from(fields_ext: &'t ss_plugin_table_fields_vtable_ext) -> Result<Self, TableError> {
         Ok(TableFields {
             list_table_fields: fields_ext
                 .list_table_fields
@@ -286,6 +288,8 @@ impl TableFields {
             add_table_field: fields_ext
                 .add_table_field
                 .ok_or(TableError::BadVtable("add_table_field"))?,
+
+            lifetime: PhantomData,
         })
     }
 
@@ -347,7 +351,7 @@ pub struct TablesInput<'t> {
     pub(in crate::plugin::tables) writer_ext: TableWriter<'t>,
 
     /// accessor object for manipulating fields
-    pub(in crate::plugin::tables) fields_ext: TableFields,
+    pub(in crate::plugin::tables) fields_ext: TableFields<'t>,
 }
 
 impl<'t> TablesInput<'t> {
