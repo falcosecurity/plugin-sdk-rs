@@ -18,7 +18,6 @@ use falco_plugin_api::{
     ss_plugin_table_writer_vtable_ext,
 };
 use std::ffi::CStr;
-use std::marker::PhantomData;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -234,39 +233,12 @@ impl<'t> TableWriter<'t> {
 
 #[derive(Debug)]
 pub struct TableFields<'t> {
-    list_table_fields: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        nfields: *mut u32,
-    ) -> *const ss_plugin_table_fieldinfo,
-    get_table_field: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        name: *const ::std::os::raw::c_char,
-        data_type: ss_plugin_state_type,
-    ) -> *mut ss_plugin_table_field_t,
-    add_table_field: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        name: *const ::std::os::raw::c_char,
-        data_type: ss_plugin_state_type,
-    ) -> *mut ss_plugin_table_field_t,
-
-    lifetime: PhantomData<&'t ()>,
+    fields_ext: &'t ss_plugin_table_fields_vtable_ext,
 }
 
 impl<'t> TableFields<'t> {
     fn try_from(fields_ext: &'t ss_plugin_table_fields_vtable_ext) -> Result<Self, TableError> {
-        Ok(TableFields {
-            list_table_fields: fields_ext
-                .list_table_fields
-                .ok_or(TableError::BadVtable("list_table_fields"))?,
-            get_table_field: fields_ext
-                .get_table_field
-                .ok_or(TableError::BadVtable("get_table_field"))?,
-            add_table_field: fields_ext
-                .add_table_field
-                .ok_or(TableError::BadVtable("add_table_field"))?,
-
-            lifetime: PhantomData,
-        })
+        Ok(TableFields { fields_ext })
     }
 
     pub(in crate::plugin::tables) fn list_table_fields(
@@ -274,7 +246,14 @@ impl<'t> TableFields<'t> {
         t: *mut ss_plugin_table_t,
         nfields: *mut u32,
     ) -> Result<*const ss_plugin_table_fieldinfo, TableError> {
-        unsafe { Ok((self.list_table_fields)(t, nfields)) }
+        unsafe {
+            Ok(self
+                .fields_ext
+                .list_table_fields
+                .ok_or(BadVtable("list_table_fields"))?(
+                t, nfields
+            ))
+        }
     }
 
     pub(in crate::plugin::tables) fn get_table_field(
@@ -283,7 +262,14 @@ impl<'t> TableFields<'t> {
         name: *const ::std::os::raw::c_char,
         data_type: ss_plugin_state_type,
     ) -> Result<*mut ss_plugin_table_field_t, TableError> {
-        unsafe { Ok((self.get_table_field)(t, name, data_type)) }
+        unsafe {
+            Ok(self
+                .fields_ext
+                .get_table_field
+                .ok_or(BadVtable("get_table_field"))?(
+                t, name, data_type
+            ))
+        }
     }
 
     pub(in crate::plugin::tables) fn add_table_field(
@@ -292,7 +278,14 @@ impl<'t> TableFields<'t> {
         name: *const ::std::os::raw::c_char,
         data_type: ss_plugin_state_type,
     ) -> Result<*mut ss_plugin_table_field_t, TableError> {
-        unsafe { Ok((self.add_table_field)(t, name, data_type)) }
+        unsafe {
+            Ok(self
+                .fields_ext
+                .add_table_field
+                .ok_or(BadVtable("add_table_field"))?(
+                t, name, data_type
+            ))
+        }
     }
 }
 
