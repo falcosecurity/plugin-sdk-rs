@@ -124,29 +124,8 @@ impl<'t> TableReader<'t> {
 /// It's used as a token to prove you're allowed to write tables in a particular context
 #[derive(Debug)]
 pub struct TableWriter<'t> {
-    clear_table: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
-    erase_table_entry: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        key: *const ss_plugin_state_data,
-    ) -> ss_plugin_rc,
-    create_table_entry:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
-    destroy_table_entry:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    add_table_entry: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        key: *const ss_plugin_state_data,
-        entry: *mut ss_plugin_table_entry_t,
-    ) -> *mut ss_plugin_table_entry_t,
-    write_entry_field: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        e: *mut ss_plugin_table_entry_t,
-        f: *const ss_plugin_table_field_t,
-        in_: *const ss_plugin_state_data,
-    ) -> ss_plugin_rc,
-
+    writer_ext: &'t ss_plugin_table_writer_vtable_ext,
     pub(in crate::plugin::tables) last_error: LastError,
-    lifetime: PhantomData<&'t ()>,
 }
 
 impl<'t> TableWriter<'t> {
@@ -155,26 +134,8 @@ impl<'t> TableWriter<'t> {
         last_error: LastError,
     ) -> Result<Self, TableError> {
         Ok(TableWriter {
-            clear_table: writer_ext
-                .clear_table
-                .ok_or(TableError::BadVtable("clear_table"))?,
-            erase_table_entry: writer_ext
-                .erase_table_entry
-                .ok_or(TableError::BadVtable("erase_table_entry"))?,
-            create_table_entry: writer_ext
-                .create_table_entry
-                .ok_or(TableError::BadVtable("create_table_entry"))?,
-            destroy_table_entry: writer_ext
-                .destroy_table_entry
-                .ok_or(TableError::BadVtable("destroy_table_entry"))?,
-            add_table_entry: writer_ext
-                .add_table_entry
-                .ok_or(TableError::BadVtable("add_table_entry"))?,
-            write_entry_field: writer_ext
-                .write_entry_field
-                .ok_or(TableError::BadVtable("write_entry_field"))?,
+            writer_ext,
             last_error,
-            lifetime: PhantomData,
         })
     }
 
@@ -182,7 +143,12 @@ impl<'t> TableWriter<'t> {
         &self,
         t: *mut ss_plugin_table_t,
     ) -> Result<ss_plugin_rc, TableError> {
-        unsafe { Ok((self.clear_table)(t)) }
+        unsafe {
+            Ok(self
+                .writer_ext
+                .clear_table
+                .ok_or(BadVtable("clear_table"))?(t))
+        }
     }
 
     pub(in crate::plugin::tables) fn erase_table_entry(
@@ -190,14 +156,26 @@ impl<'t> TableWriter<'t> {
         t: *mut ss_plugin_table_t,
         key: *const ss_plugin_state_data,
     ) -> Result<ss_plugin_rc, TableError> {
-        unsafe { Ok((self.erase_table_entry)(t, key)) }
+        unsafe {
+            Ok(self
+                .writer_ext
+                .erase_table_entry
+                .ok_or(BadVtable("erase_table_entry"))?(
+                t, key
+            ))
+        }
     }
 
     pub(in crate::plugin::tables) fn create_table_entry(
         &self,
         t: *mut ss_plugin_table_t,
     ) -> Result<*mut ss_plugin_table_entry_t, TableError> {
-        unsafe { Ok((self.create_table_entry)(t)) }
+        unsafe {
+            Ok(self
+                .writer_ext
+                .create_table_entry
+                .ok_or(BadVtable("create_table_entry"))?(t))
+        }
     }
 
     pub(in crate::plugin::tables) fn destroy_table_entry(
@@ -205,7 +183,11 @@ impl<'t> TableWriter<'t> {
         t: *mut ss_plugin_table_t,
         e: *mut ss_plugin_table_entry_t,
     ) {
-        unsafe { (self.destroy_table_entry)(t, e) }
+        let Some(destroy_table_entry) = self.writer_ext.destroy_table_entry else {
+            return;
+        };
+
+        unsafe { destroy_table_entry(t, e) }
     }
 
     pub(in crate::plugin::tables) fn destroy_table_entry_fn(
@@ -213,7 +195,7 @@ impl<'t> TableWriter<'t> {
     ) -> Option<
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
     > {
-        Some(self.destroy_table_entry)
+        self.writer_ext.destroy_table_entry
     }
 
     pub(in crate::plugin::tables) fn add_table_entry(
@@ -222,7 +204,14 @@ impl<'t> TableWriter<'t> {
         key: *const ss_plugin_state_data,
         entry: *mut ss_plugin_table_entry_t,
     ) -> Result<*mut ss_plugin_table_entry_t, TableError> {
-        unsafe { Ok((self.add_table_entry)(t, key, entry)) }
+        unsafe {
+            Ok(self
+                .writer_ext
+                .add_table_entry
+                .ok_or(BadVtable("add_table_entry"))?(
+                t, key, entry
+            ))
+        }
     }
 
     pub(in crate::plugin::tables) fn write_entry_field(
@@ -232,7 +221,14 @@ impl<'t> TableWriter<'t> {
         f: *const ss_plugin_table_field_t,
         in_: *const ss_plugin_state_data,
     ) -> Result<ss_plugin_rc, TableError> {
-        unsafe { Ok((self.write_entry_field)(t, e, f, in_)) }
+        unsafe {
+            Ok(self
+                .writer_ext
+                .write_entry_field
+                .ok_or(BadVtable("write_entry_field"))?(
+                t, e, f, in_
+            ))
+        }
     }
 }
 
