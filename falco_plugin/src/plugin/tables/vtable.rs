@@ -17,6 +17,7 @@ use falco_plugin_api::{
     ss_plugin_table_writer_vtable_ext,
 };
 use std::ffi::CStr;
+use std::marker::PhantomData;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -29,7 +30,7 @@ pub enum TableError {
 ///
 /// It's used as a token to prove you're allowed to read tables in a particular context
 #[derive(Debug)]
-pub struct TableReader {
+pub struct TableReader<'t> {
     get_table_name:
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
     get_table_size: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64,
@@ -52,11 +53,12 @@ pub struct TableReader {
     ) -> ss_plugin_bool,
 
     pub(in crate::plugin::tables) last_error: LastError,
+    lifetime: PhantomData<&'t ()>,
 }
 
-impl TableReader {
+impl<'t> TableReader<'t> {
     pub(crate) fn try_from(
-        reader_ext: &ss_plugin_table_reader_vtable_ext,
+        reader_ext: &'t ss_plugin_table_reader_vtable_ext,
         last_error: LastError,
     ) -> Result<Self, TableError> {
         Ok(TableReader {
@@ -79,6 +81,7 @@ impl TableReader {
                 .iterate_entries
                 .ok_or(TableError::BadVtable("iterate_entries"))?,
             last_error,
+            lifetime: PhantomData,
         })
     }
 
@@ -316,7 +319,7 @@ impl TableFields {
 ///
 /// It's used as a token to prove you're allowed to read/write tables
 /// or manage their fields
-pub struct TablesInput {
+pub struct TablesInput<'t> {
     owner: *mut ss_plugin_owner_t,
     pub(in crate::plugin::tables) last_error: LastError,
     pub(in crate::plugin::tables) list_tables:
@@ -336,7 +339,7 @@ pub struct TablesInput {
     ) -> ss_plugin_rc,
 
     /// accessor object for reading tables
-    pub(in crate::plugin::tables) reader_ext: TableReader,
+    pub(in crate::plugin::tables) reader_ext: TableReader<'t>,
 
     /// accessor object for writing tables
     pub(in crate::plugin::tables) writer_ext: TableWriter,
@@ -345,7 +348,7 @@ pub struct TablesInput {
     pub(in crate::plugin::tables) fields_ext: TableFields,
 }
 
-impl TablesInput {
+impl<'t> TablesInput<'t> {
     pub(crate) fn try_from(value: &ss_plugin_init_input) -> Result<Option<Self>, TableError> {
         if let Some(table_init_input) = unsafe { value.tables.as_ref() } {
             let reader_ext = unsafe {
@@ -394,7 +397,7 @@ impl TablesInput {
     }
 }
 
-impl TablesInput {
+impl<'t> TablesInput<'t> {
     /// # List the available tables
     ///
     /// **Note**: this method is of limited utility in actual plugin code (you know the tables you

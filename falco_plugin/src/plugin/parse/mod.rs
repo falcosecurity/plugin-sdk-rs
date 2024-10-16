@@ -63,14 +63,14 @@ pub trait ParsePlugin: Plugin {
 /// but you won't interact with them otherwise. They're effectively tokens proving
 /// you're in the right context to read/write tables.
 #[derive(Debug)]
-pub struct ParseInput {
+pub struct ParseInput<'t> {
     /// Accessors to read table entries
-    pub reader: TableReader,
+    pub reader: TableReader<'t>,
     /// Accessors to modify table entries
     pub writer: TableWriter,
 }
 
-impl ParseInput {
+impl<'t> ParseInput<'t> {
     pub(in crate::plugin::parse) unsafe fn try_from(
         value: *const ss_plugin_event_parse_input,
         last_error: LastError,

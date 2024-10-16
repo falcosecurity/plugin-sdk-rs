@@ -27,16 +27,16 @@ pub trait CaptureListenPlugin: Plugin {
 /// the [tables API](`crate::tables`), as well as a [`ThreadPool`] to run tasks
 /// in the background.
 #[derive(Debug)]
-pub struct CaptureListenInput {
+pub struct CaptureListenInput<'t> {
     /// Accessors to the thread pool for submitting routines to
     pub thread_pool: ThreadPool,
     /// Accessors to read table entries
-    pub reader: TableReader,
+    pub reader: TableReader<'t>,
     /// Accessors to modify table entries
     pub writer: TableWriter,
 }
 
-impl CaptureListenInput {
+impl<'t> CaptureListenInput<'t> {
     pub(in crate::plugin::listen) unsafe fn try_from(
         value: *const ss_plugin_capture_listen_input,
         last_error: LastError,

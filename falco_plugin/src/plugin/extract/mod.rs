@@ -104,7 +104,7 @@ pub struct ExtractRequest<'c, 'e, 't, P: ExtractPlugin> {
     /// an interface to access tables exposed from Falco core and other plugins
     ///
     /// See [`crate::tables`] for details
-    pub table_reader: &'t TableReader,
+    pub table_reader: &'t TableReader<'t>,
 }
 
 /// # Support for field extraction plugins
