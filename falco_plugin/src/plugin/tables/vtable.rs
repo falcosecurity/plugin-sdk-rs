@@ -143,7 +143,7 @@ impl<'t> TableReader<'t> {
 ///
 /// It's used as a token to prove you're allowed to write tables in a particular context
 #[derive(Debug)]
-pub struct TableWriter {
+pub struct TableWriter<'t> {
     clear_table: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
     erase_table_entry: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
@@ -166,11 +166,12 @@ pub struct TableWriter {
     ) -> ss_plugin_rc,
 
     pub(in crate::plugin::tables) last_error: LastError,
+    lifetime: PhantomData<&'t ()>,
 }
 
-impl TableWriter {
+impl<'t> TableWriter<'t> {
     pub(crate) fn try_from(
-        writer_ext: &ss_plugin_table_writer_vtable_ext,
+        writer_ext: &'t ss_plugin_table_writer_vtable_ext,
         last_error: LastError,
     ) -> Result<Self, TableError> {
         Ok(TableWriter {
@@ -193,6 +194,7 @@ impl TableWriter {
                 .write_entry_field
                 .ok_or(TableError::BadVtable("write_entry_field"))?,
             last_error,
+            lifetime: PhantomData,
         })
     }
 
@@ -342,7 +344,7 @@ pub struct TablesInput<'t> {
     pub(in crate::plugin::tables) reader_ext: TableReader<'t>,
 
     /// accessor object for writing tables
-    pub(in crate::plugin::tables) writer_ext: TableWriter,
+    pub(in crate::plugin::tables) writer_ext: TableWriter<'t>,
 
     /// accessor object for manipulating fields
     pub(in crate::plugin::tables) fields_ext: TableFields,

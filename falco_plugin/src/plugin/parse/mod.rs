@@ -67,7 +67,7 @@ pub struct ParseInput<'t> {
     /// Accessors to read table entries
     pub reader: TableReader<'t>,
     /// Accessors to modify table entries
-    pub writer: TableWriter,
+    pub writer: TableWriter<'t>,
 }
 
 impl<'t> ParseInput<'t> {
