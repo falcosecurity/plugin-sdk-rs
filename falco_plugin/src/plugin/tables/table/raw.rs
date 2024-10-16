@@ -152,10 +152,9 @@ impl RawTable {
         writer_vtable: &TableWriter,
         key: &K,
     ) -> Result<(), anyhow::Error> {
-        Ok(
-            (writer_vtable.erase_table_entry)(self.table, &key.to_data() as *const _)
-                .as_result()?,
-        )
+        Ok(writer_vtable
+            .erase_table_entry(self.table, &key.to_data() as *const _)?
+            .as_result()?)
     }
 
     /// # Create a table entry
@@ -163,7 +162,7 @@ impl RawTable {
     /// This creates an entry that's not attached to any particular key. To insert it into
     /// the table, pass it to [`RawTable::insert`]
     pub fn create_entry(&self, writer_vtable: &TableWriter) -> Result<RawEntry, anyhow::Error> {
-        let entry = unsafe { (writer_vtable.create_table_entry)(self.table) };
+        let entry = writer_vtable.create_table_entry(self.table)?;
 
         if entry.is_null() {
             Err(anyhow::anyhow!("Failed to create table entry"))
@@ -171,7 +170,7 @@ impl RawTable {
             Ok(RawEntry {
                 table: self.table,
                 entry,
-                destructor: Some(writer_vtable.destroy_table_entry),
+                destructor: writer_vtable.destroy_table_entry_fn(),
             })
         }
     }
@@ -191,7 +190,7 @@ impl RawTable {
         mut entry: RawEntry,
     ) -> Result<RawEntry, anyhow::Error> {
         let ret =
-            (writer_vtable.add_table_entry)(self.table, &key.to_data() as *const _, entry.entry);
+            writer_vtable.add_table_entry(self.table, &key.to_data() as *const _, entry.entry)?;
 
         if ret.is_null() {
             Err(anyhow::anyhow!("Failed to attach entry"))
@@ -259,7 +258,7 @@ impl RawTable {
     ///
     /// Removes all entries from the table
     pub fn clear(&self, writer_vtable: &TableWriter) -> Result<(), anyhow::Error> {
-        unsafe { Ok((writer_vtable.clear_table)(self.table).as_result()?) }
+        Ok(writer_vtable.clear_table(self.table)?.as_result()?)
     }
 
     pub(in crate::plugin::tables) unsafe fn with_subtable<K, F, R>(
@@ -272,7 +271,7 @@ impl RawTable {
         K: Key,
         F: FnOnce(&RawTable) -> R,
     {
-        let entry = unsafe { (tables_input.writer_ext.create_table_entry)(self.table) };
+        let entry = tables_input.writer_ext.create_table_entry(self.table)?;
         if entry.is_null() {
             anyhow::bail!("Failed to create temporary table entry");
         }
@@ -291,7 +290,9 @@ impl RawTable {
 
         let input = unsafe { &*(val.table as *mut falco_plugin_api::ss_plugin_table_input) };
         if input.key_type != K::TYPE_ID as ss_plugin_state_type {
-            unsafe { (tables_input.writer_ext.destroy_table_entry)(self.table, entry) };
+            tables_input
+                .writer_ext
+                .destroy_table_entry(self.table, entry);
             anyhow::bail!(
                 "Bad key type, requested {:?}, table has {:?}",
                 K::TYPE_ID,
@@ -301,7 +302,9 @@ impl RawTable {
 
         let raw_table = unsafe { RawTable { table: val.table } };
         let ret = func(&raw_table);
-        unsafe { (tables_input.writer_ext.destroy_table_entry)(self.table, entry) };
+        tables_input
+            .writer_ext
+            .destroy_table_entry(self.table, entry);
         Ok(ret)
     }
 

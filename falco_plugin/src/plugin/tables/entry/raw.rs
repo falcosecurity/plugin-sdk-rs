@@ -39,7 +39,9 @@ impl RawEntry {
         field: *const ss_plugin_table_field_t,
         val: &ss_plugin_state_data,
     ) -> ss_plugin_rc {
-        (writer.write_entry_field)(self.table, self.entry, field, val as *const _)
+        writer
+            .write_entry_field(self.table, self.entry, field, val as *const _)
+            .unwrap_or(ss_plugin_rc_SS_PLUGIN_NOT_SUPPORTED)
     }
 }
 

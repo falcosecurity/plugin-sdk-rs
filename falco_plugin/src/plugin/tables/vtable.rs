@@ -141,30 +141,26 @@ impl TableReader {
 /// It's used as a token to prove you're allowed to write tables in a particular context
 #[derive(Debug)]
 pub struct TableWriter {
-    pub(in crate::plugin::tables) clear_table:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
-    pub(in crate::plugin::tables) erase_table_entry: unsafe extern "C-unwind" fn(
+    clear_table: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
+    erase_table_entry: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         key: *const ss_plugin_state_data,
-    )
-        -> ss_plugin_rc,
-    pub(in crate::plugin::tables) create_table_entry:
+    ) -> ss_plugin_rc,
+    create_table_entry:
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
-    pub(in crate::plugin::tables) destroy_table_entry:
+    destroy_table_entry:
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    pub(in crate::plugin::tables) add_table_entry:
-        unsafe extern "C-unwind" fn(
-            t: *mut ss_plugin_table_t,
-            key: *const ss_plugin_state_data,
-            entry: *mut ss_plugin_table_entry_t,
-        ) -> *mut ss_plugin_table_entry_t,
-    pub(in crate::plugin::tables) write_entry_field: unsafe extern "C-unwind" fn(
+    add_table_entry: unsafe extern "C-unwind" fn(
+        t: *mut ss_plugin_table_t,
+        key: *const ss_plugin_state_data,
+        entry: *mut ss_plugin_table_entry_t,
+    ) -> *mut ss_plugin_table_entry_t,
+    write_entry_field: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         e: *mut ss_plugin_table_entry_t,
         f: *const ss_plugin_table_field_t,
         in_: *const ss_plugin_state_data,
-    )
-        -> ss_plugin_rc,
+    ) -> ss_plugin_rc,
 
     pub(in crate::plugin::tables) last_error: LastError,
 }
@@ -195,6 +191,63 @@ impl TableWriter {
                 .ok_or(TableError::BadVtable("write_entry_field"))?,
             last_error,
         })
+    }
+
+    pub(in crate::plugin::tables) fn clear_table(
+        &self,
+        t: *mut ss_plugin_table_t,
+    ) -> Result<ss_plugin_rc, TableError> {
+        unsafe { Ok((self.clear_table)(t)) }
+    }
+
+    pub(in crate::plugin::tables) fn erase_table_entry(
+        &self,
+        t: *mut ss_plugin_table_t,
+        key: *const ss_plugin_state_data,
+    ) -> Result<ss_plugin_rc, TableError> {
+        unsafe { Ok((self.erase_table_entry)(t, key)) }
+    }
+
+    pub(in crate::plugin::tables) fn create_table_entry(
+        &self,
+        t: *mut ss_plugin_table_t,
+    ) -> Result<*mut ss_plugin_table_entry_t, TableError> {
+        unsafe { Ok((self.create_table_entry)(t)) }
+    }
+
+    pub(in crate::plugin::tables) fn destroy_table_entry(
+        &self,
+        t: *mut ss_plugin_table_t,
+        e: *mut ss_plugin_table_entry_t,
+    ) {
+        unsafe { (self.destroy_table_entry)(t, e) }
+    }
+
+    pub(in crate::plugin::tables) fn destroy_table_entry_fn(
+        &self,
+    ) -> Option<
+        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+    > {
+        Some(self.destroy_table_entry)
+    }
+
+    pub(in crate::plugin::tables) fn add_table_entry(
+        &self,
+        t: *mut ss_plugin_table_t,
+        key: *const ss_plugin_state_data,
+        entry: *mut ss_plugin_table_entry_t,
+    ) -> Result<*mut ss_plugin_table_entry_t, TableError> {
+        unsafe { Ok((self.add_table_entry)(t, key, entry)) }
+    }
+
+    pub(in crate::plugin::tables) fn write_entry_field(
+        &self,
+        t: *mut ss_plugin_table_t,
+        e: *mut ss_plugin_table_entry_t,
+        f: *const ss_plugin_table_field_t,
+        in_: *const ss_plugin_state_data,
+    ) -> Result<ss_plugin_rc, TableError> {
+        unsafe { Ok((self.write_entry_field)(t, e, f, in_)) }
     }
 }
 
