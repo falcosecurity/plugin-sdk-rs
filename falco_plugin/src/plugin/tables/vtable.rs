@@ -7,6 +7,7 @@ use crate::plugin::exported_tables::wrappers::{fields_vtable, reader_vtable, wri
 use crate::plugin::tables::data::Key;
 use crate::plugin::tables::table::raw::RawTable;
 use crate::plugin::tables::traits::{TableAccess, TableMetadata as ImportedTableMetadata};
+use crate::plugin::tables::vtable::TableError::BadVtable;
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_init_input, ss_plugin_owner_t, ss_plugin_rc, ss_plugin_state_data,
     ss_plugin_state_type, ss_plugin_table_entry_t, ss_plugin_table_field_t,
@@ -31,29 +32,8 @@ pub enum TableError {
 /// It's used as a token to prove you're allowed to read tables in a particular context
 #[derive(Debug)]
 pub struct TableReader<'t> {
-    get_table_name:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
-    get_table_size: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64,
-    get_table_entry: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        key: *const ss_plugin_state_data,
-    ) -> *mut ss_plugin_table_entry_t,
-    read_entry_field: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        e: *mut ss_plugin_table_entry_t,
-        f: *const ss_plugin_table_field_t,
-        out: *mut ss_plugin_state_data,
-    ) -> ss_plugin_rc,
-    release_table_entry:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    iterate_entries: unsafe extern "C-unwind" fn(
-        t: *mut ss_plugin_table_t,
-        it: ss_plugin_table_iterator_func_t,
-        s: *mut ss_plugin_table_iterator_state_t,
-    ) -> ss_plugin_bool,
-
+    reader_ext: &'t ss_plugin_table_reader_vtable_ext,
     pub(in crate::plugin::tables) last_error: LastError,
-    lifetime: PhantomData<&'t ()>,
 }
 
 impl<'t> TableReader<'t> {
@@ -62,26 +42,8 @@ impl<'t> TableReader<'t> {
         last_error: LastError,
     ) -> Result<Self, TableError> {
         Ok(TableReader {
-            get_table_name: reader_ext
-                .get_table_name
-                .ok_or(TableError::BadVtable("get_table_name"))?,
-            get_table_size: reader_ext
-                .get_table_size
-                .ok_or(TableError::BadVtable("get_table_size"))?,
-            get_table_entry: reader_ext
-                .get_table_entry
-                .ok_or(TableError::BadVtable("get_table_entry"))?,
-            read_entry_field: reader_ext
-                .read_entry_field
-                .ok_or(TableError::BadVtable("read_entry_field"))?,
-            release_table_entry: reader_ext
-                .release_table_entry
-                .ok_or(TableError::BadVtable("release_table_entry"))?,
-            iterate_entries: reader_ext
-                .iterate_entries
-                .ok_or(TableError::BadVtable("iterate_entries"))?,
+            reader_ext,
             last_error,
-            lifetime: PhantomData,
         })
     }
 
@@ -89,14 +51,22 @@ impl<'t> TableReader<'t> {
         &self,
         t: *mut ss_plugin_table_t,
     ) -> Result<*const ::std::os::raw::c_char, TableError> {
-        Ok(unsafe { (self.get_table_name)(t) })
+        Ok(unsafe {
+            self.reader_ext
+                .get_table_name
+                .ok_or(BadVtable("get_table_name"))?(t)
+        })
     }
 
     pub(in crate::plugin::tables) fn get_table_size(
         &self,
         t: *mut ss_plugin_table_t,
     ) -> Result<u64, TableError> {
-        Ok(unsafe { (self.get_table_size)(t) })
+        Ok(unsafe {
+            self.reader_ext
+                .get_table_size
+                .ok_or(BadVtable("get_table_size"))?(t)
+        })
     }
 
     pub(in crate::plugin::tables) fn get_table_entry(
@@ -104,7 +74,11 @@ impl<'t> TableReader<'t> {
         t: *mut ss_plugin_table_t,
         key: *const ss_plugin_state_data,
     ) -> Result<*mut ss_plugin_table_entry_t, TableError> {
-        Ok(unsafe { (self.get_table_entry)(t, key) })
+        Ok(unsafe {
+            self.reader_ext
+                .get_table_entry
+                .ok_or(BadVtable("get_table_entry"))?(t, key)
+        })
     }
 
     pub(in crate::plugin::tables) fn read_entry_field(
@@ -114,7 +88,11 @@ impl<'t> TableReader<'t> {
         f: *const ss_plugin_table_field_t,
         out: *mut ss_plugin_state_data,
     ) -> Result<ss_plugin_rc, TableError> {
-        Ok(unsafe { (self.read_entry_field)(t, e, f, out) })
+        Ok(unsafe {
+            self.reader_ext
+                .read_entry_field
+                .ok_or(BadVtable("read_entry_field"))?(t, e, f, out)
+        })
     }
 
     pub(in crate::plugin::tables) fn release_table_entry_fn(
@@ -122,7 +100,7 @@ impl<'t> TableReader<'t> {
     ) -> Option<
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
     > {
-        Some(self.release_table_entry)
+        self.reader_ext.release_table_entry
     }
 
     pub(in crate::plugin::tables) fn iterate_entries_fn(
@@ -135,7 +113,9 @@ impl<'t> TableReader<'t> {
         ) -> ss_plugin_bool,
         TableError,
     > {
-        Ok(self.iterate_entries)
+        self.reader_ext
+            .iterate_entries
+            .ok_or(BadVtable("iterate_entries"))
     }
 }
 
