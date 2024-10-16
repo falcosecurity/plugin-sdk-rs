@@ -2,7 +2,7 @@ use crate::plugin::base::PluginWrapper;
 use crate::plugin::error::ffi_result::FfiResult;
 use crate::plugin::event::EventInput;
 use crate::plugin::extract::ExtractPlugin;
-use crate::tables::TableReader;
+use crate::tables::LazyTableReader;
 use falco_plugin_api::plugin_api__bindgen_ty_2 as extract_plugin_api;
 use falco_plugin_api::ss_plugin_rc;
 use falco_plugin_api::{ss_plugin_event_input, ss_plugin_rc_SS_PLUGIN_FAILURE};
@@ -100,10 +100,7 @@ pub unsafe extern "C-unwind" fn plugin_extract_fields<T: ExtractPlugin>(
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
 
-        let Ok(table_reader) = TableReader::try_from(reader_ext, actual_plugin.last_error.clone())
-        else {
-            return ss_plugin_rc_SS_PLUGIN_FAILURE;
-        };
+        let table_reader = LazyTableReader::new(reader_ext, actual_plugin.last_error.clone());
 
         plugin.field_storage.reset();
         actual_plugin

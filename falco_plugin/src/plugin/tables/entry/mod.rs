@@ -47,7 +47,7 @@ impl<M> Entry<M> {
     /// Get a field value for this entry
     pub fn read_field<V: Value + ?Sized>(
         &self,
-        reader: &TableReader,
+        reader: &impl TableReader,
         field: &Field<V, Entry<M>>,
     ) -> Result<V::Value<'_>, anyhow::Error> {
         field.validator.check(self.table)?;
@@ -55,7 +55,7 @@ impl<M> Entry<M> {
             self.raw_entry
                 .read_field_with_assoc::<V>(reader, field.field.field, &field.field.assoc_data)
                 .ok_or_else(|| anyhow::anyhow!("Could not read field value"))
-                .with_last_error(&reader.last_error)
+                .with_last_error(reader.last_error())
         }
     }
 

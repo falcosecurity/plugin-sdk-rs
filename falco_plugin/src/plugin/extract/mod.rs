@@ -1,7 +1,7 @@
 use crate::extract::{EventInput, ExtractArgType};
 use crate::plugin::base::Plugin;
 use crate::plugin::extract::schema::ExtractFieldInfo;
-use crate::tables::TableReader;
+use crate::tables::LazyTableReader;
 use falco_event::events::types::EventType;
 use falco_plugin_api::ss_plugin_extract_field;
 use std::any::TypeId;
@@ -104,7 +104,7 @@ pub struct ExtractRequest<'c, 'e, 't, P: ExtractPlugin> {
     /// an interface to access tables exposed from Falco core and other plugins
     ///
     /// See [`crate::tables`] for details
-    pub table_reader: &'t TableReader<'t>,
+    pub table_reader: &'t LazyTableReader<'t>,
 }
 
 /// # Support for field extraction plugins
@@ -300,7 +300,7 @@ where
     fn extract_fields<'a>(
         &'a mut self,
         event_input: &EventInput,
-        table_reader: &TableReader,
+        table_reader: &LazyTableReader,
         fields: &mut [ss_plugin_extract_field],
         storage: &'a mut bumpalo::Bump,
     ) -> Result<(), anyhow::Error> {

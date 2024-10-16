@@ -6,7 +6,7 @@ use crate::base::Plugin;
 use crate::listen::ThreadPool;
 use crate::plugin::error::last_error::LastError;
 use crate::plugin::tables::vtable::writer::TableWriter;
-use crate::tables::TableReader;
+use crate::tables::LazyTableReader;
 use falco_plugin_api::ss_plugin_capture_listen_input;
 
 /// Support for capture listening plugins
@@ -32,7 +32,7 @@ pub struct CaptureListenInput<'t> {
     /// Accessors to the thread pool for submitting routines to
     pub thread_pool: ThreadPool,
     /// Accessors to read table entries
-    pub reader: TableReader<'t>,
+    pub reader: LazyTableReader<'t>,
     /// Accessors to modify table entries
     pub writer: TableWriter<'t>,
 }
@@ -63,7 +63,7 @@ impl<'t> CaptureListenInput<'t> {
                 .ok_or_else(|| anyhow::anyhow!("Got null writer vtable"))?
         };
 
-        let reader = TableReader::try_from(reader, last_error.clone())?;
+        let reader = LazyTableReader::new(reader, last_error.clone());
         let writer = TableWriter::try_from(writer, last_error)?;
 
         Ok(Self {

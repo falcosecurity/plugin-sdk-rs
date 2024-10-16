@@ -18,7 +18,7 @@ pub struct RawEntry {
 impl RawEntry {
     pub unsafe fn read_field_with_assoc<'a, T: Value + ?Sized>(
         &self,
-        reader: &TableReader,
+        reader: &impl TableReader,
         field: *const ss_plugin_table_field_t,
         assoc: &T::AssocData,
     ) -> Option<T::Value<'a>> {

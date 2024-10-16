@@ -639,6 +639,7 @@ pub mod listen {
 /// can use them from your plugin (e.g. in a separate thread) concurrently to other plugins
 /// (in the main thread).
 pub mod tables {
+    pub use crate::plugin::tables::vtable::reader::LazyTableReader;
     pub use crate::plugin::tables::vtable::reader::TableReader;
     pub use crate::plugin::tables::vtable::writer::TableWriter;
     pub use crate::plugin::tables::vtable::TablesInput;

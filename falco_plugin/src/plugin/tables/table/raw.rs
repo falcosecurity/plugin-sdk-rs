@@ -4,6 +4,7 @@ use crate::plugin::tables::entry::raw::RawEntry;
 use crate::plugin::tables::field::raw::RawField;
 use crate::plugin::tables::traits::TableMetadata;
 use crate::plugin::tables::vtable::fields::TableFields;
+use crate::plugin::tables::vtable::reader::private::TableReaderImpl;
 use crate::plugin::tables::vtable::reader::TableReader;
 use crate::plugin::tables::vtable::writer::TableWriter;
 use crate::plugin::tables::vtable::TableError;
@@ -121,7 +122,7 @@ impl RawTable {
     /// # Look up an entry in `table` corresponding to `key`
     pub fn get_entry<K: Key>(
         &self,
-        reader_vtable: &TableReader,
+        reader_vtable: &impl TableReader,
         key: &K,
     ) -> Result<RawEntry, anyhow::Error> {
         let input = unsafe { &*(self.table as *mut falco_plugin_api::ss_plugin_table_input) };
@@ -133,7 +134,8 @@ impl RawTable {
             );
         }
 
-        let entry = reader_vtable.get_table_entry(self.table, &key.to_data() as *const _)?;
+        let entry =
+            unsafe { reader_vtable.get_table_entry(self.table, &key.to_data() as *const _) }?;
 
         if entry.is_null() {
             Err(anyhow::anyhow!("table entry not found"))
@@ -188,7 +190,7 @@ impl RawTable {
     /// (especially using a number if the real key type is a string) will lead to UB.
     pub unsafe fn insert<K: Key>(
         &self,
-        reader_vtable: &TableReader,
+        reader_vtable: &impl TableReader,
         writer_vtable: &TableWriter,
         key: &K,
         mut entry: RawEntry,
@@ -211,7 +213,7 @@ impl RawTable {
     /// # Get the table name
     ///
     /// This method returns an error if the name cannot be represented as UTF-8
-    pub fn get_name(&self, reader_vtable: &TableReader) -> Result<&str, TableNameError> {
+    pub fn get_name(&self, reader_vtable: &impl TableReader) -> anyhow::Result<&str> {
         unsafe {
             Ok(try_str_from_ptr_with_lifetime(
                 reader_vtable.get_table_name(self.table)?,
@@ -223,8 +225,8 @@ impl RawTable {
     /// # Get the table size
     ///
     /// Return the number of entries in the table
-    pub fn get_size(&self, reader_vtable: &TableReader) -> Result<usize, TableError> {
-        Ok(reader_vtable.get_table_size(self.table)? as usize)
+    pub fn get_size(&self, reader_vtable: &impl TableReader) -> anyhow::Result<usize> {
+        Ok(unsafe { reader_vtable.get_table_size(self.table) }? as usize)
     }
 
     /// # Iterate over all entries in a table with mutable access
@@ -236,9 +238,9 @@ impl RawTable {
     /// [`ControlFlow::Break`].
     pub fn iter_entries_mut<F>(
         &self,
-        reader_vtable: &TableReader,
+        reader_vtable: &impl TableReader,
         mut func: F,
-    ) -> Result<ControlFlow<()>, TableError>
+    ) -> anyhow::Result<ControlFlow<()>>
     where
         F: FnMut(RawEntry) -> ControlFlow<()>,
     {

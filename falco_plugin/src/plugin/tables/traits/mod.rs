@@ -72,7 +72,7 @@ pub trait TableAccess: Sized {
     /// get a table entry
     fn get_entry(
         &self,
-        reader_vtable: &TableReader,
+        reader_vtable: &impl TableReader,
         key: &Self::Key,
     ) -> Result<Self::Entry, anyhow::Error>
     where

@@ -57,7 +57,7 @@ macro_rules! impl_import_table_accessor_traits {
 
                 fn $getter(
                     &'a self,
-                    reader: &$crate::tables::TableReader,
+                    reader: &impl $crate::tables::TableReader,
                 ) -> $crate::anyhow::Result<Self::EntryValue>;
             }
 
@@ -68,7 +68,7 @@ macro_rules! impl_import_table_accessor_traits {
 
                 fn $table_getter(
                     &'a self,
-                    reader: &$crate::tables::TableReader,
+                    reader: &impl $crate::tables::TableReader,
                     key: &Self::Key,
                 ) -> $crate::anyhow::Result<Self::Entry>;
             }
@@ -110,7 +110,7 @@ macro_rules! impl_import_table_accessor_impls {
 
                 fn $getter(
                     &'a self,
-                    reader: &$crate::tables::TableReader,
+                    reader: &impl $crate::tables::TableReader,
                 ) -> $crate::anyhow::Result<Self::EntryValue> {
                     let metadata = self.get_metadata();
                     self.read_field(reader, &metadata.$field)
@@ -129,7 +129,7 @@ macro_rules! impl_import_table_accessor_impls {
 
                 fn $table_getter(
                     &'a self,
-                    reader: &$crate::tables::TableReader,
+                    reader: &impl $crate::tables::TableReader,
                     key: &Self::Key,
                 ) -> $crate::anyhow::Result<Self::Entry> {
                     let value = self.$getter(reader)?;

@@ -19,8 +19,8 @@ pub mod fields;
 pub mod reader;
 pub mod writer;
 
+use crate::tables::LazyTableReader;
 use fields::TableFields;
-use reader::TableReader;
 use writer::TableWriter;
 
 #[derive(Error, Debug)]
@@ -54,7 +54,7 @@ pub struct TablesInput<'t> {
     ) -> ss_plugin_rc,
 
     /// accessor object for reading tables
-    pub(in crate::plugin::tables) reader_ext: TableReader<'t>,
+    pub(in crate::plugin::tables) reader_ext: LazyTableReader<'t>,
 
     /// accessor object for writing tables
     pub(in crate::plugin::tables) writer_ext: TableWriter<'t>,
@@ -102,7 +102,7 @@ impl<'t> TablesInput<'t> {
                 add_table: table_init_input
                     .add_table
                     .ok_or(TableError::BadVtable("add_table"))?,
-                reader_ext: TableReader::try_from(reader_ext, last_error.clone())?,
+                reader_ext: LazyTableReader::new(reader_ext, last_error.clone()),
                 writer_ext: TableWriter::try_from(writer_ext, last_error)?,
                 fields_ext: TableFields::try_from(fields_ext)?,
             }))
