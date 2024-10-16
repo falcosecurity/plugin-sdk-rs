@@ -35,13 +35,15 @@ where
     type Decorated = anyhow::Result<T>;
 
     fn with_last_error(self, last_error: &LastError) -> Self::Decorated {
-        let Some(msg) = last_error.get() else {
-            return self.map_err(|e| e.into());
-        };
-
         match self {
             Ok(ok) => Ok(ok),
-            Err(_) => self.context(msg),
+            Err(_) => {
+                let Some(msg) = last_error.get() else {
+                    return self.map_err(|e| e.into());
+                };
+
+                self.context(msg)
+            }
         }
     }
 }
