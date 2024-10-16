@@ -42,8 +42,9 @@ impl RawTable {
     /// raw pointers to C-style strings. This may change later.
     pub fn list_fields(&self, fields_vtable: &TableFields) -> &[ss_plugin_table_fieldinfo] {
         let mut num_fields = 0u32;
-        let fields =
-            unsafe { (fields_vtable.list_table_fields)(self.table, &mut num_fields as *mut _) };
+        let fields = fields_vtable
+            .list_table_fields(self.table, &mut num_fields as *mut _)
+            .unwrap_or(std::ptr::null_mut());
         if fields.is_null() {
             &[]
         } else {
@@ -63,12 +64,12 @@ impl RawTable {
         tables_input: &TablesInput,
         name: &CStr,
     ) -> Result<RawField<V>, anyhow::Error> {
+        let field = tables_input.fields_ext.get_table_field(
+            self.table,
+            name.as_ptr().cast(),
+            V::TYPE_ID as ss_plugin_state_type,
+        )?;
         let raw_field = unsafe {
-            let field = (tables_input.fields_ext.get_table_field)(
-                self.table,
-                name.as_ptr().cast(),
-                V::TYPE_ID as ss_plugin_state_type,
-            );
             field
                 .as_mut()
                 .ok_or_else(|| anyhow::anyhow!("Failed to get table field {:?}", name))
@@ -95,12 +96,12 @@ impl RawTable {
         tables_input: &TablesInput,
         name: &CStr,
     ) -> Result<RawField<V>, anyhow::Error> {
+        let field = tables_input.fields_ext.add_table_field(
+            self.table,
+            name.as_ptr().cast(),
+            V::TYPE_ID as ss_plugin_state_type,
+        )?;
         let raw_field = unsafe {
-            let field = (tables_input.fields_ext.add_table_field)(
-                self.table,
-                name.as_ptr().cast(),
-                V::TYPE_ID as ss_plugin_state_type,
-            );
             field
                 .as_mut()
                 .ok_or_else(|| anyhow::anyhow!("Failed to add table field {:?}", name))

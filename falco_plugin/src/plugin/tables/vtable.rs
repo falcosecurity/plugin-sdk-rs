@@ -253,23 +253,20 @@ impl TableWriter {
 
 #[derive(Debug)]
 pub struct TableFields {
-    pub(in crate::plugin::tables) list_table_fields:
-        unsafe extern "C-unwind" fn(
-            t: *mut ss_plugin_table_t,
-            nfields: *mut u32,
-        ) -> *const ss_plugin_table_fieldinfo,
-    pub(in crate::plugin::tables) get_table_field:
-        unsafe extern "C-unwind" fn(
-            t: *mut ss_plugin_table_t,
-            name: *const ::std::os::raw::c_char,
-            data_type: ss_plugin_state_type,
-        ) -> *mut ss_plugin_table_field_t,
-    pub(in crate::plugin::tables) add_table_field:
-        unsafe extern "C-unwind" fn(
-            t: *mut ss_plugin_table_t,
-            name: *const ::std::os::raw::c_char,
-            data_type: ss_plugin_state_type,
-        ) -> *mut ss_plugin_table_field_t,
+    list_table_fields: unsafe extern "C-unwind" fn(
+        t: *mut ss_plugin_table_t,
+        nfields: *mut u32,
+    ) -> *const ss_plugin_table_fieldinfo,
+    get_table_field: unsafe extern "C-unwind" fn(
+        t: *mut ss_plugin_table_t,
+        name: *const ::std::os::raw::c_char,
+        data_type: ss_plugin_state_type,
+    ) -> *mut ss_plugin_table_field_t,
+    add_table_field: unsafe extern "C-unwind" fn(
+        t: *mut ss_plugin_table_t,
+        name: *const ::std::os::raw::c_char,
+        data_type: ss_plugin_state_type,
+    ) -> *mut ss_plugin_table_field_t,
 }
 
 impl TableFields {
@@ -285,6 +282,32 @@ impl TableFields {
                 .add_table_field
                 .ok_or(TableError::BadVtable("add_table_field"))?,
         })
+    }
+
+    pub(in crate::plugin::tables) fn list_table_fields(
+        &self,
+        t: *mut ss_plugin_table_t,
+        nfields: *mut u32,
+    ) -> Result<*const ss_plugin_table_fieldinfo, TableError> {
+        unsafe { Ok((self.list_table_fields)(t, nfields)) }
+    }
+
+    pub(in crate::plugin::tables) fn get_table_field(
+        &self,
+        t: *mut ss_plugin_table_t,
+        name: *const ::std::os::raw::c_char,
+        data_type: ss_plugin_state_type,
+    ) -> Result<*mut ss_plugin_table_field_t, TableError> {
+        unsafe { Ok((self.get_table_field)(t, name, data_type)) }
+    }
+
+    pub(in crate::plugin::tables) fn add_table_field(
+        &self,
+        t: *mut ss_plugin_table_t,
+        name: *const ::std::os::raw::c_char,
+        data_type: ss_plugin_state_type,
+    ) -> Result<*mut ss_plugin_table_field_t, TableError> {
+        unsafe { Ok((self.add_table_field)(t, name, data_type)) }
     }
 }
 
