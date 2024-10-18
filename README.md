@@ -4,4 +4,4 @@ This crate provides a framework for writing [Falco](https://github.com/falcosecu
 plugins. There are several types of plugins available. Learn more about Falco plugins
 and plugin types in the [Falco plugin documentation](https://falco.org/docs/plugins/).
 
-You can find more details in the [documentation](https://gnosek.github.io/falco-plugin-rs/).
+You can find more details in the [documentation](https://falcosecurity.github.io/falco-plugin-rs/).
