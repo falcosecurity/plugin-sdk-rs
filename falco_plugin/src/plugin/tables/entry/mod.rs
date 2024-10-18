@@ -3,10 +3,10 @@ use crate::plugin::tables::data::Value;
 use crate::plugin::tables::field::Field;
 use crate::plugin::tables::traits::{EntryWrite, TableMetadata};
 use crate::plugin::tables::vtable::reader::TableReader;
+use crate::plugin::tables::vtable::writer::TableWriter;
 use falco_plugin_api::ss_plugin_table_t;
 
 pub(in crate::plugin::tables) mod raw;
-use crate::plugin::tables::vtable::writer::TableWriter;
 use raw::RawEntry;
 
 /// # An entry in a Falco plugin table
@@ -62,7 +62,7 @@ impl<M> Entry<M> {
     /// Set a field value for this entry
     pub fn write_field<V: Value<AssocData = ()> + ?Sized>(
         &self,
-        writer: &TableWriter,
+        writer: &impl TableWriter,
         field: &Field<V, Entry<M>>,
         val: &V,
     ) -> Result<(), anyhow::Error> {
@@ -71,7 +71,7 @@ impl<M> Entry<M> {
             self.raw_entry
                 .write_field(writer, field.field.field, &val.to_data())
                 .as_result()
-                .with_last_error(&writer.last_error)
+                .with_last_error(writer.last_error())
         }
     }
 }
@@ -79,7 +79,7 @@ impl<M> Entry<M> {
 impl<M, V: Value<AssocData = ()> + ?Sized> EntryWrite<&Field<V, Entry<M>>, V> for Entry<M> {
     fn write_field(
         &self,
-        writer: &TableWriter,
+        writer: &impl TableWriter,
         field: &Field<V, Entry<M>>,
         val: &V,
     ) -> Result<(), anyhow::Error> {

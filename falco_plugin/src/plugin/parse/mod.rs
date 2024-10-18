@@ -1,7 +1,7 @@
 use crate::parse::EventInput;
 use crate::plugin::base::Plugin;
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::tables::vtable::writer::TableWriter;
+use crate::plugin::tables::vtable::writer::LazyTableWriter;
 use crate::tables::LazyTableReader;
 use falco_event::events::types::EventType;
 use falco_plugin_api::ss_plugin_event_parse_input;
@@ -68,7 +68,7 @@ pub struct ParseInput<'t> {
     /// Accessors to read table entries
     pub reader: LazyTableReader<'t>,
     /// Accessors to modify table entries
-    pub writer: TableWriter<'t>,
+    pub writer: LazyTableWriter<'t>,
 }
 
 impl<'t> ParseInput<'t> {
@@ -96,7 +96,7 @@ impl<'t> ParseInput<'t> {
         };
 
         let reader = LazyTableReader::new(reader, last_error.clone());
-        let writer = TableWriter::try_from(writer, last_error)?;
+        let writer = LazyTableWriter::try_from(writer, last_error)?;
 
         Ok(Self { reader, writer })
     }

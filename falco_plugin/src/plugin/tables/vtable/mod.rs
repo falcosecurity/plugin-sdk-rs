@@ -21,7 +21,7 @@ pub mod writer;
 
 use crate::tables::LazyTableReader;
 use fields::TableFields;
-use writer::TableWriter;
+use writer::LazyTableWriter;
 
 #[derive(Error, Debug)]
 pub enum TableError {
@@ -57,7 +57,7 @@ pub struct TablesInput<'t> {
     pub(in crate::plugin::tables) reader_ext: LazyTableReader<'t>,
 
     /// accessor object for writing tables
-    pub(in crate::plugin::tables) writer_ext: TableWriter<'t>,
+    pub(in crate::plugin::tables) writer_ext: LazyTableWriter<'t>,
 
     /// accessor object for manipulating fields
     pub(in crate::plugin::tables) fields_ext: TableFields<'t>,
@@ -103,7 +103,7 @@ impl<'t> TablesInput<'t> {
                     .add_table
                     .ok_or(TableError::BadVtable("add_table"))?,
                 reader_ext: LazyTableReader::new(reader_ext, last_error.clone()),
-                writer_ext: TableWriter::try_from(writer_ext, last_error)?,
+                writer_ext: LazyTableWriter::try_from(writer_ext, last_error)?,
                 fields_ext: TableFields::try_from(fields_ext)?,
             }))
         } else {

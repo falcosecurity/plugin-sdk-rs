@@ -641,7 +641,7 @@ pub mod listen {
 pub mod tables {
     pub use crate::plugin::tables::vtable::reader::LazyTableReader;
     pub use crate::plugin::tables::vtable::reader::TableReader;
-    pub use crate::plugin::tables::vtable::writer::TableWriter;
+    pub use crate::plugin::tables::vtable::writer::LazyTableWriter;
     pub use crate::plugin::tables::vtable::TablesInput;
 
     /// Exporting tables to other plugins

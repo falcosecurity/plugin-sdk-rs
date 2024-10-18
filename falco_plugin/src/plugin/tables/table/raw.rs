@@ -6,6 +6,7 @@ use crate::plugin::tables::traits::TableMetadata;
 use crate::plugin::tables::vtable::fields::TableFields;
 use crate::plugin::tables::vtable::reader::private::TableReaderImpl;
 use crate::plugin::tables::vtable::reader::TableReader;
+use crate::plugin::tables::vtable::writer::private::TableWriterImpl;
 use crate::plugin::tables::vtable::writer::TableWriter;
 use crate::plugin::tables::vtable::TableError;
 use crate::plugin::tables::vtable::TablesInput;
@@ -155,7 +156,7 @@ impl RawTable {
     /// (especially using a number if the real key type is a string) will lead to UB.
     pub unsafe fn erase<K: Key>(
         &self,
-        writer_vtable: &TableWriter,
+        writer_vtable: &impl TableWriter,
         key: &K,
     ) -> Result<(), anyhow::Error> {
         Ok(writer_vtable
@@ -167,8 +168,11 @@ impl RawTable {
     ///
     /// This creates an entry that's not attached to any particular key. To insert it into
     /// the table, pass it to [`RawTable::insert`]
-    pub fn create_entry(&self, writer_vtable: &TableWriter) -> Result<RawEntry, anyhow::Error> {
-        let entry = writer_vtable.create_table_entry(self.table)?;
+    pub fn create_entry(
+        &self,
+        writer_vtable: &impl TableWriter,
+    ) -> Result<RawEntry, anyhow::Error> {
+        let entry = unsafe { writer_vtable.create_table_entry(self.table) }?;
 
         if entry.is_null() {
             Err(anyhow::anyhow!("Failed to create table entry"))
@@ -191,7 +195,7 @@ impl RawTable {
     pub unsafe fn insert<K: Key>(
         &self,
         reader_vtable: &impl TableReader,
-        writer_vtable: &TableWriter,
+        writer_vtable: &impl TableWriter,
         key: &K,
         mut entry: RawEntry,
     ) -> Result<RawEntry, anyhow::Error> {
@@ -263,8 +267,8 @@ impl RawTable {
     /// # Clear the table
     ///
     /// Removes all entries from the table
-    pub fn clear(&self, writer_vtable: &TableWriter) -> Result<(), anyhow::Error> {
-        Ok(writer_vtable.clear_table(self.table)?.as_result()?)
+    pub fn clear(&self, writer_vtable: &impl TableWriter) -> Result<(), anyhow::Error> {
+        Ok(unsafe { writer_vtable.clear_table(self.table) }?.as_result()?)
     }
 
     pub(in crate::plugin::tables) unsafe fn with_subtable<K, F, R>(

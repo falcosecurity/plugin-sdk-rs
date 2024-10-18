@@ -48,7 +48,12 @@ pub trait Entry {
 /// Hence, a trait.
 pub trait EntryWrite<F, V: Value<AssocData = ()> + ?Sized> {
     /// write a field using the plugin API
-    fn write_field(&self, writer: &TableWriter, field: F, val: &V) -> Result<(), anyhow::Error>;
+    fn write_field(
+        &self,
+        writer: &impl TableWriter,
+        field: F,
+        val: &V,
+    ) -> Result<(), anyhow::Error>;
 }
 
 /// A trait describing a table that can have its entries looked up

@@ -36,7 +36,7 @@ impl RawEntry {
 
     pub unsafe fn write_field(
         &self,
-        writer: &TableWriter,
+        writer: &impl TableWriter,
         field: *const ss_plugin_table_field_t,
         val: &ss_plugin_state_data,
     ) -> ss_plugin_rc {

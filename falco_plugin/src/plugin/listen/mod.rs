@@ -5,7 +5,7 @@ pub mod wrappers;
 use crate::base::Plugin;
 use crate::listen::ThreadPool;
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::tables::vtable::writer::TableWriter;
+use crate::plugin::tables::vtable::writer::LazyTableWriter;
 use crate::tables::LazyTableReader;
 use falco_plugin_api::ss_plugin_capture_listen_input;
 
@@ -34,7 +34,7 @@ pub struct CaptureListenInput<'t> {
     /// Accessors to read table entries
     pub reader: LazyTableReader<'t>,
     /// Accessors to modify table entries
-    pub writer: TableWriter<'t>,
+    pub writer: LazyTableWriter<'t>,
 }
 
 impl<'t> CaptureListenInput<'t> {
@@ -64,7 +64,7 @@ impl<'t> CaptureListenInput<'t> {
         };
 
         let reader = LazyTableReader::new(reader, last_error.clone());
-        let writer = TableWriter::try_from(writer, last_error)?;
+        let writer = LazyTableWriter::try_from(writer, last_error)?;
 
         Ok(Self {
             thread_pool,

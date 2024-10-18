@@ -76,7 +76,7 @@ where
     }
 
     /// Erase a table entry by key
-    pub fn erase(&self, writer_vtable: &TableWriter, key: &K) -> Result<(), Error> {
+    pub fn erase(&self, writer_vtable: &impl TableWriter, key: &K) -> Result<(), Error> {
         unsafe { self.raw_table.erase(writer_vtable, key) }
     }
 
@@ -84,7 +84,7 @@ where
     pub fn insert(
         &self,
         reader_vtable: &impl TableReader,
-        writer_vtable: &TableWriter,
+        writer_vtable: &impl TableWriter,
         key: &K,
         entry: E,
     ) -> Result<E, Error> {
@@ -129,7 +129,7 @@ where
     }
 
     /// Create a new table entry (not yet attached to a key)
-    pub fn create_entry(&self, writer_vtable: &TableWriter) -> Result<E, Error> {
+    pub fn create_entry(&self, writer_vtable: &impl TableWriter) -> Result<E, Error> {
         let raw_entry = self.raw_table.create_entry(writer_vtable)?;
         Ok(E::new(
             raw_entry,
@@ -139,7 +139,7 @@ where
     }
 
     /// Remove all entries from the table
-    pub fn clear(&self, writer_vtable: &TableWriter) -> Result<(), Error> {
+    pub fn clear(&self, writer_vtable: &impl TableWriter) -> Result<(), Error> {
         self.raw_table.clear(writer_vtable)
     }
 

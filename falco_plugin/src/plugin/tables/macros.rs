@@ -79,7 +79,7 @@ macro_rules! impl_import_table_accessor_traits {
 
                 fn $setter(
                     &'a self,
-                    writer: &$crate::tables::TableWriter,
+                    writer: &$crate::tables::LazyTableWriter,
                     value: &Self::ScalarValue,
                 ) -> $crate::anyhow::Result<()>;
             }
@@ -149,7 +149,7 @@ macro_rules! impl_import_table_accessor_impls {
 
                 fn $setter(
                     &'a self,
-                    writer: &$crate::tables::TableWriter,
+                    writer: &$crate::tables::LazyTableWriter,
                     value: &Self::ScalarValue,
                 ) -> $crate::anyhow::Result<()> {
                     let metadata = self.get_metadata();
