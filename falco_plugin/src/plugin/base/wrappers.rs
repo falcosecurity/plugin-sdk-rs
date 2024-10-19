@@ -296,7 +296,7 @@ macro_rules! wrap_ffi {
 /// }
 ///
 /// // require version 3.3.0 of the API
-/// plugin!(3;3;0 => MyPlugin);
+/// plugin!(unsafe { 3;3;0 } => MyPlugin);
 /// ```
 ///
 /// **Note**: this does not affect the actual version supported in any way. If you use this form,
@@ -304,15 +304,17 @@ macro_rules! wrap_ffi {
 /// version supported by this crate.
 #[macro_export]
 macro_rules! plugin {
+    (unsafe { $maj:expr; $min:expr; $patch:expr } => $ty:ty) => {
+        $crate::base_plugin_ffi_wrappers!($maj; $min; $patch => #[no_mangle] $ty);
+    };
     ($ty:ty) => {
         plugin!(
-            falco_plugin::api::PLUGIN_API_VERSION_MAJOR as usize;
-            falco_plugin::api::PLUGIN_API_VERSION_MINOR as usize;
-            0 => $ty
+            unsafe {
+                falco_plugin::api::PLUGIN_API_VERSION_MAJOR as usize;
+                falco_plugin::api::PLUGIN_API_VERSION_MINOR as usize;
+                0
+            } => $ty
         );
-    };
-    ($maj:expr; $min:expr; $patch:expr => $ty:ty) => {
-        $crate::base_plugin_ffi_wrappers!($maj; $min; $patch => #[no_mangle] $ty);
     };
 }
 
@@ -403,7 +405,7 @@ macro_rules! plugin {
 /// }
 ///
 /// // advertise API version 3.3.0
-/// static_plugin!(MY_PLUGIN_API @ (3;3;0) = MyPlugin);
+/// static_plugin!(MY_PLUGIN_API @ unsafe { 3;3;0 } = MyPlugin);
 /// ```
 ///
 /// **Note**: this does not affect the actual version supported in any way. If you use this form,
@@ -413,15 +415,16 @@ macro_rules! plugin {
 macro_rules! static_plugin {
     ($name:ident = $ty:ty) => {
         static_plugin!(
-            $name @ (
-            falco_plugin::api::PLUGIN_API_VERSION_MAJOR as usize;
-            falco_plugin::api::PLUGIN_API_VERSION_MINOR as usize;
-            0)
+            $name @ unsafe {
+                falco_plugin::api::PLUGIN_API_VERSION_MAJOR as usize;
+                falco_plugin::api::PLUGIN_API_VERSION_MINOR as usize;
+                0
+            }
             = $ty
         );
 
     };
-    ($name:ident @ ($maj:expr; $min:expr; $patch:expr) = $ty:ty) => {
+    ($name:ident @ unsafe { $maj:expr; $min:expr; $patch:expr } = $ty:ty) => {
         #[no_mangle]
         static $name: falco_plugin::api::plugin_api = const {
             $crate::base_plugin_ffi_wrappers!($maj; $min; $patch => #[deny(dead_code)] $ty);
