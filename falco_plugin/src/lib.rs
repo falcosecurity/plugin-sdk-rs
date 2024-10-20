@@ -1025,7 +1025,7 @@ pub mod internals {
         pub use crate::plugin::parse::wrappers;
     }
 
-    pub mod async_events {
+    pub mod async_event {
         pub use crate::plugin::async_event::wrappers;
     }
 

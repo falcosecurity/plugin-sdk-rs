@@ -115,7 +115,7 @@ macro_rules! async_event_plugin {
     ($ty:ty) => {
         $crate::wrap_ffi! {
             #[no_mangle]
-            use $crate::internals::async_events::wrappers: <$ty>;
+            use $crate::internals::async_event::wrappers: <$ty>;
 
             unsafe fn plugin_get_async_events() -> *const ::std::ffi::c_char;
             unsafe fn plugin_get_async_event_sources() -> *const ::std::ffi::c_char;
