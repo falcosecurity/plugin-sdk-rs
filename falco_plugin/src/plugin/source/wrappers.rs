@@ -12,6 +12,19 @@ use falco_plugin_api::{
 use std::ffi::c_char;
 use std::io::Write;
 
+/// Marker trait to mark a source plugin as exported to the API
+///
+/// # Safety
+///
+/// Only implement this trait if you export the plugin either statically or dynamically
+/// to the plugin API. This is handled by the `source_plugin!` and `static_plugin!` macros, so you
+/// should never need to implement this trait manually.
+#[diagnostic::on_unimplemented(
+    message = "Source plugin is not exported",
+    note = "use either `source_plugin!` or `static_plugin!`"
+)]
+pub unsafe trait SourcePluginExported {}
+
 pub trait SourcePluginFallbackApi {
     const SOURCE_API: source_plugin_api = source_plugin_api {
         get_id: None,
@@ -272,6 +285,8 @@ pub unsafe extern "C-unwind" fn plugin_event_to_string<T: SourcePlugin>(
 #[macro_export]
 macro_rules! source_plugin {
     ($ty:ty) => {
+        unsafe impl $crate::internals::source::wrappers::SourcePluginExported for $ty {}
+
         $crate::wrap_ffi! {
             #[no_mangle]
             use $crate::internals::source::wrappers: <$ty>;

@@ -12,6 +12,19 @@ use std::collections::BTreeMap;
 use std::ffi::{c_char, CString};
 use std::sync::Mutex;
 
+/// Marker trait to mark an extract plugin as exported to the API
+///
+/// # Safety
+///
+/// Only implement this trait if you export the plugin either statically or dynamically
+/// to the plugin API. This is handled by the `extract_plugin!` and `static_plugin!` macros, so you
+/// should never need to implement this trait manually.
+#[diagnostic::on_unimplemented(
+    message = "Extract plugin is not exported",
+    note = "use either `extract_plugin!` or `static_plugin!`"
+)]
+pub unsafe trait ExtractPluginExported {}
+
 pub trait ExtractPluginFallbackApi {
     const EXTRACT_API: extract_plugin_api = extract_plugin_api {
         get_extract_event_types: None,
@@ -122,6 +135,8 @@ pub unsafe extern "C-unwind" fn plugin_extract_fields<T: ExtractPlugin>(
 #[macro_export]
 macro_rules! extract_plugin {
     ($ty:ty) => {
+        unsafe impl $crate::internals::extract::wrappers::ExtractPluginExported for $ty {}
+
         $crate::wrap_ffi! {
             #[no_mangle]
             use $crate::internals::extract::wrappers: <$ty>;

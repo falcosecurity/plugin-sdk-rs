@@ -5,12 +5,13 @@ pub mod wrappers;
 use crate::base::Plugin;
 use crate::listen::ThreadPool;
 use crate::plugin::error::last_error::LastError;
+use crate::plugin::listen::wrappers::CaptureListenPluginExported;
 use crate::plugin::tables::vtable::writer::LazyTableWriter;
 use crate::tables::LazyTableReader;
 use falco_plugin_api::ss_plugin_capture_listen_input;
 
 /// Support for capture listening plugins
-pub trait CaptureListenPlugin: Plugin {
+pub trait CaptureListenPlugin: Plugin + CaptureListenPluginExported {
     /// # Capture open notification
     ///
     /// This method gets called whenever the capture is started

@@ -659,6 +659,7 @@ pub mod tables {
     /// ```
     /// use std::ffi::{CStr, CString};
     /// use falco_plugin::base::Plugin;
+    ///# use falco_plugin::plugin;
     /// use falco_plugin::tables::TablesInput;
     /// use falco_plugin::tables::export;
     ///
@@ -701,6 +702,7 @@ pub mod tables {
     ///         Ok(MyPlugin { exported_table })
     ///     }
     /// }
+    ///# plugin!(MyPlugin);
     /// ```
     pub mod export {
         pub use crate::plugin::exported_tables::field::private::Private;
@@ -823,6 +825,8 @@ pub mod tables {
     /// use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
     /// use falco_plugin::tables::TablesInput;
     /// use falco_plugin::tables::import::{Entry, Field, Table, TableMetadata};
+    ///# use falco_plugin::plugin;
+    ///# use falco_plugin::parse_plugin;
     ///
     /// #[derive(TableMetadata)]
     /// #[entry_type(ImportedThing)]
@@ -884,6 +888,8 @@ pub mod tables {
     ///     }
     /// }
     ///
+    /// # plugin!(MyPlugin);
+    /// # parse_plugin!(MyPlugin);
     /// # // make this doctest a module, not a function: https://github.com/rust-lang/rust/issues/83583#issuecomment-1083300448
     /// # fn main() {}
     /// ```
@@ -910,6 +916,7 @@ pub mod tables {
     /// use falco_plugin::base::Plugin;
     /// use falco_plugin::event::events::types::EventType;
     /// use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
+    ///# use falco_plugin::{parse_plugin, plugin};
     /// use falco_plugin::tables::TablesInput;
     /// use falco_plugin::tables::import::{Field, RuntimeEntry, Table};
     ///
@@ -975,6 +982,8 @@ pub mod tables {
     ///         Ok(())
     ///     }
     /// }
+    ///# plugin!(MyPlugin);
+    ///# parse_plugin!(MyPlugin);
     /// ```
     ///
     /// **Note**: in the above example, `ImportedThingTag` is just an empty struct, used to

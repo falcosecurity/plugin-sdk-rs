@@ -1,4 +1,5 @@
 use crate::plugin::base::metrics::Metric;
+use crate::plugin::base::wrappers::BasePluginExported;
 use crate::plugin::error::last_error::LastError;
 use crate::plugin::schema::ConfigSchema;
 use crate::plugin::tables::vtable::TablesInput;
@@ -95,7 +96,7 @@ impl<P: Plugin> PluginWrapper<P> {
 /// // generate the actual plugin wrapper code
 /// plugin!(NoOpPlugin);
 /// ```
-pub trait Plugin: Sized {
+pub trait Plugin: BasePluginExported + Sized {
     /// the name of your plugin, must match the plugin name in the Falco config file
     const NAME: &'static CStr;
     /// the version of your plugin
@@ -154,6 +155,7 @@ pub trait Plugin: Sized {
     /// use std::ffi::CStr;
     /// use anyhow::Error;
     /// use falco_plugin::base::{Json, Metric, Plugin};
+    ///# use falco_plugin::plugin;
     /// use falco_plugin::schemars::JsonSchema;
     /// use falco_plugin::serde::Deserialize;
     ///
@@ -199,6 +201,7 @@ pub trait Plugin: Sized {
     ///
     ///     // ...
     /// }
+    ///# plugin!(MyPlugin);
     /// ```
     type ConfigType: ConfigSchema;
 
@@ -270,6 +273,7 @@ pub trait Plugin: Sized {
     ///         [self.my_metric.with_value(MetricValue::U64(10u64))]
     ///     }
     ///# }
+    ///# plugin!(MyPlugin);
     /// ```
     ///
     /// 2. Inline metrics
@@ -307,6 +311,7 @@ pub trait Plugin: Sized {
     ///         )]
     ///     }
     ///# }
+    ///# plugin!(NoOpPlugin);
     /// ```
     fn get_metrics(&mut self) -> impl IntoIterator<Item = Metric> {
         []

@@ -15,6 +15,19 @@ use std::collections::BTreeMap;
 use std::ffi::{c_char, CString};
 use std::sync::Mutex;
 
+/// Marker trait to mark a plugin as exported to the API
+///
+/// # Safety
+///
+/// Only implement this trait if you export the plugin either statically or dynamically
+/// to the plugin API. This is handled by the `plugin!` and `static_plugin!` macros, so you
+/// should never need to implement this trait manually.
+#[diagnostic::on_unimplemented(
+    message = "Plugin is not exported",
+    note = "use either `plugin!` or `static_plugin!`"
+)]
+pub unsafe trait BasePluginExported {}
+
 pub extern "C-unwind" fn plugin_get_required_api_version<
     const MAJOR: usize,
     const MINOR: usize,
@@ -422,7 +435,6 @@ macro_rules! static_plugin {
             }
             = $ty
         );
-
     };
     ($name:ident @ unsafe { $maj:expr; $min:expr; $patch:expr } = $ty:ty) => {
         #[no_mangle]
@@ -430,6 +442,13 @@ macro_rules! static_plugin {
             $crate::base_plugin_ffi_wrappers!($maj; $min; $patch => #[deny(dead_code)] $ty);
             __plugin_base_api()
         };
+
+        // a static plugin automatically exports all capabilities
+        unsafe impl $crate::internals::async_event::wrappers::AsyncPluginExported for $ty {}
+        unsafe impl $crate::internals::extract::wrappers::ExtractPluginExported for $ty {}
+        unsafe impl $crate::internals::listen::wrappers::CaptureListenPluginExported for $ty {}
+        unsafe impl $crate::internals::parse::wrappers::ParsePluginExported for $ty {}
+        unsafe impl $crate::internals::source::wrappers::SourcePluginExported for $ty {}
     }
 }
 
@@ -437,6 +456,8 @@ macro_rules! static_plugin {
 #[macro_export]
 macro_rules! base_plugin_ffi_wrappers {
     ($maj:expr; $min:expr; $patch:expr => #[$attr:meta] $ty:ty) => {
+        unsafe impl $crate::internals::base::wrappers::BasePluginExported for $ty {}
+
         #[$attr]
         pub extern "C-unwind" fn plugin_get_required_api_version() -> *const std::ffi::c_char {
             $crate::internals::base::wrappers::plugin_get_required_api_version::<

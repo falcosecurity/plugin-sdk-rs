@@ -1,6 +1,7 @@
 use crate::extract::EventInput;
 use crate::plugin::base::Plugin;
 use crate::plugin::extract::schema::ExtractFieldInfo;
+use crate::plugin::extract::wrappers::ExtractPluginExported;
 use crate::tables::LazyTableReader;
 use falco_event::events::types::EventType;
 use falco_plugin_api::ss_plugin_extract_field;
@@ -66,7 +67,7 @@ pub struct ExtractRequest<'c, 'e, 't, P: ExtractPlugin> {
 }
 
 /// # Support for field extraction plugins
-pub trait ExtractPlugin: Plugin + Sized
+pub trait ExtractPlugin: Plugin + ExtractPluginExported + Sized
 where
     Self: 'static,
 {
@@ -168,6 +169,7 @@ where
     ///     ExtractFieldInfo,
     ///     ExtractPlugin,
     ///     ExtractRequest};
+    ///# use falco_plugin::{extract_plugin, plugin};
     /// use falco_plugin::tables::TablesInput;
     ///
     /// struct SampleExtractPlugin;
@@ -211,6 +213,8 @@ where
     ///     ];
     /// }
     ///
+    ///# plugin!(SampleExtractPlugin);
+    ///# extract_plugin!(SampleExtractPlugin);
     /// ```
     const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>];
 

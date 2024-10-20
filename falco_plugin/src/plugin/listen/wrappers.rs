@@ -7,6 +7,19 @@ use falco_plugin_api::{
     ss_plugin_rc_SS_PLUGIN_FAILURE, ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_t,
 };
 
+/// Marker trait to mark a capture listen plugin as exported to the API
+///
+/// # Safety
+///
+/// Only implement this trait if you export the plugin either statically or dynamically
+/// to the plugin API. This is handled by the `capture_listen_plugin!` and `static_plugin!` macros, so you
+/// should never need to implement this trait manually.
+#[diagnostic::on_unimplemented(
+    message = "Capture listen plugin is not exported",
+    note = "use either `capture_listen_plugin!` or `static_plugin!`"
+)]
+pub unsafe trait CaptureListenPluginExported {}
+
 pub trait CaptureListenFallbackApi {
     const LISTEN_API: listen_plugin_api = listen_plugin_api {
         capture_open: None,
@@ -85,6 +98,8 @@ pub unsafe extern "C-unwind" fn plugin_capture_close<T: CaptureListenPlugin>(
 #[macro_export]
 macro_rules! capture_listen_plugin {
     ($ty:ty) => {
+        unsafe impl $crate::internals::listen::wrappers::CaptureListenPluginExported for $ty {}
+
         $crate::wrap_ffi! {
             #[no_mangle]
             use $crate::internals::listen::wrappers: <$ty>;

@@ -12,6 +12,19 @@ use std::collections::BTreeMap;
 use std::ffi::{c_char, CString};
 use std::sync::Mutex;
 
+/// Marker trait to mark an async plugin as exported to the API
+///
+/// # Safety
+///
+/// Only implement this trait if you export the plugin either statically or dynamically
+/// to the plugin API. This is handled by the `async_plugin!` and `static_plugin!` macros, so you
+/// should never need to implement this trait manually.
+#[diagnostic::on_unimplemented(
+    message = "Async plugin is not exported",
+    note = "use either `async_plugin!` or `static_plugin!`"
+)]
+pub unsafe trait AsyncPluginExported {}
+
 pub trait AsyncPluginFallbackApi {
     const ASYNC_API: async_plugin_api = async_plugin_api {
         get_async_event_sources: None,
@@ -113,6 +126,8 @@ pub unsafe extern "C-unwind" fn plugin_set_async_event_handler<T: AsyncEventPlug
 #[macro_export]
 macro_rules! async_event_plugin {
     ($ty:ty) => {
+        unsafe impl $crate::internals::async_event::wrappers::AsyncPluginExported for $ty {}
+
         $crate::wrap_ffi! {
             #[no_mangle]
             use $crate::internals::async_event::wrappers: <$ty>;

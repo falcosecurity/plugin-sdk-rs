@@ -115,18 +115,69 @@ Loading and configuring a statically linked plugin entirely depends on the appli
 
 ### Building static and dynamic plugins from a single codebase
 
-You cannot have static and dynamic plugin built from a single crate. Linking multiple dynamic plugins into a single
-library will have conflicting symbols between the plugins (they will both want to expose the same function names).
+This is a more complex problem, but still doable. As the SDK has validation to ensure the required macros
+are invoked, we cannot split the plugin `impl`s from the export macros. We also cannot conditionally compile
+one set or the other based on the crate type we're building, so we need another approach.
 
-One workaround might be to use three separate crates:
+First, add a lints setting to your `Cargo.toml` and make sure you're building a `cdylib`:
 
-1. One `rlib` (the default Rust library crate), containing all the code except for the `plugin!`/`static_plugin!` macros
-2. One crate for the dynamic plugin
-3. One crate for the static plugin
+```toml
+[lib]
+crate-type = ["cdylib"]
 
-The two latter crates just need to import the actual plugin code from crate 1 and invoke the relevant macros.
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(linkage, values("static"))'] }
+```
+
+This lets us configure the build either with or without `linkage="static"` and check the value of this
+setting inside the code.
+
+Then, conditionally invoke the right macros, based on the setting:
+
+```ignore
+// static linking
+#[cfg(linkage = "static")]
+use falco_plugin::static_plugin;
+
+#[cfg(linkage = "static")]
+static_plugin!(MY_PLUGIN = MyPlugin);
+
+// dynamic linking
+#[cfg(not(linkage = "static"))]
+use falco_plugin::{plugin, source_plugin};
+
+#[cfg(not(linkage = "static"))]
+plugin!(MyPlugin);
+
+#[cfg(not(linkage = "static"))]
+source_plugin!(MyPlugin);
+```
+
+(explicitly importing the macros seems necessary for some reason)
+
+Finally, build both variants:
+
+```shell
+# build the shared plugin library (default)
+cargo build --release
+
+# override crate type and the linkage setting to build a static library
+# note we're using `cargo rustc` here, not `cargo build`
+RUSTFLAGS='--cfg linkage="static"' cargo rustc --crate-type=staticlib --release
+```
 
 ## Plugin capabilities
+
+Plugin functionality is split across several independent capabilities. You will want to implement at least one,
+otherwise your plugin won't do anything at all (and will be rejected by Falco when trying to load it).
+
+Capabilities are added by implementing the corresponding trait on your plugin type and invoking the matching
+capability export macro (see individual capabilities for details).
+
+The SDK will check that all the capabilities your plugin does support are exported to the plugin API.
+This happens automatically with statically linked plugins, but with dynamically linked plugins you need to invoke
+one macro per capability yourself. If you forget to do this, you will get a compile error pointing you to the right
+macro.
 
 ### Event sourcing plugins
 

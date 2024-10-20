@@ -1,4 +1,5 @@
 use crate::plugin::base::Plugin;
+use crate::plugin::source::wrappers::SourcePluginExported;
 use crate::source::{EventBatch, EventInput};
 use falco_event::events::types::PPME_PLUGINEVENT_E as PluginEvent;
 use falco_event::events::Event;
@@ -11,7 +12,7 @@ pub mod open_params;
 pub mod wrappers;
 
 /// # Support for event sourcing plugins
-pub trait SourcePlugin: Plugin {
+pub trait SourcePlugin: Plugin + SourcePluginExported {
     /// # Instance type
     ///
     /// Each source plugin defines an instance type. The instance is the object responsible

@@ -12,6 +12,19 @@ use std::collections::BTreeMap;
 use std::ffi::{c_char, CString};
 use std::sync::Mutex;
 
+/// Marker trait to mark a parse plugin as exported to the API
+///
+/// # Safety
+///
+/// Only implement this trait if you export the plugin either statically or dynamically
+/// to the plugin API. This is handled by the `parse_plugin!` and `static_plugin!` macros, so you
+/// should never need to implement this trait manually.
+#[diagnostic::on_unimplemented(
+    message = "Parse plugin is not exported",
+    note = "use either `parse_plugin!` or `static_plugin!`"
+)]
+pub unsafe trait ParsePluginExported {}
+
 pub trait ParsePluginFallbackApi {
     const PARSE_API: parse_plugin_api = parse_plugin_api {
         get_parse_event_types: None,
@@ -108,6 +121,8 @@ pub unsafe extern "C-unwind" fn plugin_parse_event<T: ParsePlugin>(
 #[macro_export]
 macro_rules! parse_plugin {
     ($ty:ty) => {
+        unsafe impl $crate::internals::parse::wrappers::ParsePluginExported for $ty {}
+
         $crate::wrap_ffi! {
             #[no_mangle]
             use $crate::internals::parse::wrappers: <$ty>;
