@@ -94,7 +94,9 @@ impl<P: Plugin> PluginWrapper<P> {
 /// }
 ///
 /// // generate the actual plugin wrapper code
-/// plugin!(NoOpPlugin);
+/// // note we need to decorate the type name with `#[no_capabilities]` to bypass
+/// // the safeguard against building an invalid plugin
+/// plugin!(#[no_capabilities] NoOpPlugin);
 /// ```
 pub trait Plugin: BasePluginExported + Sized {
     /// the name of your plugin, must match the plugin name in the Falco config file
@@ -201,7 +203,7 @@ pub trait Plugin: BasePluginExported + Sized {
     ///
     ///     // ...
     /// }
-    ///# plugin!(MyPlugin);
+    ///# plugin!(#[no_capabilities] MyPlugin);
     /// ```
     type ConfigType: ConfigSchema;
 
@@ -273,7 +275,7 @@ pub trait Plugin: BasePluginExported + Sized {
     ///         [self.my_metric.with_value(MetricValue::U64(10u64))]
     ///     }
     ///# }
-    ///# plugin!(MyPlugin);
+    ///# plugin!(#[no_capabilities] MyPlugin);
     /// ```
     ///
     /// 2. Inline metrics
@@ -311,7 +313,7 @@ pub trait Plugin: BasePluginExported + Sized {
     ///         )]
     ///     }
     ///# }
-    ///# plugin!(NoOpPlugin);
+    ///# plugin!(#[no_capabilities] NoOpPlugin);
     /// ```
     fn get_metrics(&mut self) -> impl IntoIterator<Item = Metric> {
         []

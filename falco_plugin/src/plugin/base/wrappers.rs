@@ -272,7 +272,7 @@ macro_rules! wrap_ffi {
 /// #    }
 /// }
 ///
-/// plugin!(MyPlugin);
+/// plugin!(#[no_capabilities] MyPlugin);
 /// ```
 ///
 /// It implements a form where you can override the required API version (for example, if
@@ -309,7 +309,7 @@ macro_rules! wrap_ffi {
 /// }
 ///
 /// // require version 3.3.0 of the API
-/// plugin!(unsafe { 3;3;0 } => MyPlugin);
+/// plugin!(unsafe { 3;3;0 } => #[no_capabilities] MyPlugin);
 /// ```
 ///
 /// **Note**: this does not affect the actual version supported in any way. If you use this form,
@@ -317,16 +317,21 @@ macro_rules! wrap_ffi {
 /// version supported by this crate.
 #[macro_export]
 macro_rules! plugin {
-    (unsafe { $maj:expr; $min:expr; $patch:expr } => $ty:ty) => {
+    (unsafe { $maj:expr; $min:expr; $patch:expr } => #[no_capabilities] $ty:ty) => {
         $crate::base_plugin_ffi_wrappers!($maj; $min; $patch => #[no_mangle] $ty);
     };
-    ($ty:ty) => {
+    (unsafe { $maj:expr; $min:expr; $patch:expr } => $ty:ty) => {
+        plugin!(unsafe {$maj; $min; $patch} => #[no_capabilities] $ty);
+
+        $crate::ensure_plugin_capabilities!($ty);
+    };
+    ($(#[$attr:tt])? $ty:ty) => {
         plugin!(
             unsafe {
                 falco_plugin::api::PLUGIN_API_VERSION_MAJOR as usize;
                 falco_plugin::api::PLUGIN_API_VERSION_MINOR as usize;
                 0
-            } => $ty
+            } => $(#[$attr])? $ty
         );
     };
 }
@@ -370,7 +375,7 @@ macro_rules! plugin {
 ///#     }
 /// }
 ///
-/// static_plugin!(MY_PLUGIN_API = MyPlugin);
+/// static_plugin!(#[no_capabilities] MY_PLUGIN_API = MyPlugin);
 /// ```
 ///
 /// This expands to:
@@ -418,7 +423,7 @@ macro_rules! plugin {
 /// }
 ///
 /// // advertise API version 3.3.0
-/// static_plugin!(MY_PLUGIN_API @ unsafe { 3;3;0 } = MyPlugin);
+/// static_plugin!(MY_PLUGIN_API @ unsafe { 3;3;0 } = #[no_capabilities] MyPlugin);
 /// ```
 ///
 /// **Note**: this does not affect the actual version supported in any way. If you use this form,
@@ -426,17 +431,17 @@ macro_rules! plugin {
 /// version supported by this crate.
 #[macro_export]
 macro_rules! static_plugin {
-    ($name:ident = $ty:ty) => {
+    ($(#[$attr:tt])? $name:ident = $ty:ty) => {
         static_plugin!(
             $name @ unsafe {
                 falco_plugin::api::PLUGIN_API_VERSION_MAJOR as usize;
                 falco_plugin::api::PLUGIN_API_VERSION_MINOR as usize;
                 0
             }
-            = $ty
+            = $(#[$attr])? $ty
         );
     };
-    ($name:ident @ unsafe { $maj:expr; $min:expr; $patch:expr } = $ty:ty) => {
+    ($name:ident @ unsafe { $maj:expr; $min:expr; $patch:expr } = #[no_capabilities] $ty:ty) => {
         #[no_mangle]
         static $name: falco_plugin::api::plugin_api = const {
             $crate::base_plugin_ffi_wrappers!($maj; $min; $patch => #[deny(dead_code)] $ty);
@@ -449,7 +454,42 @@ macro_rules! static_plugin {
         unsafe impl $crate::internals::listen::wrappers::CaptureListenPluginExported for $ty {}
         unsafe impl $crate::internals::parse::wrappers::ParsePluginExported for $ty {}
         unsafe impl $crate::internals::source::wrappers::SourcePluginExported for $ty {}
+    };
+    ($name:ident @ unsafe { $maj:expr; $min:expr; $patch:expr } = $ty:ty) => {
+        static_plugin!($name @ unsafe { $maj; $min; $patch } = #[no_capabilities] $ty);
+
+        $crate::ensure_plugin_capabilities!($ty);
     }
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! ensure_plugin_capabilities {
+    ($ty:ty) => {
+        const _: () = {
+            use $crate::internals::async_event::wrappers::AsyncPluginFallbackApi;
+            use $crate::internals::extract::wrappers::ExtractPluginFallbackApi;
+            use $crate::internals::listen::wrappers::CaptureListenFallbackApi;
+            use $crate::internals::parse::wrappers::ParsePluginFallbackApi;
+            use $crate::internals::source::wrappers::SourcePluginFallbackApi;
+
+            let impls_async =
+                $crate::internals::async_event::wrappers::AsyncPluginApi::<$ty>::IMPLEMENTS_ASYNC;
+            let impls_extract =
+                $crate::internals::extract::wrappers::ExtractPluginApi::<$ty>::IMPLEMENTS_EXTRACT;
+            let impls_listen =
+                $crate::internals::listen::wrappers::CaptureListenApi::<$ty>::IMPLEMENTS_LISTEN;
+            let impls_parse =
+                $crate::internals::parse::wrappers::ParsePluginApi::<$ty>::IMPLEMENTS_PARSE;
+            let impls_source =
+                $crate::internals::source::wrappers::SourcePluginApi::<$ty>::IMPLEMENTS_SOURCE;
+
+            assert!(
+                impls_async || impls_extract || impls_listen || impls_parse || impls_source,
+                "Plugin must implement at least one capability. If you really want a plugin without capabilities, use the #[no_capabilities] attribute"
+            );
+        };
+    };
 }
 
 #[doc(hidden)]

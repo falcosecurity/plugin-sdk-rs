@@ -36,6 +36,8 @@ pub trait SourcePluginFallbackApi {
         event_to_string: None,
         next_batch: None,
     };
+
+    const IMPLEMENTS_SOURCE: bool = false;
 }
 impl<T> SourcePluginFallbackApi for T {}
 
@@ -53,6 +55,8 @@ impl<T: SourcePlugin> SourcePluginApi<T> {
         event_to_string: Some(plugin_event_to_string::<T>),
         next_batch: Some(plugin_next_batch::<T>),
     };
+
+    pub const IMPLEMENTS_SOURCE: bool = true;
 }
 
 pub extern "C-unwind" fn plugin_get_event_source<T: SourcePlugin>() -> *const c_char {

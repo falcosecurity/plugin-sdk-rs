@@ -179,6 +179,17 @@ This happens automatically with statically linked plugins, but with dynamically 
 one macro per capability yourself. If you forget to do this, you will get a compile error pointing you to the right
 macro.
 
+The SDK will also check that your plugin supports at least one capability. During initial development, you might want to
+build a plugin with no capabilities, so this check can be disabled by using the `#[no_capabilities]` attribute:
+
+```ignore
+// dynamically linked plugin:
+plugin!(#[no_capabilities] MyPlugin);
+
+// statically linked plugin
+static_plugin!(#[no_capabilities] MY_PLUGIN = MyPlugin);
+```
+
 ### Event sourcing plugins
 
 Source plugins are used to generate events. The implementation comes in two parts:

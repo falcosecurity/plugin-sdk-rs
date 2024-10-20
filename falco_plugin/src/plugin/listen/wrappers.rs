@@ -25,6 +25,8 @@ pub trait CaptureListenFallbackApi {
         capture_open: None,
         capture_close: None,
     };
+
+    const IMPLEMENTS_LISTEN: bool = false;
 }
 
 impl<T> CaptureListenFallbackApi for T {}
@@ -36,6 +38,8 @@ impl<T: CaptureListenPlugin + 'static> CaptureListenApi<T> {
         capture_open: Some(plugin_capture_open::<T>),
         capture_close: Some(plugin_capture_close::<T>),
     };
+
+    pub const IMPLEMENTS_LISTEN: bool = true;
 }
 
 pub unsafe extern "C-unwind" fn plugin_capture_open<T: CaptureListenPlugin>(

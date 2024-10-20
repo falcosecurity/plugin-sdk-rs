@@ -31,6 +31,8 @@ pub trait AsyncPluginFallbackApi {
         get_async_events: None,
         set_async_event_handler: None,
     };
+
+    const IMPLEMENTS_ASYNC: bool = false;
 }
 impl<T> AsyncPluginFallbackApi for T {}
 
@@ -42,6 +44,8 @@ impl<T: AsyncEventPlugin + 'static> AsyncPluginApi<T> {
         get_async_events: Some(plugin_get_async_events::<T>),
         set_async_event_handler: Some(plugin_set_async_event_handler::<T>),
     };
+
+    pub const IMPLEMENTS_ASYNC: bool = true;
 }
 
 pub extern "C-unwind" fn plugin_get_async_event_sources<T: AsyncEventPlugin + 'static>(

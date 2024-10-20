@@ -31,6 +31,8 @@ pub trait ParsePluginFallbackApi {
         get_parse_event_sources: None,
         parse_event: None,
     };
+
+    const IMPLEMENTS_PARSE: bool = false;
 }
 impl<T> ParsePluginFallbackApi for T {}
 
@@ -43,6 +45,8 @@ impl<T: ParsePlugin + 'static> ParsePluginApi<T> {
         get_parse_event_sources: Some(plugin_get_parse_event_sources::<T>),
         parse_event: Some(plugin_parse_event::<T>),
     };
+
+    pub const IMPLEMENTS_PARSE: bool = true;
 }
 
 /// # Safety

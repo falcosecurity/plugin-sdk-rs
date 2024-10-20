@@ -702,7 +702,7 @@ pub mod tables {
     ///         Ok(MyPlugin { exported_table })
     ///     }
     /// }
-    ///# plugin!(MyPlugin);
+    ///# plugin!(#[no_capabilities] MyPlugin);
     /// ```
     pub mod export {
         pub use crate::plugin::exported_tables::field::private::Private;

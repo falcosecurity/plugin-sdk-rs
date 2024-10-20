@@ -32,6 +32,8 @@ pub trait ExtractPluginFallbackApi {
         get_fields: None,
         extract_fields: None,
     };
+
+    const IMPLEMENTS_EXTRACT: bool = false;
 }
 impl<T> ExtractPluginFallbackApi for T {}
 
@@ -45,6 +47,8 @@ impl<T: ExtractPlugin> ExtractPluginApi<T> {
         get_fields: Some(plugin_get_fields::<T>),
         extract_fields: Some(plugin_extract_fields::<T>),
     };
+
+    pub const IMPLEMENTS_EXTRACT: bool = true;
 }
 
 pub extern "C-unwind" fn plugin_get_fields<T: ExtractPlugin>() -> *const c_char {
