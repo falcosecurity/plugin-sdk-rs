@@ -30,7 +30,10 @@ impl Plugin for DummyPlugin {
     }
 }
 
-static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
+static_plugin!(
+    #[no_capabilities]
+    DUMMY_PLUGIN_API = DummyPlugin
+);
 
 #[cfg(test)]
 mod tests {

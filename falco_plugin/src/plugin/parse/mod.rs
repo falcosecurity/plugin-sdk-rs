@@ -1,6 +1,7 @@
 use crate::parse::EventInput;
 use crate::plugin::base::Plugin;
 use crate::plugin::error::last_error::LastError;
+use crate::plugin::parse::wrappers::ParsePluginExported;
 use crate::plugin::tables::vtable::writer::LazyTableWriter;
 use crate::tables::LazyTableReader;
 use falco_event::events::types::EventType;
@@ -10,7 +11,7 @@ use falco_plugin_api::ss_plugin_event_parse_input;
 pub mod wrappers;
 
 /// # Support for event parse plugins
-pub trait ParsePlugin: Plugin {
+pub trait ParsePlugin: Plugin + ParsePluginExported {
     // TODO: document event_type vs anyevent vs individual event types somewhere prominent
 
     /// # Supported event types

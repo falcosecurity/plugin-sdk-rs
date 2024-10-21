@@ -1,5 +1,6 @@
 use crate::base::Plugin;
 use crate::plugin::async_event::async_handler::AsyncHandler;
+use crate::plugin::async_event::wrappers::AsyncPluginExported;
 
 pub mod async_handler;
 pub mod background_task;
@@ -7,7 +8,7 @@ pub mod background_task;
 pub mod wrappers;
 
 /// # Support for asynchronous event plugins
-pub trait AsyncEventPlugin: Plugin {
+pub trait AsyncEventPlugin: Plugin + AsyncPluginExported {
     /// # Event names coming from this plugin
     ///
     /// This constant contains a list describing the name list of all asynchronous events

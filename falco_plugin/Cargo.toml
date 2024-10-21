@@ -12,6 +12,14 @@ categories = ["api-bindings"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+# RUSTFLAGS='--cfg linkage="static"' cargo rustc --crate-type=staticlib -p falco_plugin --example dummy_source
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(linkage, values("static"))'] }
+
+[[example]]
+name = "dummy_source"
+crate-type = ["cdylib"]
+
 [features]
 thread-safe-tables = ["dep:parking_lot"]
 
