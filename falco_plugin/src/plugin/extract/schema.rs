@@ -1,8 +1,6 @@
-use crate::extract::ExtractFieldRequestArg;
+use crate::plugin::extract::extractor_fn::{ExtractLambda, ExtractorFn};
 use crate::plugin::extract::fields::{Extract, ExtractFieldTypeId};
-use crate::plugin::extract::{ExtractField, ExtractPlugin, ExtractRequest};
-use anyhow::Error;
-use falco_plugin_api::ss_plugin_extract_field;
+use crate::plugin::extract::ExtractPlugin;
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
 use std::fmt::{Debug, Formatter};
@@ -74,36 +72,6 @@ pub fn serialize_field_type<S: Serializer>(
     }
 }
 
-pub trait Extractor<P: ExtractPlugin> {
-    fn extract<'a>(
-        &self,
-        plugin: &'a mut P,
-        field: &mut ss_plugin_extract_field,
-        request: ExtractRequest<'a, '_, '_, P>,
-        arg_type: ExtractArgType,
-        storage: &'a mut bumpalo::Bump,
-    ) -> Result<(), Error>;
-}
-
-impl<P, R, F> Extractor<P> for F
-where
-    P: ExtractPlugin,
-    R: Extract,
-    F: Fn(&mut P, ExtractRequest<P>, ExtractFieldRequestArg) -> Result<R, Error>,
-{
-    fn extract<'a>(
-        &self,
-        plugin: &'a mut P,
-        field: &mut ss_plugin_extract_field,
-        request: ExtractRequest<'a, '_, '_, P>,
-        arg_type: ExtractArgType,
-        storage: &'a mut bumpalo::Bump,
-    ) -> Result<(), Error> {
-        let result = self(plugin, request, unsafe { field.key(arg_type) }?)?;
-        Ok(result.extract_to(field, storage)?)
-    }
-}
-
 /// # A description of an extracted field
 ///
 /// You should create instances of this struct by calling [`field`].
@@ -130,7 +98,7 @@ pub struct ExtractFieldInfo<P: ExtractPlugin> {
     pub description: &'static str,
     #[serde(skip)]
     /// the function implementing the actual extraction
-    pub func: &'static dyn Extractor<P>,
+    pub func: ExtractLambda<P>,
 }
 
 impl<P: ExtractPlugin> Debug for ExtractFieldInfo<P> {
@@ -141,14 +109,6 @@ impl<P: ExtractPlugin> Debug for ExtractFieldInfo<P> {
 }
 
 impl<P: ExtractPlugin> ExtractFieldInfo<P> {
-    /// Specify the type of argument the field extractor takes
-    ///
-    /// See [`ExtractArgType`] for the possible values
-    pub const fn with_arg(mut self, extract_arg_type: ExtractArgType) -> Self {
-        self.arg = extract_arg_type;
-        self
-    }
-
     /// Set the display name fdr the extracted field
     pub const fn with_display(mut self, display_name: &'static str) -> Self {
         self.display_name = Some(display_name);
@@ -165,19 +125,23 @@ impl<P: ExtractPlugin> ExtractFieldInfo<P> {
 /// Wrap a function or method to make it usable as a field extractor
 ///
 /// See [ExtractPlugin::EXTRACT_FIELDS](`crate::extract::ExtractPlugin::EXTRACT_FIELDS`)
-pub const fn field<P, R, F>(name: &'static str, func: &'static F) -> ExtractFieldInfo<P>
+pub const fn field<P, R, F, A>(name: &'static str, func: &'static F) -> ExtractFieldInfo<P>
 where
     P: ExtractPlugin,
-    R: Extract,
-    F: Fn(&mut P, ExtractRequest<P>, ExtractFieldRequestArg) -> Result<R, Error>,
+    R: Extract + 'static,
+    F: ExtractorFn<P, R, A>,
+    A: 'static,
 {
     ExtractFieldInfo {
         name,
         field_type: <R as Extract>::TYPE_ID,
         is_list: <R as Extract>::IS_LIST,
-        arg: ExtractArgType::None,
+        arg: F::ARG_TYPE,
         display_name: None,
         description: name,
-        func: func as &'static dyn Extractor<P>,
+        func: ExtractLambda {
+            obj: func as *const _ as *const (),
+            func: F::extract,
+        },
     }
 }

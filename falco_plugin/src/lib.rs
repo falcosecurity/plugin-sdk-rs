@@ -60,7 +60,6 @@ pub mod base {
 /// use falco_plugin::extract::{
 ///     EventInput,
 ///     ExtractFieldInfo,
-///     ExtractFieldRequestArg,
 ///     ExtractPlugin,
 ///     ExtractRequest,
 ///     field};
@@ -93,7 +92,6 @@ pub mod base {
 ///     fn extract_sample(
 ///         &mut self,
 ///         _req: ExtractRequest<Self>,
-///         _arg: ExtractFieldRequestArg,
 ///     ) -> Result<CString, Error> {
 ///         Ok(c"hello".to_owned())
 ///     }
@@ -117,8 +115,7 @@ pub mod base {
 pub mod extract {
     pub use crate::plugin::event::EventInput;
     pub use crate::plugin::extract::schema::field;
-    pub use crate::plugin::extract::schema::{ExtractArgType, ExtractFieldInfo};
-    pub use crate::plugin::extract::ExtractFieldRequestArg;
+    pub use crate::plugin::extract::schema::ExtractFieldInfo;
     pub use crate::plugin::extract::ExtractPlugin;
     pub use crate::plugin::extract::ExtractRequest;
 }

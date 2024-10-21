@@ -2,9 +2,7 @@ use falco_plugin::anyhow::Error;
 use falco_plugin::base::{Metric, MetricLabel, MetricType, MetricValue, Plugin};
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E};
-use falco_plugin::extract::{
-    field, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin, ExtractRequest,
-};
+use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
 use falco_plugin::parse::{ParseInput, ParsePlugin};
 use falco_plugin::source::{
     EventBatch, EventInput, PluginEvent, SourcePlugin, SourcePluginInstance,
@@ -163,11 +161,7 @@ impl Plugin for DummyExtractPlugin {
 }
 
 impl DummyExtractPlugin {
-    fn extract_remaining(
-        &mut self,
-        req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<u64, Error> {
+    fn extract_remaining(&mut self, req: ExtractRequest<Self>) -> Result<u64, Error> {
         let event_num = req.event.event_number() as u64;
 
         let entry = self

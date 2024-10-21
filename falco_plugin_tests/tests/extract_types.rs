@@ -3,9 +3,7 @@ use falco_plugin::base::Plugin;
 use falco_plugin::event::events::types::EventType;
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::event::fields::types::PT_IPNET;
-use falco_plugin::extract::{
-    field, ExtractFieldInfo, ExtractFieldRequestArg, ExtractPlugin, ExtractRequest,
-};
+use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
 use falco_plugin::source::{
     EventBatch, EventInput, PluginEvent, SourcePlugin, SourcePluginInstance,
 };
@@ -85,52 +83,28 @@ impl SourcePlugin for DummyPlugin {
 }
 
 impl DummyPlugin {
-    fn extract_u64(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<u64, Error> {
+    fn extract_u64(&mut self, _req: ExtractRequest<Self>) -> Result<u64, Error> {
         Ok(5u64)
     }
 
-    fn extract_vec_u64(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<Vec<u64>, Error> {
+    fn extract_vec_u64(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<u64>, Error> {
         Ok(vec![5u64, 6u64, 7u64])
     }
 
-    fn extract_string(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<CString, Error> {
+    fn extract_string(&mut self, _req: ExtractRequest<Self>) -> Result<CString, Error> {
         Ok(CString::new("Hello, World!")?)
     }
 
-    fn extract_vec_string(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<Vec<CString>, Error> {
+    fn extract_vec_string(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<CString>, Error> {
         let s = CString::new("Hello, World!")?;
         Ok(vec![s.clone(), s.clone(), s.clone()])
     }
 
-    fn extract_reltime(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<Duration, Error> {
+    fn extract_reltime(&mut self, _req: ExtractRequest<Self>) -> Result<Duration, Error> {
         Ok(Duration::from_millis(10))
     }
 
-    fn extract_vec_reltime(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<Vec<Duration>, Error> {
+    fn extract_vec_reltime(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<Duration>, Error> {
         Ok(vec![
             Duration::from_millis(10),
             Duration::from_millis(20),
@@ -138,18 +112,13 @@ impl DummyPlugin {
         ])
     }
 
-    fn extract_abstime(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<SystemTime, Error> {
+    fn extract_abstime(&mut self, _req: ExtractRequest<Self>) -> Result<SystemTime, Error> {
         Ok(UNIX_EPOCH + Duration::from_millis(10))
     }
 
     fn extract_vec_abstime(
         &mut self,
         _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
     ) -> Result<Vec<SystemTime>, Error> {
         Ok(vec![
             UNIX_EPOCH + Duration::from_millis(10),
@@ -158,70 +127,38 @@ impl DummyPlugin {
         ])
     }
 
-    fn extract_bool(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<bool, Error> {
+    fn extract_bool(&mut self, _req: ExtractRequest<Self>) -> Result<bool, Error> {
         Ok(true)
     }
 
-    fn extract_vec_bool(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<Vec<bool>, Error> {
+    fn extract_vec_bool(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<bool>, Error> {
         Ok(vec![true, false, true])
     }
 
-    fn extract_ipaddr_v4(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<IpAddr, Error> {
+    fn extract_ipaddr_v4(&mut self, _req: ExtractRequest<Self>) -> Result<IpAddr, Error> {
         Ok(IpAddr::V4(Ipv4Addr::LOCALHOST))
     }
 
-    fn extract_ipaddr_v6(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<IpAddr, Error> {
+    fn extract_ipaddr_v6(&mut self, _req: ExtractRequest<Self>) -> Result<IpAddr, Error> {
         Ok(IpAddr::V6(Ipv6Addr::LOCALHOST))
     }
 
-    fn extract_vec_ipaddr(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<Vec<IpAddr>, Error> {
+    fn extract_vec_ipaddr(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<IpAddr>, Error> {
         Ok(vec![
             IpAddr::V4(Ipv4Addr::LOCALHOST),
             IpAddr::V6(Ipv6Addr::LOCALHOST),
         ])
     }
 
-    fn extract_ipnet_v4(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<PT_IPNET, Error> {
+    fn extract_ipnet_v4(&mut self, _req: ExtractRequest<Self>) -> Result<PT_IPNET, Error> {
         Ok(PT_IPNET(IpAddr::V4(Ipv4Addr::LOCALHOST)))
     }
 
-    fn extract_ipnet_v6(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<PT_IPNET, Error> {
+    fn extract_ipnet_v6(&mut self, _req: ExtractRequest<Self>) -> Result<PT_IPNET, Error> {
         Ok(PT_IPNET(IpAddr::V6(Ipv6Addr::LOCALHOST)))
     }
 
-    fn extract_vec_ipnet(
-        &mut self,
-        _req: ExtractRequest<Self>,
-        _arg: ExtractFieldRequestArg,
-    ) -> Result<Vec<PT_IPNET>, Error> {
+    fn extract_vec_ipnet(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<PT_IPNET>, Error> {
         Ok(vec![
             PT_IPNET(IpAddr::V4(Ipv4Addr::LOCALHOST)),
             PT_IPNET(IpAddr::V6(Ipv6Addr::LOCALHOST)),

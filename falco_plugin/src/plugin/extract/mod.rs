@@ -1,4 +1,4 @@
-use crate::extract::{EventInput, ExtractArgType};
+use crate::extract::EventInput;
 use crate::plugin::base::Plugin;
 use crate::plugin::extract::schema::ExtractFieldInfo;
 use crate::tables::TableReader;
@@ -8,8 +8,8 @@ use std::any::TypeId;
 use std::collections::BTreeMap;
 use std::ffi::{CStr, CString};
 use std::sync::Mutex;
-use thiserror::Error;
 
+mod extractor_fn;
 pub mod fields;
 pub mod schema;
 #[doc(hidden)]
@@ -32,50 +32,8 @@ pub enum ExtractFieldRequestArg<'a> {
     String(&'a CStr),
 }
 
-#[derive(Debug, Error)]
-pub enum ArgError {
-    #[error("required argument missing")]
-    Missing,
-
-    #[error("unexpected argument")]
-    Unexpected,
-
-    #[error("expected string argument")]
-    ExpectedString,
-
-    #[error("expected int argument")]
-    ExpectedInt,
-}
-
 pub trait ExtractField {
     unsafe fn key_unchecked(&self) -> ExtractFieldRequestArg;
-
-    unsafe fn key(&self, arg_type: ExtractArgType) -> Result<ExtractFieldRequestArg, ArgError> {
-        let key = unsafe { self.key_unchecked() };
-        match key {
-            k @ ExtractFieldRequestArg::None => match arg_type {
-                ExtractArgType::None => Ok(k),
-                ExtractArgType::OptionalIndex => Ok(k),
-                ExtractArgType::OptionalKey => Ok(k),
-                ExtractArgType::RequiredIndex => Err(ArgError::Missing),
-                ExtractArgType::RequiredKey => Err(ArgError::Missing),
-            },
-            k @ ExtractFieldRequestArg::Int(_) => match arg_type {
-                ExtractArgType::None => Err(ArgError::Unexpected),
-                ExtractArgType::OptionalIndex => Ok(k),
-                ExtractArgType::OptionalKey => Err(ArgError::ExpectedString),
-                ExtractArgType::RequiredIndex => Ok(k),
-                ExtractArgType::RequiredKey => Err(ArgError::ExpectedString),
-            },
-            k @ ExtractFieldRequestArg::String(_) => match arg_type {
-                ExtractArgType::None => Err(ArgError::Unexpected),
-                ExtractArgType::OptionalIndex => Err(ArgError::ExpectedInt),
-                ExtractArgType::OptionalKey => Ok(k),
-                ExtractArgType::RequiredIndex => Err(ArgError::ExpectedInt),
-                ExtractArgType::RequiredKey => Ok(k),
-            },
-        }
-    }
 }
 
 impl ExtractField for ss_plugin_extract_field {
@@ -152,8 +110,7 @@ where
     ///
     ///     fn extract_field_one(
     ///         &mut self,
-    ///         req: ExtractContext<Self>,
-    ///         arg: ExtractRequestArg) -> ... {
+    ///         req: ExtractContext<Self>) -> ... {
     ///         let context = req.context.get_or_insert_with(|| self.make_context(...));
     ///
     ///         // use context
@@ -173,7 +130,7 @@ where
     /// fn extract_sample(
     ///     &mut self,
     ///     req: ExtractRequest<Self>,
-    ///     arg: ExtractFieldRequestArg,
+    ///     arg: A, // optional
     /// ) -> Result<R, Error>;
     ///
     /// ```
@@ -186,10 +143,18 @@ where
     /// - [`std::net::IpAddr`]
     /// - [`falco_event::fields::types::PT_IPNET`]
     ///
+    /// and `A` is the argument to the field extraction:
+    ///
+    /// | Argument declaration | `field` lookup | `field[5]` lookup | `field[foo]` lookup |
+    /// |----------------------|----------------|-------------------|---------------------|
+    /// | _missing_            | valid          | -                 | -                   |
+    /// | `arg: u64`           | -              | valid             | -                   |
+    /// | `arg: Option<u64>`   | valid          | valid             | -                   |
+    /// | `arg: &CStr`         | -              | -                 | valid               |
+    /// | `arg: Option<&CStr>` | valid          | -                 | valid               |
+    ///
     /// `req` is the extraction request ([`ExtractRequest`]), containing the context in which
     /// the plugin is doing the work.
-    ///
-    /// `arg` is the actual argument passed along with the field (see [`ExtractFieldRequestArg`])
     ///
     /// To register extracted fields, add them to the [`ExtractPlugin::EXTRACT_FIELDS`] array, wrapped via [`crate::extract::field`]:
     /// ```
@@ -200,9 +165,7 @@ where
     /// use falco_plugin::base::Plugin;
     /// use falco_plugin::extract::{
     ///     field,
-    ///     ExtractArgType,
     ///     ExtractFieldInfo,
-    ///     ExtractFieldRequestArg,
     ///     ExtractPlugin,
     ///     ExtractRequest};
     /// use falco_plugin::tables::TablesInput;
@@ -225,7 +188,6 @@ where
     ///     fn extract_sample(
     ///         &mut self,
     ///         _req: ExtractRequest<Self>,
-    ///         _arg: ExtractFieldRequestArg,
     ///     ) -> Result<u64, Error> {
     ///         Ok(10u64)
     ///     }
@@ -233,12 +195,9 @@ where
     ///     fn extract_arg(
     ///         &mut self,
     ///         _req: ExtractRequest<Self>,
-    ///         arg: ExtractFieldRequestArg,
+    ///         arg: u64,
     ///     ) -> Result<u64, Error> {
-    ///         match arg {
-    ///             ExtractFieldRequestArg::Int(i) => Ok(i),
-    ///             _ => anyhow::bail!("wanted an int argument, got {:?}", arg)
-    ///         }
+    ///         Ok(arg)
     ///     }
     /// }
     ///
@@ -248,15 +207,11 @@ where
     ///     type ExtractContext = ();
     ///     const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] = &[
     ///         field("sample.always_10", &Self::extract_sample),
-    ///         field("sample.arg", &Self::extract_arg).with_arg(ExtractArgType::RequiredIndex),
+    ///         field("sample.arg", &Self::extract_arg)
     ///     ];
     /// }
     ///
     /// ```
-    ///
-    /// **Note**: while the returned field type is automatically determined based on the return type
-    /// of the function, the argument type defaults to [`ExtractArgType::None`] and must be explicitly specified
-    /// using [`ExtractFieldInfo::with_arg`] if the function expects an argument.
     const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>];
 
     /// Generate the field schema for the Falco plugin framework
@@ -317,7 +272,7 @@ where
                 table_reader,
             };
 
-            info.func.extract(self, req, request, info.arg, storage)?;
+            info.func.call(self, req, request, storage)?;
         }
         Ok(())
     }
