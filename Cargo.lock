@@ -156,7 +156,7 @@ checksum = "0d6ef0072f8a535281e4876be788938b528e9a1d43900b82c2569af7da799125"
 
 [[package]]
 name = "falco_event"
-version = "0.1.4"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "bitflags",
@@ -173,7 +173,7 @@ dependencies = [
 
 [[package]]
 name = "falco_event_derive"
-version = "0.2.0"
+version = "0.4.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -182,7 +182,7 @@ dependencies = [
 
 [[package]]
 name = "falco_plugin"
-version = "0.3.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "bumpalo",
@@ -205,11 +205,11 @@ dependencies = [
 
 [[package]]
 name = "falco_plugin_api"
-version = "0.2.0"
+version = "0.4.0"
 
 [[package]]
 name = "falco_plugin_derive"
-version = "0.2.0"
+version = "0.4.0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -218,7 +218,7 @@ dependencies = [
 
 [[package]]
 name = "falco_plugin_runner"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "falco_event",
@@ -230,7 +230,7 @@ dependencies = [
 
 [[package]]
 name = "falco_plugin_tests"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "anyhow",
  "cxx",

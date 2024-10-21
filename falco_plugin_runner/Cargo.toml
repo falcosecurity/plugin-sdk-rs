@@ -1,12 +1,12 @@
 [package]
 name = "falco_plugin_runner"
-version = "0.1.0"
+version = "0.4.0"
 edition = "2021"
 
 [dependencies]
 anyhow = "1.0.89"
-falco_event = { version = "0.1.4", path = "../falco_event" }
-falco_plugin_api = { version = "0.2.0", path = "../falco_plugin_api" }
+falco_event = { version = "0.4.0", path = "../falco_event" }
+falco_plugin_api = { version = "0.4.0", path = "../falco_plugin_api" }
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 

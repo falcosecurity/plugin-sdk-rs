@@ -29,7 +29,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-falco_plugin = "0.3.0"
+falco_plugin = "0.4.0"
 ```
 
 The general layout of your plugin code would be:
@@ -92,7 +92,7 @@ edition = "2021"
 crate-type = ["staticlib"]
 
 [dependencies]
-falco_plugin = "0.3.0"
+falco_plugin = "0.4.0"
 ```
 
 The outline of the plugin code would look like:
@@ -192,3 +192,12 @@ The SDK uses the [`log`] crate for logging, redirecting all messages to the Falc
 e.g. `log::info!` in your plugin without any explicit initialization. The log level defaults to `Trace`
 in debug builds and to `Info` in release builds, but can be overridden by calling [`log::set_max_level`]
 in your [plugin init method](`base::Plugin::new`).
+
+## Versioning and MSRV
+
+The SDK consists of several crates, some are more coupled to each other, some are mostly independent. However,
+to keep packaging manageable, all the crates are versioned together, i.e. a version bump in one causes
+a corresponding version bump in all the other crates, even if it's not strictly necessary. This may change
+in the future.
+
+While we're in the 0.x version range, the Minimum Supported Rust Version is defined as "latest stable".
