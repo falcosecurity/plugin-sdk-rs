@@ -135,9 +135,9 @@ Once you enable the `serde` feature of this crate, the following types gain seri
 support:
 
 * all the `PT_*` field types (many are Rust stdlib built-ins and support (de)serialization regardless)
-* all the [`event::types`] events (see the module documentation for details regarding owned/borrowed types)
+* all the [`events::types`] events (see the module documentation for details regarding owned/borrowed types)
 * `Event<AnyEvent>` (but *not* other `Event<T>` types, to avoid ambiguous serialization results and subsequent
   deserialization issues)
 
-**Note**: you can serialize an event wrapping either the [borrowed](`event::types::AnyEvent`) or
-[owned](`event::types::owned::AnyEvent`) variant of `AnyEvent`, but can only deserialize to the owned variant.
+**Note**: you can serialize an event wrapping either the [borrowed](`events::types::AnyEvent`) or
+[owned](`events::types::owned::AnyEvent`) variant of `AnyEvent`, but can only deserialize to the owned variant.
