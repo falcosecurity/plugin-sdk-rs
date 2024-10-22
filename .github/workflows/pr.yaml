@@ -1,0 +1,46 @@
+name: PR
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+    strategy:
+      fail-fast: false
+      matrix:
+        tag: [ default_features, all_features ]
+        include:
+          - tag: default_features
+            name: Test with default features enabled
+            cargo_test_opts: ""
+          - tag: all_features
+            name: Test with all features enabled
+            cargo_test_opts: "--all-features"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build and test
+        run: cargo test ${{ matrix.cargo_test_opts }}
+
+  render_docs:
+    name: Render docs
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build docs
+        run: cargo doc --all-features --no-deps
