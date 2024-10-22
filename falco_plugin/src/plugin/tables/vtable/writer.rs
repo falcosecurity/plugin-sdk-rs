@@ -10,6 +10,7 @@ use std::marker::PhantomData;
 /// A vtable containing table write access methods
 ///
 /// It's used as a token to prove you're allowed to write tables in a particular context
+/// The default implementation is [`crate::tables::LazyTableWriter`].
 pub trait TableWriter: private::TableWriterImpl {}
 
 impl<T: private::TableWriterImpl> TableWriter for T {}

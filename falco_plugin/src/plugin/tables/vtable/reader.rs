@@ -10,7 +10,8 @@ use std::marker::PhantomData;
 
 /// A vtable containing table read access methods
 ///
-/// It's used as a token to prove you're allowed to read tables in a particular context
+/// It's used as a token to prove you're allowed to read tables in a particular context.
+/// The default implementation is [`crate::tables::LazyTableReader`].
 pub trait TableReader: private::TableReaderImpl {}
 
 impl<T: private::TableReaderImpl> TableReader for T {}

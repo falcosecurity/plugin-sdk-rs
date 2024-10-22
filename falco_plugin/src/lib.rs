@@ -290,6 +290,7 @@ pub mod async_event {
     /// The event type that can be emitted from async event plugins
     pub use falco_event::events::types::PPME_ASYNCEVENT_E as AsyncEvent;
 
+
     pub use crate::plugin::async_event::async_handler::AsyncHandler;
     pub use crate::plugin::async_event::AsyncEventPlugin;
 
@@ -638,7 +639,10 @@ pub mod listen {
 pub mod tables {
     pub use crate::plugin::tables::vtable::reader::LazyTableReader;
     pub use crate::plugin::tables::vtable::reader::TableReader;
+    pub use crate::plugin::tables::vtable::reader::ValidatedTableReader;
     pub use crate::plugin::tables::vtable::writer::LazyTableWriter;
+    pub use crate::plugin::tables::vtable::writer::TableWriter;
+    pub use crate::plugin::tables::vtable::writer::ValidatedTableWriter;
     pub use crate::plugin::tables::vtable::TablesInput;
 
     /// Exporting tables to other plugins
