@@ -4,8 +4,8 @@ version = "0.4.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "Derive macros for the falco_plugin library"
-homepage = "https://gnosek.github.io/falco-plugin-rs/falco_plugin_derive/"
-repository = "https://github.com/gnosek/falco-plugin-rs"
+homepage = "https://falcosecurity.github.io/plugin-sdk-rs/falco_plugin_derive/"
+repository = "https://github.com/falcosecurity/plugin-sdk-rs"
 readme = "README.md"
 keywords = ["falco", "security"]
 
