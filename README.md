@@ -10,7 +10,7 @@ This crate provides a framework for writing [Falco](https://github.com/falcosecu
 plugins. There are several types of plugins available. Learn more about Falco plugins
 and plugin types in the [Falco plugin documentation](https://falco.org/docs/plugins/).
 
-You can find more details in the [documentation](falcosecurity.github.io/plugin-sdk-rs/).
+You can find more details in the [documentation](https://falcosecurity.github.io/plugin-sdk-rs/).
 
 ## Join the Community
 
