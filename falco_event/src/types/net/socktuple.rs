@@ -1,6 +1,5 @@
 use std::fmt::{Debug, Display, Formatter};
 use std::io::Write;
-use std::path::{Path, PathBuf};
 
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL};
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
@@ -8,6 +7,7 @@ use crate::types::format::Format;
 use crate::types::net::endpoint::{EndpointV4, EndpointV6};
 use crate::types::{Borrow, Borrowed};
 use byteorder::{ReadBytesExt, WriteBytesExt};
+use typed_path::{UnixPath, UnixPathBuf};
 
 /// Socket tuple: describing both endpoints of a connection
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
@@ -21,7 +21,8 @@ pub enum SockTuple<'a> {
         /// destination socket kernel pointer
         dest_ptr: u64,
         /// filesystem path to the socket
-        path: &'a Path,
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))]
+        path: &'a UnixPath,
     },
 
     /// IPv4 connection
@@ -146,7 +147,7 @@ impl<'a> FromBytes<'a> for SockTuple<'a> {
 
 impl<F> Format<F> for SockTuple<'_>
 where
-    for<'a> &'a Path: Format<F>,
+    for<'a> &'a UnixPath: Format<F>,
     EndpointV4: Format<F>,
     EndpointV6: Format<F>,
 {
@@ -187,7 +188,8 @@ pub enum OwnedSockTuple {
         /// destination socket kernel pointer
         dest_ptr: u64,
         /// filesystem path to the socket
-        path: PathBuf,
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))]
+        path: UnixPathBuf,
     },
 
     /// IPv4 connection
@@ -249,7 +251,6 @@ mod tests {
     use super::*;
     use crate::types::Port;
     use std::net::{Ipv4Addr, Ipv6Addr};
-    use std::os::unix::ffi::OsStrExt;
     use std::str::FromStr;
 
     #[test]
@@ -324,10 +325,7 @@ mod tests {
 
         assert_eq!(source_addr, 0);
         assert_eq!(dest_addr, 0xffff98bc4ecf2000);
-        assert_eq!(
-            path.as_os_str().as_bytes(),
-            b"/var/run/nscd/socket".as_slice()
-        );
+        assert_eq!(path.as_bytes(), b"/var/run/nscd/socket".as_slice());
 
         assert_eq!(binary, binary2.as_slice(),);
     }
@@ -337,12 +335,12 @@ mod tests {
 mod serde_tests {
     use crate::types::{OwnedSockTuple, Port, SockTuple};
     use std::net::{Ipv4Addr, Ipv6Addr};
-    use std::path::Path;
     use std::str::FromStr;
+    use typed_path::UnixPath;
 
     #[test]
     fn test_serde_socktuple_unix() {
-        let path = Path::new("/path/to/unix");
+        let path = UnixPath::new("/path/to/unix");
         let sockaddr = SockTuple::Unix {
             source_ptr: 1,
             dest_ptr: 2,

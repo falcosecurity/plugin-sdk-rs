@@ -174,6 +174,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
+ "typed-path",
 ]
 
 [[package]]
@@ -244,6 +245,7 @@ dependencies = [
  "falco_plugin_runner",
  "log",
  "pkg-config",
+ "typed-path",
 ]
 
 [[package]]
@@ -651,6 +653,12 @@ dependencies = [
  "quote",
  "syn 2.0.71",
 ]
+
+[[package]]
+name = "typed-path"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82205ffd44a9697e34fc145491aa47310f9871540bb7909eaa9365e0a9a46607"
 
 [[package]]
 name = "unicode-ident"
