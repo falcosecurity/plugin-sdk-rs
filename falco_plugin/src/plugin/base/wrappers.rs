@@ -318,6 +318,8 @@ macro_rules! wrap_ffi {
 #[macro_export]
 macro_rules! plugin {
     (unsafe { $maj:expr; $min:expr; $patch:expr } => #[no_capabilities] $ty:ty) => {
+        unsafe impl $crate::internals::base::wrappers::BasePluginExported for $ty {}
+
         $crate::base_plugin_ffi_wrappers!($maj; $min; $patch => #[no_mangle] $ty);
     };
     (unsafe { $maj:expr; $min:expr; $patch:expr } => $ty:ty) => {
@@ -449,6 +451,7 @@ macro_rules! static_plugin {
         };
 
         // a static plugin automatically exports all capabilities
+        unsafe impl $crate::internals::base::wrappers::BasePluginExported for $ty {}
         unsafe impl $crate::internals::async_event::wrappers::AsyncPluginExported for $ty {}
         unsafe impl $crate::internals::extract::wrappers::ExtractPluginExported for $ty {}
         unsafe impl $crate::internals::listen::wrappers::CaptureListenPluginExported for $ty {}
@@ -496,8 +499,6 @@ macro_rules! ensure_plugin_capabilities {
 #[macro_export]
 macro_rules! base_plugin_ffi_wrappers {
     ($maj:expr; $min:expr; $patch:expr => #[$attr:meta] $ty:ty) => {
-        unsafe impl $crate::internals::base::wrappers::BasePluginExported for $ty {}
-
         #[$attr]
         pub extern "C-unwind" fn plugin_get_required_api_version() -> *const std::ffi::c_char {
             $crate::internals::base::wrappers::plugin_get_required_api_version::<
