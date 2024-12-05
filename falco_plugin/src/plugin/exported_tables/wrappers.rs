@@ -160,7 +160,6 @@ where
     ss_plugin_rc_SS_PLUGIN_SUCCESS
 }
 
-// TODO(spec) is removing a nonexistent entry an error?
 // SAFETY: all pointers must be valid
 unsafe extern "C-unwind" fn erase_table_entry<K, E>(
     table: *mut ss_plugin_table_t,
@@ -179,9 +178,11 @@ where
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         let key = K::from_data(key);
-        table.erase(key);
+        match table.erase(key) {
+            None => ss_plugin_rc_SS_PLUGIN_FAILURE,
+            Some(_) => ss_plugin_rc_SS_PLUGIN_SUCCESS,
+        }
     }
-    ss_plugin_rc_SS_PLUGIN_SUCCESS
 }
 
 // SAFETY: `table` must be a valid pointer to Table<K,E>
@@ -205,7 +206,6 @@ where
     }
 }
 
-// TODO(spec) what if the entry already exists?
 // SAFETY: all pointers must be valid
 unsafe extern "C-unwind" fn add_table_entry<K, E>(
     table: *mut ss_plugin_table_t,
