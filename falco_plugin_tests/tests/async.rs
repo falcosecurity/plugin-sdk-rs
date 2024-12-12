@@ -82,7 +82,23 @@ impl AsyncEventPlugin for DummyPlugin {
                 metadata,
                 params: event,
             };
-            handler.emit(event)
+            handler.emit(event)?;
+
+            let event = AsyncEvent {
+                plugin_id: Some(0),
+                name: Some(c"invalid_event_name"),
+                data: Some(b"hello"),
+            };
+
+            let metadata = EventMetadata::default();
+
+            let event = Event {
+                metadata,
+                params: event,
+            };
+            assert!(handler.emit(event).is_err());
+
+            Ok(())
         })?);
 
         Ok(())
