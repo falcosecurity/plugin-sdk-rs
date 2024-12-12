@@ -23,6 +23,7 @@ type RemainingEntryTable = export::Table<u64, RemainingCounter>;
 #[derive(export::Entry)]
 struct RemainingCounter {
     remaining: export::Public<u64>,
+    readonly: export::Readonly<u64>,
 }
 
 // same table, but imported
@@ -33,6 +34,7 @@ type RemainingCounterImport = import::Entry<Arc<RemainingCounterImportMetadata>>
 #[entry_type(RemainingCounterImport)]
 struct RemainingCounterImportMetadata {
     remaining: import::Field<u64, RemainingCounterImport>,
+    readonly: import::Field<u64, RemainingCounterImport>,
 }
 
 struct DummyPlugin {
@@ -145,6 +147,10 @@ impl ParsePlugin for DummyPlugin {
         let w = &parse_input.writer;
         let entry = self.remaining_table_import.create_entry(w)?;
         entry.set_remaining(w, &remaining)?;
+        anyhow::ensure!(
+            entry.set_readonly(w, &1).is_err(),
+            "setting a read-only field succeeded"
+        );
         let _ = self
             .remaining_table_import
             .insert(r, w, &event_num, entry)?;

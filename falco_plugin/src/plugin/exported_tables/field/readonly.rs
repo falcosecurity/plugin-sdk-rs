@@ -1,3 +1,4 @@
+use crate::internals::tables::export::DynamicFieldValue;
 use crate::plugin::exported_tables::field_value::traits::FieldValue;
 use crate::plugin::exported_tables::field_value::traits::{seal, StaticField};
 use crate::plugin::exported_tables::metadata::HasMetadata;
@@ -51,4 +52,12 @@ impl<T: FieldValue> FieldValue for Readonly<T> {
 impl<T: StaticField> StaticField for Readonly<T> {
     const TYPE_ID: FieldTypeId = T::TYPE_ID;
     const READONLY: bool = true;
+}
+
+impl<T: TryFrom<DynamicFieldValue>> TryFrom<DynamicFieldValue> for Readonly<T> {
+    type Error = T::Error;
+
+    fn try_from(value: DynamicFieldValue) -> Result<Self, Self::Error> {
+        Ok(Self(T::try_from(value)?))
+    }
 }
