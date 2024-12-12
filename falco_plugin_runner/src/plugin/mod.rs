@@ -132,6 +132,21 @@ impl Plugin {
         }
     }
 
+    pub fn source_name(&self) -> *const c_char {
+        if let Some(get_source) = self.api().__bindgen_anon_1.get_event_source {
+            let ptr = unsafe { get_source() };
+            if !ptr.is_null() {
+                let source = unsafe { CStr::from_ptr(ptr) };
+                if !source.is_empty() {
+                    return ptr;
+                }
+                return c"syscall".as_ptr();
+            }
+        }
+
+        std::ptr::null()
+    }
+
     pub fn last_error(&self) -> Option<CString> {
         let get_last_error = self.api().get_last_error?;
         let last_error = unsafe { get_last_error(self.plugin) };
@@ -385,7 +400,7 @@ impl Plugin {
 
     fn decorate_event(&mut self, buf: *mut ss_plugin_event) -> Event {
         Event {
-            source: self.name(),
+            source: self.source_name(),
             source_plugin: self.plugin,
             to_string: self.api.__bindgen_anon_1.event_to_string,
             buf,
