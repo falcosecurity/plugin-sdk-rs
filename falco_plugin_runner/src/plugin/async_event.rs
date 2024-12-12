@@ -3,7 +3,7 @@ use falco_event::events::RawEvent;
 use falco_plugin_api::{
     plugin_api__bindgen_ty_4, ss_plugin_event, ss_plugin_owner_t, ss_plugin_rc,
     ss_plugin_rc_SS_PLUGIN_FAILURE, ss_plugin_rc_SS_PLUGIN_NOT_SUPPORTED,
-    ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_rc_SS_PLUGIN_TIMEOUT, ss_plugin_t,
+    ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_rc_SS_PLUGIN_TIMEOUT, ss_plugin_t, PLUGIN_MAX_ERRLEN,
 };
 use std::collections::VecDeque;
 use std::ffi::{c_char, CStr};
@@ -87,34 +87,70 @@ impl AsyncPlugin {
     }
 }
 
+fn write_err_msg(buf: &mut [u8], msg: &str) {
+    let len = std::cmp::min(buf.len() - 1, msg.len());
+    unsafe {
+        std::ptr::copy_nonoverlapping(msg.as_ptr(), buf.as_mut_ptr(), len);
+    }
+
+    buf[len] = 0;
+}
+
 unsafe extern "C-unwind" fn async_handler(
     owner: *mut ss_plugin_owner_t,
     event: *const ss_plugin_event,
-    _err: *mut c_char,
+    err: *mut c_char,
 ) -> i32 {
+    let err = std::slice::from_raw_parts_mut(err as *mut _, PLUGIN_MAX_ERRLEN as usize);
     let owner = unsafe { &mut *(owner as *mut AsyncPlugin) };
     let evt_len = unsafe { (*event).len as usize };
 
     let event = event as *const u8;
     let event = unsafe { std::slice::from_raw_parts(event, evt_len) };
 
-    let Ok(raw_event) = RawEvent::from(event) else {
-        return ss_plugin_rc_SS_PLUGIN_FAILURE;
+    let raw_event = match RawEvent::from(event) {
+        Ok(event) => event,
+        Err(e) => {
+            write_err_msg(err, &format!("Failed to parse event: {}", e));
+            return ss_plugin_rc_SS_PLUGIN_FAILURE;
+        }
     };
 
-    let Ok(async_event) = raw_event.load::<PPME_ASYNCEVENT_E>() else {
-        return ss_plugin_rc_SS_PLUGIN_FAILURE;
+    let async_event = match raw_event.load::<PPME_ASYNCEVENT_E>() {
+        Ok(event) => event,
+        Err(e) => {
+            write_err_msg(err, &format!("Failed to parse async event: {}", e));
+            return ss_plugin_rc_SS_PLUGIN_FAILURE;
+        }
     };
 
-    let Some(async_event_name) = async_event.params.name else {
-        return ss_plugin_rc_SS_PLUGIN_FAILURE;
+    let async_event_name = match async_event.params.name {
+        Some(name) => name,
+        None => {
+            write_err_msg(err, "Event name missing");
+            return ss_plugin_rc_SS_PLUGIN_FAILURE;
+        }
     };
 
-    let Ok(async_event_name) = async_event_name.to_str() else {
-        return ss_plugin_rc_SS_PLUGIN_FAILURE;
+    let async_event_name = match async_event_name.to_str() {
+        Ok(name) => name,
+        Err(e) => {
+            write_err_msg(
+                err,
+                &format!("Failed to decode async event name as UTF-8: {}", e),
+            );
+            return ss_plugin_rc_SS_PLUGIN_FAILURE;
+        }
     };
 
     if !owner.async_events.iter().any(|evt| evt == async_event_name) {
+        write_err_msg(
+            err,
+            &format!(
+                "Event name mismatch, got {:?}, expected any of {:?}",
+                async_event_name, owner.async_events
+            ),
+        );
         return ss_plugin_rc_SS_PLUGIN_FAILURE;
     }
 
