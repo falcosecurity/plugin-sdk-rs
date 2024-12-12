@@ -2,6 +2,9 @@ use crate::base::Plugin;
 use crate::plugin::async_event::async_handler::AsyncHandler;
 use crate::plugin::async_event::wrappers::AsyncPluginExported;
 
+use falco_event::events::types::PPME_ASYNCEVENT_E as AsyncEvent;
+use falco_event::events::Event;
+
 pub mod async_handler;
 pub mod background_task;
 #[doc(hidden)]
@@ -48,4 +51,20 @@ pub trait AsyncEventPlugin: Plugin + AsyncPluginExported {
     ///
     /// **Note**: [`AsyncEventPlugin::start_async`] can be called again, with a different [`AsyncHandler`].
     fn stop_async(&mut self) -> Result<(), anyhow::Error>;
+
+    /// # A helper method to create an asynchronous event
+    fn async_event<'a>(name: &'a std::ffi::CStr, data: &'a [u8]) -> Event<AsyncEvent<'a>> {
+        let event = AsyncEvent {
+            plugin_id: None, // gets populated by the framework, shall be None
+            name: Some(name),
+            data: Some(data),
+        };
+
+        let metadata = falco_event::events::EventMetadata::default();
+
+        Event {
+            metadata,
+            params: event,
+        }
+    }
 }

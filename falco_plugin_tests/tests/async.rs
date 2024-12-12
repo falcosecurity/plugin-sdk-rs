@@ -1,7 +1,6 @@
 use falco_plugin::anyhow::{self, Error};
-use falco_plugin::async_event::{AsyncEvent, AsyncEventPlugin, AsyncHandler, BackgroundTask};
+use falco_plugin::async_event::{AsyncEventPlugin, AsyncHandler, BackgroundTask};
 use falco_plugin::base::Plugin;
-use falco_plugin::event::events::{Event, EventMetadata};
 use falco_plugin::extract::EventInput;
 use falco_plugin::source::{EventBatch, SourcePlugin, SourcePluginInstance};
 use falco_plugin::tables::TablesInput;
@@ -70,34 +69,10 @@ impl AsyncEventPlugin for DummyPlugin {
 
         self.thread = Some(self.task.spawn(Duration::from_millis(100), move || {
             dbg!("emitting event");
-            let event = AsyncEvent {
-                plugin_id: Some(0),
-                name: Some(c"dummy_async"),
-                data: Some(b"hello"),
-            };
-
-            let metadata = EventMetadata::default();
-
-            let event = Event {
-                metadata,
-                params: event,
-            };
-            handler.emit(event)?;
-
-            let event = AsyncEvent {
-                plugin_id: Some(0),
-                name: Some(c"invalid_event_name"),
-                data: Some(b"hello"),
-            };
-
-            let metadata = EventMetadata::default();
-
-            let event = Event {
-                metadata,
-                params: event,
-            };
-            assert!(handler.emit(event).is_err());
-
+            handler.emit(Self::async_event(c"dummy_async", b"hello"))?;
+            assert!(handler
+                .emit(Self::async_event(c"invalid_event_name", b"hello"))
+                .is_err());
             Ok(())
         })?);
 

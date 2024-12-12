@@ -208,7 +208,6 @@ pub mod parse {
 /// use falco_plugin::base::Plugin;
 /// use falco_plugin::{async_event_plugin, plugin};
 /// use falco_plugin::async_event::{
-///     AsyncEvent,
 ///     AsyncEventPlugin,
 ///     AsyncHandler,
 ///     BackgroundTask};
@@ -249,22 +248,8 @@ pub mod parse {
 ///         // start a new thread
 ///         // waiting up to 100ms between events for the stop request
 ///         self.thread = Some(self.task.spawn(std::time::Duration::from_millis(100), move || {
-///             // build an event
-///             let event = AsyncEvent {
-///                 plugin_id: Some(0),
-///                 name: Some(c"sample_async"),
-///                 data: Some(b"hello"),
-///             };
-///
-///             let metadata = EventMetadata::default();
-///
-///             let event = Event {
-///                 metadata,
-///                 params: event,
-///             };
-///
-///             // submit it to the main event loop
-///             handler.emit(event)?;
+///             // submit an async event to the main event loop
+///             handler.emit(Self::async_event(c"sample_async", b"hello"))?;
 ///             Ok(())
 ///         })?);
 ///         Ok(())
