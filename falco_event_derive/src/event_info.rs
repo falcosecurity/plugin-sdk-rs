@@ -419,6 +419,20 @@ impl EventInfo {
             }
         )
     }
+
+    fn variant_to_bytes(&self) -> proc_macro2::TokenStream {
+        let event_code = &self.event_code;
+        let event_type = Ident::new(
+            &event_code.to_string().replace("PPME_", ""),
+            event_code.span(),
+        );
+
+        quote!(
+            AnyEvent::#event_type(inner) => {
+                inner.write(metadata, writer)
+            }
+        )
+    }
 }
 
 struct Events {
@@ -459,12 +473,17 @@ impl Events {
     fn variant_fmts(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
         self.events.iter().map(|e| e.variant_fmt())
     }
+
+    fn variants_to_bytes(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
+        self.events.iter().map(|e| e.variant_to_bytes())
+    }
 }
 
 fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::TokenStream {
     let typedefs = events.typedefs(variant);
     let variants = events.enum_variants(variant);
     let variant_fmts = events.variant_fmts();
+    let variants_to_bytes = events.variants_to_bytes();
     let lifetime = match variant {
         CodegenVariant::Borrowed => Some(quote!(<'a>)),
         CodegenVariant::Owned => None,
@@ -492,6 +511,14 @@ fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::
         #[allow(non_camel_case_types)]
         pub enum AnyEvent #lifetime {
             #(#variants,)*
+        }
+
+        impl #lifetime crate::event_derive::PayloadToBytes for AnyEvent #lifetime {
+            fn write<W: std::io::Write>(&self, metadata: &crate::event_derive::EventMetadata, writer: W) -> std::io::Result<()> {
+                match self {
+                    #(#variants_to_bytes)*
+                }
+            }
         }
 
         impl #lifetime crate::event_derive::Format<crate::event_derive::format_type::PF_NA> for AnyEvent #lifetime {
