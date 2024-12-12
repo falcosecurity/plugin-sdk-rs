@@ -18,7 +18,7 @@ impl<'a> FromBytes<'a> for &'a Path {
 
 impl ToBytes for &Path {
     fn binary_size(&self) -> usize {
-        self.as_os_str().len()
+        self.as_os_str().len() + 1
     }
 
     fn write<W: Write>(&self, mut writer: W) -> std::io::Result<()> {
