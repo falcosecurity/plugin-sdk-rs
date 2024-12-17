@@ -1,6 +1,6 @@
 [package]
 name = "falco_plugin_runner"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 license = "Apache-2.0"
 description = "Pure-Rust runner for Falco plugins"
