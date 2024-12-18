@@ -12,6 +12,7 @@ use falco_plugin_api::{
     ss_plugin_table_fields_vtable, ss_plugin_table_info, ss_plugin_table_input,
     ss_plugin_table_reader_vtable, ss_plugin_table_t, ss_plugin_table_writer_vtable,
 };
+use std::borrow::Borrow;
 use std::ffi::CStr;
 use thiserror::Error;
 
@@ -161,7 +162,9 @@ impl<'t> TablesInput<'t> {
     /// going out of scope, which will lead to crashes in plugins using your table).
     pub fn add_table<K, E>(&self, table: Table<K, E>) -> Result<Box<Table<K, E>>, anyhow::Error>
     where
-        K: Key + Ord + Clone,
+        K: Key + Ord,
+        K: Borrow<<K as Key>::Borrowed>,
+        <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
         E: Entry,
         E::Metadata: TableMetadata,
     {

@@ -6,11 +6,14 @@ use crate::plugin::exported_tables::ref_shared::RefShared;
 use crate::plugin::exported_tables::table::Table;
 use crate::plugin::tables::data::Key;
 use anyhow::Error;
+use std::borrow::Borrow;
 use std::ffi::CStr;
 
 impl<K, E> HasMetadata for Box<Table<K, E>>
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {

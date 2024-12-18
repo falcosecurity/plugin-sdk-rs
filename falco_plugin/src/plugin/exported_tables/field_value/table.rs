@@ -6,10 +6,13 @@ use crate::plugin::exported_tables::field_value::traits::{seal, StaticField};
 use crate::plugin::exported_tables::table::Table;
 use crate::plugin::tables::data::{FieldTypeId, Key};
 use falco_plugin_api::ss_plugin_state_data;
+use std::borrow::Borrow;
 
 impl<K, E> seal::Sealed for Box<Table<K, E>>
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata + Clone,
 {
@@ -17,7 +20,9 @@ where
 
 impl<K, E> FieldValue for Box<Table<K, E>>
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata + Clone,
 {
@@ -38,7 +43,9 @@ where
 
 impl<K, E> StaticField for Box<Table<K, E>>
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata + Clone,
 {
@@ -48,7 +55,9 @@ where
 
 impl<K, E> TryFrom<DynamicFieldValue> for Box<Table<K, E>>
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata + Clone,
 {

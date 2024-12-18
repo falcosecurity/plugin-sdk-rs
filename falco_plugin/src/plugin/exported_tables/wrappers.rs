@@ -12,12 +12,15 @@ use falco_plugin_api::{
     ss_plugin_table_writer_vtable_ext,
 };
 use num_traits::FromPrimitive;
+use std::borrow::Borrow;
 use std::ffi::{c_char, CStr};
 
 // SAFETY: `table` must be a valid pointer to Table<K,E>
 unsafe extern "C-unwind" fn get_table_name<K, E>(table: *mut ss_plugin_table_t) -> *const c_char
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -32,7 +35,9 @@ where
 // SAFETY: `table` must be a valid pointer to Table<K,E>
 unsafe extern "C-unwind" fn get_table_size<K, E>(table: *mut ss_plugin_table_t) -> u64
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -51,7 +56,9 @@ unsafe extern "C-unwind" fn get_table_entry<K, E>(
     key: *const ss_plugin_state_data,
 ) -> *mut ss_plugin_table_entry_t
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -79,7 +86,9 @@ unsafe extern "C-unwind" fn read_entry_field<K, E>(
     out: *mut ss_plugin_state_data,
 ) -> ss_plugin_rc
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -123,7 +132,9 @@ unsafe extern "C-unwind" fn iterate_entries<K, E>(
     state: *mut ss_plugin_table_iterator_state_t,
 ) -> ss_plugin_bool
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -147,7 +158,9 @@ where
 // SAFETY: `table` must be a valid pointer to Table<K,E>
 unsafe extern "C-unwind" fn clear_table<K, E>(table: *mut ss_plugin_table_t) -> ss_plugin_rc
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -166,7 +179,9 @@ unsafe extern "C-unwind" fn erase_table_entry<K, E>(
     key: *const ss_plugin_state_data,
 ) -> ss_plugin_rc
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -190,7 +205,9 @@ unsafe extern "C-unwind" fn create_table_entry<K, E>(
     table: *mut ss_plugin_table_t,
 ) -> *mut ss_plugin_table_entry_t
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -213,7 +230,9 @@ unsafe extern "C-unwind" fn add_table_entry<K, E>(
     entry: *mut ss_plugin_table_entry_t,
 ) -> *mut ss_plugin_table_entry_t
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -246,7 +265,9 @@ unsafe extern "C-unwind" fn write_entry_field<K, E>(
     value: *const ss_plugin_state_data,
 ) -> ss_plugin_rc
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -273,7 +294,9 @@ unsafe extern "C-unwind" fn list_table_fields<K, E>(
     nfields: *mut u32,
 ) -> *const ss_plugin_table_fieldinfo
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -294,7 +317,9 @@ unsafe extern "C-unwind" fn get_table_field<K, E>(
     data_type: ss_plugin_state_type,
 ) -> *mut ss_plugin_table_field_t
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -324,7 +349,9 @@ unsafe extern "C-unwind" fn add_table_field<K, E>(
     data_type: ss_plugin_state_type,
 ) -> *mut ss_plugin_table_field_t
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -349,7 +376,9 @@ where
 
 pub(crate) fn reader_vtable<K, E>() -> ss_plugin_table_reader_vtable_ext
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -365,7 +394,9 @@ where
 
 pub(crate) fn writer_vtable<K, E>() -> ss_plugin_table_writer_vtable_ext
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -381,7 +412,9 @@ where
 
 pub(crate) fn fields_vtable<K, E>() -> ss_plugin_table_fields_vtable_ext
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {

@@ -13,6 +13,7 @@ use crate::plugin::exported_tables::vtable::Vtable;
 use crate::plugin::tables::data::{FieldTypeId, Key};
 use crate::FailureReason;
 use falco_plugin_api::{ss_plugin_state_data, ss_plugin_table_fieldinfo};
+use std::borrow::Borrow;
 use std::collections::BTreeMap;
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
@@ -37,7 +38,9 @@ use std::fmt::{Debug, Formatter};
 #[must_use]
 pub struct Table<K, E>
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -51,7 +54,9 @@ where
 
 impl<K, E> Debug for Table<K, E>
 where
-    K: Key + Ord + Clone + Debug,
+    K: Key + Ord + Debug,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry + Debug,
     E::Metadata: TableMetadata + Debug,
 {
@@ -69,7 +74,9 @@ pub(in crate::plugin::exported_tables) type TableEntryType<E> = RefGuard<Extensi
 
 impl<K, E> Table<K, E>
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
@@ -115,7 +122,11 @@ where
     }
 
     /// Get an entry corresponding to a particular key.
-    pub fn lookup(&self, key: &K) -> Option<TableEntryType<E>> {
+    pub fn lookup<Q>(&self, key: &Q) -> Option<TableEntryType<E>>
+    where
+        K: Borrow<Q>,
+        Q: Ord + ?Sized,
+    {
         Some(self.data.get(key)?.write_arc())
     }
 
@@ -153,7 +164,11 @@ where
     }
 
     /// Erase an entry by key.
-    pub fn erase(&mut self, key: &K) -> Option<TableEntryType<E>> {
+    pub fn erase<Q>(&mut self, key: &Q) -> Option<TableEntryType<E>>
+    where
+        K: Borrow<Q>,
+        Q: Ord + ?Sized,
+    {
         Some(self.data.remove(key)?.write_arc())
     }
 
@@ -169,10 +184,16 @@ where
     }
 
     /// Attach an entry to a table key
-    pub fn insert(&mut self, key: &K, entry: TableEntryType<E>) -> Option<TableEntryType<E>> {
+    pub fn insert<Q>(&mut self, key: &Q, entry: TableEntryType<E>) -> Option<TableEntryType<E>>
+    where
+        K: Borrow<Q>,
+        Q: Ord + ToOwned<Owned = K> + ?Sized,
+    {
         // note: different semantics from data.insert: we return the *new* entry
-        self.data
-            .insert(key.clone(), std::sync::Arc::clone(RefGuard::rwlock(&entry)));
+        self.data.insert(
+            key.to_owned(),
+            std::sync::Arc::clone(RefGuard::rwlock(&entry)),
+        );
         drop(entry);
         self.lookup(key)
     }

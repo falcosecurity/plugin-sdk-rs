@@ -10,7 +10,8 @@ use falco_plugin_api::{
     ss_plugin_table_field_t,
 };
 use num_derive::FromPrimitive;
-use std::ffi::CStr;
+use std::borrow::Borrow;
+use std::ffi::{CStr, CString};
 use std::fmt::{Debug, Formatter};
 
 pub(in crate::plugin::tables) mod seal {
@@ -60,15 +61,21 @@ pub trait TableData: seal::Sealed {
 
 /// # A trait describing types usable as table keys
 pub trait Key: TableData {
+    /// The type borrowed from the FFI representation
+    type Borrowed: ?Sized;
+
     /// # Borrow from the raw FFI representation
     ///
     /// **Note**: this function only borrows the data and must return a reference.
-    /// This means that the types implementing this trait must be repr(C) and compatible
-    /// with the layout of `ss_plugin_state_data`.
+    /// This means that Self::Borrowed must be repr(C) and compatible
+    /// with the layout of `ss_plugin_state_data`, or otherwise constructible
+    /// as a reference from a pointer to the actual data (e.g. CStr from a *const c_char).
     ///
     /// # Safety
     /// `data` must contain valid data of the correct type
-    unsafe fn from_data(data: &ss_plugin_state_data) -> &Self;
+    unsafe fn from_data(data: &ss_plugin_state_data) -> &Self::Borrowed
+    where
+        Self: Borrow<Self::Borrowed>;
 }
 
 /// # A trait describing types usable as table values
@@ -119,6 +126,8 @@ macro_rules! impl_table_data_direct {
         }
 
         impl Key for $ty {
+            type Borrowed = $ty;
+
             unsafe fn from_data(data: &ss_plugin_state_data) -> &Self {
                 unsafe { &data.$field }
             }
@@ -214,8 +223,30 @@ impl Value for Bool {
 }
 
 impl Key for Bool {
+    type Borrowed = Bool;
+
     unsafe fn from_data(data: &ss_plugin_state_data) -> &Self {
         unsafe { std::mem::transmute(&data.b) }
+    }
+}
+
+impl seal::Sealed for CString {}
+
+impl TableData for CString {
+    const TYPE_ID: FieldTypeId = FieldTypeId::String;
+
+    fn to_data(&self) -> ss_plugin_state_data {
+        ss_plugin_state_data {
+            str_: self.as_ptr(),
+        }
+    }
+}
+
+impl Key for CString {
+    type Borrowed = CStr;
+
+    unsafe fn from_data(data: &ss_plugin_state_data) -> &CStr {
+        unsafe { CStr::from_ptr(data.str_) }
     }
 }
 
@@ -228,12 +259,6 @@ impl TableData for CStr {
         ss_plugin_state_data {
             str_: self.as_ptr(),
         }
-    }
-}
-
-impl Key for CStr {
-    unsafe fn from_data(data: &ss_plugin_state_data) -> &CStr {
-        unsafe { CStr::from_ptr(data.str_) }
     }
 }
 

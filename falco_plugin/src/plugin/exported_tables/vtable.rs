@@ -8,6 +8,7 @@ use falco_plugin_api::{
     ss_plugin_table_input, ss_plugin_table_reader_vtable, ss_plugin_table_reader_vtable_ext,
     ss_plugin_table_writer_vtable, ss_plugin_table_writer_vtable_ext,
 };
+use std::borrow::Borrow;
 
 pub(crate) struct Vtable {
     pub(crate) input: ss_plugin_table_input,
@@ -18,7 +19,9 @@ pub(crate) struct Vtable {
 
 impl<K, E> Table<K, E>
 where
-    K: Key + Ord + Clone,
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
     E: Entry,
     E::Metadata: TableMetadata,
 {
