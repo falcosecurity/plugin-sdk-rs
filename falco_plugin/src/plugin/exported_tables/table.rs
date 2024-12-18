@@ -246,3 +246,29 @@ where
         self.metadata.add_field(name, field_type, read_only)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::plugin::exported_tables::entry::dynamic::DynamicEntry;
+    use crate::tables::export::Table;
+    use crate::tables::import::Bool;
+    use crate::tables::TablesInput;
+    use std::ffi::CString;
+
+    // Just a compile test
+    #[allow(unused)]
+    fn add_table(input: &TablesInput) -> anyhow::Result<()> {
+        input.add_table(Table::<i8, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<i16, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<i32, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<i64, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<u8, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<u16, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<u32, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<u64, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<Bool, DynamicEntry>::new(c"exported")?)?;
+        input.add_table(Table::<CString, DynamicEntry>::new(c"exported")?)?;
+
+        Ok(())
+    }
+}
