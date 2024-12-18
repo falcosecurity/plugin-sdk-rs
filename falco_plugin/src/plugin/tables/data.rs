@@ -171,7 +171,7 @@ impl_table_data_direct!(i64 => s64: FieldTypeId::I64);
 /// value, we cannot convert it on the fly to the native Rust type.
 ///
 /// This type serves as a wrapper, exposing conversion methods to/from Rust bool.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
 #[repr(transparent)]
 pub struct Bool(pub(crate) ss_plugin_bool);
 
