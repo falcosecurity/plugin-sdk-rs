@@ -69,7 +69,8 @@ impl<'a> Borrowed for Vec<(&'a CStr, &'a CStr)> {
 }
 
 impl Borrow for Vec<(CString, CString)> {
-    type Borrowed<'a> = Vec<(&'a CStr, &'a CStr)>
+    type Borrowed<'a>
+        = Vec<(&'a CStr, &'a CStr)>
     where
         Self: 'a;
 
