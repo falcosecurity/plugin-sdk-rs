@@ -53,12 +53,13 @@ where
     }
 }
 
-impl<'a> Borrowed for Vec<&'a CStr> {
+impl Borrowed for Vec<&CStr> {
     type Owned = Vec<CString>;
 }
 
 impl Borrow for Vec<CString> {
-    type Borrowed<'a> = Vec<&'a CStr>
+    type Borrowed<'a>
+        = Vec<&'a CStr>
     where
         Self: 'a;
 

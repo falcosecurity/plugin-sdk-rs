@@ -40,7 +40,7 @@ impl TestDriver for NativeTestDriver {
         api: &'static falco_plugin::api::plugin_api,
         config: &CStr,
     ) -> anyhow::Result<Self::Plugin> {
-        self.0.register_plugin(&api, config)?;
+        self.0.register_plugin(api, config)?;
         Ok(NativePlugin)
     }
 

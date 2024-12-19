@@ -55,7 +55,7 @@ where
 #[derive(Debug)]
 pub struct OwnedRelativePath(pub PathBuf);
 
-impl<'a> Borrowed for RelativePath<'a> {
+impl Borrowed for RelativePath<'_> {
     type Owned = OwnedRelativePath;
 }
 

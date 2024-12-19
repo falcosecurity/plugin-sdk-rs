@@ -122,7 +122,7 @@ impl<'t> LazyTableReader<'t> {
     }
 }
 
-impl<'t> private::TableReaderImpl for LazyTableReader<'t> {
+impl private::TableReaderImpl for LazyTableReader<'_> {
     type Error = TableError;
 
     unsafe fn get_table_name(
@@ -233,7 +233,7 @@ pub struct ValidatedTableReader<'t> {
     lifetime: PhantomData<&'t ()>,
 }
 
-impl<'t> private::TableReaderImpl for ValidatedTableReader<'t> {
+impl private::TableReaderImpl for ValidatedTableReader<'_> {
     type Error = std::convert::Infallible;
 
     unsafe fn get_table_name(

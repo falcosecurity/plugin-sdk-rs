@@ -59,7 +59,7 @@ pub trait SourcePlugin: Plugin + SourcePluginExported {
     ///
     /// **Note**: as of API version 3.4.0, this appears unused.
     fn list_open_params(&mut self) -> Result<&CStr, anyhow::Error> {
-        Ok(unsafe { CStr::from_ptr(b"\0".as_ptr().cast()) })
+        Ok(c"")
     }
 
     /// # Open a capture instance

@@ -213,7 +213,7 @@ pub enum OwnedSockTuple {
     ),
 }
 
-impl<'a> Borrowed for SockTuple<'a> {
+impl Borrowed for SockTuple<'_> {
     type Owned = OwnedSockTuple;
 }
 
