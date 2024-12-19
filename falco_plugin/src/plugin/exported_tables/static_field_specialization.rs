@@ -52,7 +52,7 @@ impl<T> StaticFieldGetFallback for T {}
 #[allow(missing_debug_implementations)]
 pub struct StaticFieldGet<'a, T>(pub &'a T);
 
-impl<'a, T> StaticFieldGet<'a, T>
+impl<T> StaticFieldGet<'_, T>
 where
     T: StaticField + TryFrom<DynamicFieldValue, Error = anyhow::Error>,
 {
@@ -82,7 +82,7 @@ impl<T> StaticFieldSetFallback for T {}
 #[allow(missing_debug_implementations)]
 pub struct StaticFieldSet<'a, T>(pub &'a mut T);
 
-impl<'a, T> StaticFieldSet<'a, T>
+impl<T> StaticFieldSet<'_, T>
 where
     T: StaticField + TryFrom<DynamicFieldValue, Error = anyhow::Error>,
 {

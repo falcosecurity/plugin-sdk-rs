@@ -64,7 +64,7 @@ pub struct TablesInput<'t> {
     pub(in crate::plugin::tables) fields_ext: TableFields<'t>,
 }
 
-impl<'t> TablesInput<'t> {
+impl TablesInput<'_> {
     pub(crate) fn try_from(value: &ss_plugin_init_input) -> Result<Option<Self>, TableError> {
         if let Some(table_init_input) = unsafe { value.tables.as_ref() } {
             let reader_ext = unsafe {
@@ -113,7 +113,7 @@ impl<'t> TablesInput<'t> {
     }
 }
 
-impl<'t> TablesInput<'t> {
+impl TablesInput<'_> {
     /// # List the available tables
     ///
     /// **Note**: this method is of limited utility in actual plugin code (you know the tables you
