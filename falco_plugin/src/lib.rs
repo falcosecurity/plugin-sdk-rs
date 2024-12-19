@@ -275,7 +275,6 @@ pub mod async_event {
     /// The event type that can be emitted from async event plugins
     pub use falco_event::events::types::PPME_ASYNCEVENT_E as AsyncEvent;
 
-
     pub use crate::plugin::async_event::async_handler::AsyncHandler;
     pub use crate::plugin::async_event::AsyncEventPlugin;
 

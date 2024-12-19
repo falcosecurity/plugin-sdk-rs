@@ -48,7 +48,8 @@ impl<V: Value + ?Sized, T> Field<V, T> {
 
 impl<V: Value + ?Sized, T> RawFieldValueType for Field<V, T> {
     type TableValue = V;
-    type EntryValue<'a> = <V as Value>::Value<'a>
+    type EntryValue<'a>
+        = <V as Value>::Value<'a>
     where
         Self: 'a;
 }
