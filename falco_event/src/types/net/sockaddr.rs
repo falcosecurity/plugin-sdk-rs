@@ -129,7 +129,7 @@ pub enum OwnedSockAddr {
     ),
 }
 
-impl<'a> Borrowed for SockAddr<'a> {
+impl Borrowed for SockAddr<'_> {
     type Owned = OwnedSockAddr;
 }
 
