@@ -296,7 +296,8 @@ where
     M: TableMetadata + Clone + 'static,
 {
     type AssocData = M;
-    type Value<'a> = Self
+    type Value<'a>
+        = Self
     where
         Self: 'a;
 
