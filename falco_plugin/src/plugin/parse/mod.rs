@@ -72,7 +72,7 @@ pub struct ParseInput<'t> {
     pub writer: LazyTableWriter<'t>,
 }
 
-impl<'t> ParseInput<'t> {
+impl ParseInput<'_> {
     pub(in crate::plugin::parse) unsafe fn try_from(
         value: *const ss_plugin_event_parse_input,
         last_error: LastError,

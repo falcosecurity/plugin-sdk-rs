@@ -127,7 +127,7 @@ impl<'t> LazyTableWriter<'t> {
     }
 }
 
-impl<'t> private::TableWriterImpl for LazyTableWriter<'t> {
+impl private::TableWriterImpl for LazyTableWriter<'_> {
     type Error = TableError;
 
     unsafe fn clear_table(&self, t: *mut ss_plugin_table_t) -> Result<ss_plugin_rc, TableError> {
@@ -254,7 +254,7 @@ pub struct ValidatedTableWriter<'t> {
     lifetime: PhantomData<&'t ()>,
 }
 
-impl<'t> private::TableWriterImpl for ValidatedTableWriter<'t> {
+impl private::TableWriterImpl for ValidatedTableWriter<'_> {
     type Error = std::convert::Infallible;
 
     unsafe fn clear_table(&self, t: *mut ss_plugin_table_t) -> Result<ss_plugin_rc, Self::Error> {

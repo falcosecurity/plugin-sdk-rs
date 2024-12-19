@@ -38,7 +38,7 @@ pub struct CaptureListenInput<'t> {
     pub writer: LazyTableWriter<'t>,
 }
 
-impl<'t> CaptureListenInput<'t> {
+impl CaptureListenInput<'_> {
     pub(in crate::plugin::listen) unsafe fn try_from(
         value: *const ss_plugin_capture_listen_input,
         last_error: LastError,
