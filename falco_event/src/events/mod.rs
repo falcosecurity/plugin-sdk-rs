@@ -57,9 +57,9 @@ mod to_bytes;
 /// **Footnotes**:
 ///
 /// 1. Loading an owned event from a raw event is technically possible but has no benefits over
-/// loading a borrowed event and incurs extra allocations and copies, so to avoid the confusion
-/// it's explicitly not supported.
+///    loading a borrowed event and incurs extra allocations and copies, so to avoid the confusion
+///    it's explicitly not supported.
 ///
 /// 2. Arbitrary serialization and deserialization with [`serde`] is only supported when
-/// the `serde` feature of the crate is enabled.
+///    the `serde` feature of the crate is enabled.
 pub mod types;
