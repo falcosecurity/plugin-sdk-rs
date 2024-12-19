@@ -75,7 +75,8 @@ impl Borrow for Vec<u8> {
 }
 
 impl BorrowDeref for Vec<u8> {
-    type Target<'c> = &'c [u8]
+    type Target<'c>
+        = &'c [u8]
     where
         Self: 'c;
 
