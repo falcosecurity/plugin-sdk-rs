@@ -47,7 +47,7 @@ where
     name: &'static CStr,
     field_descriptors: Vec<ss_plugin_table_fieldinfo>,
     metadata: RefShared<ExtensibleEntryMetadata<E::Metadata>>,
-    data: BTreeMap<K, RefShared<ExtensibleEntry<E>>>,
+    data: RefShared<BTreeMap<K, RefShared<ExtensibleEntry<E>>>>,
 
     pub(in crate::plugin::exported_tables) vtable: RefCounted<Option<Box<Vtable>>>,
 }
@@ -91,7 +91,7 @@ where
             name: tag,
             field_descriptors: vec![],
             metadata: metadata.clone(),
-            data: BTreeMap::new(),
+            data: new_shared_ref(BTreeMap::new()),
 
             vtable: new_counted_ref(None),
         };
@@ -105,7 +105,7 @@ where
             name,
             field_descriptors: vec![],
             metadata: new_shared_ref(ExtensibleEntryMetadata::new()?),
-            data: BTreeMap::new(),
+            data: new_shared_ref(BTreeMap::new()),
 
             vtable: new_counted_ref(None),
         })
@@ -118,7 +118,7 @@ where
 
     /// Return the number of entries in the table.
     pub fn size(&self) -> usize {
-        self.data.len()
+        self.data.read().len()
     }
 
     /// Get an entry corresponding to a particular key.
@@ -127,7 +127,7 @@ where
         K: Borrow<Q>,
         Q: Ord + ?Sized,
     {
-        Some(self.data.get(key)?.write_arc())
+        Some(self.data.read().get(key)?.write_arc())
     }
 
     /// Get the value for a field in an entry.
@@ -150,7 +150,7 @@ where
     where
         F: FnMut(&mut TableEntryType<E>) -> bool,
     {
-        for value in &mut self.data.values_mut() {
+        for value in &mut self.data.write().values_mut() {
             if !func(&mut value.write_arc()) {
                 return false;
             }
@@ -160,7 +160,7 @@ where
 
     /// Remove all entries from the table.
     pub fn clear(&mut self) {
-        self.data.clear()
+        self.data.write().clear()
     }
 
     /// Erase an entry by key.
@@ -169,7 +169,7 @@ where
         K: Borrow<Q>,
         Q: Ord + ?Sized,
     {
-        Some(self.data.remove(key)?.write_arc())
+        Some(self.data.write().remove(key)?.write_arc())
     }
 
     /// Create a new table entry.
@@ -190,7 +190,7 @@ where
         Q: Ord + ToOwned<Owned = K> + ?Sized,
     {
         // note: different semantics from data.insert: we return the *new* entry
-        self.data.insert(
+        self.data.write().insert(
             key.to_owned(),
             std::sync::Arc::clone(RefGuard::rwlock(&entry)),
         );
