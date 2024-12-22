@@ -34,7 +34,7 @@ use std::fmt::{Debug, Formatter};
 ///
 /// See [`crate::tables::export`] for details.
 ///
-/// The implementation it's thread-safe when the `thread-safe-tables` feature is enabled.
+/// The implementation is thread-safe when the `thread-safe-tables` feature is enabled.
 #[must_use]
 pub struct Table<K, E>
 where
@@ -111,6 +111,19 @@ where
         })
     }
 
+    /// Get an accessor to the underlying data
+    ///
+    /// This method returns a reference to the underlying BTreeMap, containing all the table's data.
+    /// It can be useful for:
+    /// - accessing the table from a different thread (with the `thread-safe-tables` feature enabled)
+    /// - bypassing the table API for convenience or more control over locking
+    ///
+    /// To actually access the BTreeMap, you first need to lock the returned object for reading
+    /// (`data.read()`) or writing (`data.write()`).
+    pub fn data(&self) -> RefShared<BTreeMap<K, RefShared<ExtensibleEntry<E>>>> {
+        self.data.clone()
+    }
+
     /// Return the table name.
     pub fn name(&self) -> &'static CStr {
         self.name
@@ -181,6 +194,35 @@ where
             &self.metadata,
         )?)
         .write_arc())
+    }
+
+    /// Return a closure for creating table entries
+    ///
+    /// The `Table` object itself cannot be shared between threads safely even with
+    /// the `thread-safe-tables` feature enabled, but almost full functionality can be achieved
+    /// using two objects that can:
+    /// 1. The underlying BTreeMap, obtained from [Table::data]
+    /// 2. A closure capable of creating a new entry (returned from this function)
+    ///
+    /// The only functionality missing is listing table fields, and until a use case comes along,
+    /// it's likely to remain unimplemented.
+    ///
+    /// The entry obtained by calling the closure returned from `create_entry_fn` can be later
+    /// inserted into the table e.g. by calling [BTreeMap::insert].
+    ///
+    /// To actually access the entry's fields, you first need to lock the returned object for reading
+    /// (`data.read()`) or writing (`data.write()`).
+    pub fn create_entry_fn(
+        &self,
+    ) -> impl Fn() -> Result<RefShared<ExtensibleEntry<E>>, anyhow::Error> {
+        let name = self.name;
+        let metadata = self.metadata.clone();
+
+        move || {
+            Ok(new_shared_ref(ExtensibleEntry::new_with_metadata(
+                name, &metadata,
+            )?))
+        }
     }
 
     /// Attach an entry to a table key

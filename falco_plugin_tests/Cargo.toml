@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 anyhow = "1.0.88"
 cxx = { version = "1.0.124", features = ["c++17"] }
-falco_plugin = { version = "0.4.0", path = "../falco_plugin" }
+falco_plugin = { version = "0.4.0", path = "../falco_plugin", features = ["thread-safe-tables"] }
 falco_plugin_runner = { version = "0.4.0", path = "../falco_plugin_runner" }
 log = "0.4.22"
 
