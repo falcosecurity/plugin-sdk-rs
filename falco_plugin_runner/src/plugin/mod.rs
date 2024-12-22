@@ -443,7 +443,7 @@ impl Plugin {
             };
         }
 
-        Err(anyhow::anyhow!("no source/async plugin here")).context(ScapStatus::NotSupported)
+        Err(anyhow::anyhow!("no source/async plugin here")).context(ScapStatus::Timeout)
     }
 
     pub fn on_event(&mut self, event: &Event) -> anyhow::Result<()> {
