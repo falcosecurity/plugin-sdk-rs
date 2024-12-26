@@ -30,5 +30,7 @@ cmd = [
         --new-type-alias ss_plugin_routine_state_t --no-copy ss_plugin_routine_state_t \
         --no-debug 'ss_plugin_table_info|ss_plugin_table_fieldinfo' \
         --override-abi '.*=C-unwind' \
+        --blocklist-item imaxdiv_t \
+        --blocklist-item imaxdiv \
         -- -I. > src/ffi.rs"""]
 working_dir = "."
