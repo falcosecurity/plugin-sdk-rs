@@ -38,7 +38,7 @@ serde_json = "1.0.128"
 [package.metadata.commands.regen_bindings.command]
 cmd = [
     "wget https://raw.githubusercontent.com/falcosecurity/libs/master/driver/ppm_fillers.h -O api/ppm_fillers.h",
-    "wget https://raw.githubusercontent.com/falcosecurity/libs/master/driver/ppm_events_public.h -O api/ppm_events_public.h",
+    "wget https://raw.githubusercontent.com/falcosecurity/libs/master/driver/ppm_events_public.h -O - | sed 's@\\<long\\>@int64_t@' > api/ppm_events_public.h",
     "wget https://raw.githubusercontent.com/falcosecurity/libs/master/driver/event_table.c -O api/event_table.c",
     "wget https://raw.githubusercontent.com/falcosecurity/libs/master/driver/flags_table.c -O api/flags_table.c",
     "wget https://raw.githubusercontent.com/falcosecurity/libs/master/driver/dynamic_params_table.c -O api/dynamic_params_table.c",

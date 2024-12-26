@@ -3254,7 +3254,7 @@ extern "C" {
 #[derive(Debug, Copy, Clone)]
 pub struct ppm_autofill_arg {
     pub id: i16,
-    pub default_val: ::std::os::raw::c_long,
+    pub default_val: i64,
 }
 #[test]
 fn bindgen_test_layout_ppm_autofill_arg() {
