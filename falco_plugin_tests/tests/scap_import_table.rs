@@ -155,14 +155,13 @@ mod tests {
         init_plugin, instantiate_sinsp_tests, CapturingTestDriver, SavefileTestDriver, ScapStatus,
     };
     use std::ffi::CString;
-    use std::os::unix::ffi::OsStrExt;
-    use std::path::PathBuf;
     use std::sync::atomic::Ordering;
+    use typed_path::UnixPathBuf;
 
     fn open_capture_file<D: SavefileTestDriver>(driver: D) -> anyhow::Result<D::Capturing> {
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
-        let scap_file = PathBuf::from(manifest_dir).join("tests/scap/kexec_x86.scap");
-        let scap_file = CString::new(scap_file.as_os_str().as_bytes())?;
+        let scap_file = UnixPathBuf::from(manifest_dir).join("tests/scap/kexec_x86.scap");
+        let scap_file = CString::new(scap_file.as_bytes())?;
 
         driver.load_capture_file(scap_file.as_c_str())
     }
