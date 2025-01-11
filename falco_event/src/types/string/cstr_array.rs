@@ -5,7 +5,7 @@ use std::ffi::{CStr, CString};
 use std::fmt::{Formatter, Write as _};
 use std::io::Write;
 
-impl<'a> ToBytes for Vec<&'a CStr> {
+impl ToBytes for Vec<&CStr> {
     fn binary_size(&self) -> usize {
         self.iter().map(|s| s.binary_size()).sum()
     }
