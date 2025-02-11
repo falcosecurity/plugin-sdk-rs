@@ -30,6 +30,7 @@ pub trait AsyncPluginFallbackApi {
         get_async_event_sources: None,
         get_async_events: None,
         set_async_event_handler: None,
+        dump_state: None,
     };
 
     const IMPLEMENTS_ASYNC: bool = false;
@@ -43,6 +44,7 @@ impl<T: AsyncEventPlugin + 'static> AsyncPluginApi<T> {
         get_async_event_sources: Some(plugin_get_async_event_sources::<T>),
         get_async_events: Some(plugin_get_async_events::<T>),
         set_async_event_handler: Some(plugin_set_async_event_handler::<T>),
+        dump_state: Some(plugin_dump_state::<T>),
     };
 
     pub const IMPLEMENTS_ASYNC: bool = true;
@@ -122,6 +124,40 @@ pub unsafe extern "C-unwind" fn plugin_set_async_event_handler<T: AsyncEventPlug
     }
 }
 
+/// # Safety
+///
+/// All pointers must be valid
+pub unsafe extern "C-unwind" fn plugin_dump_state<T: AsyncEventPlugin>(
+    plugin: *mut ss_plugin_t,
+    owner: *mut ss_plugin_owner_t,
+    handler: ss_plugin_async_event_handler_t,
+) -> ss_plugin_rc {
+    unsafe {
+        let Some(plugin) = (plugin as *mut PluginWrapper<T>).as_mut() else {
+            return ss_plugin_rc_SS_PLUGIN_FAILURE;
+        };
+
+        let Some(ref mut actual_plugin) = &mut plugin.plugin else {
+            return ss_plugin_rc_SS_PLUGIN_FAILURE;
+        };
+
+        let Some(raw_handler) = handler.as_ref() else {
+            return ss_plugin_rc_SS_PLUGIN_SUCCESS;
+        };
+
+        let handler = AsyncHandler {
+            owner,
+            raw_handler: *raw_handler,
+        };
+        if let Err(e) = actual_plugin.plugin.dump_state(handler) {
+            e.set_last_error(&mut plugin.error_buf);
+            return e.status_code();
+        }
+
+        ss_plugin_rc_SS_PLUGIN_SUCCESS
+    }
+}
+
 /// # Register an asynchronous event plugin
 ///
 /// This macro must be called at most once in a crate (it generates public functions with fixed
@@ -143,6 +179,11 @@ macro_rules! async_event_plugin {
                 owner: *mut falco_plugin::api::ss_plugin_owner_t,
                 handler: falco_plugin::api::ss_plugin_async_event_handler_t,
             ) -> falco_plugin::api::ss_plugin_rc;
+            unsafe fn plugin_dump_state(
+                plugin: *mut falco_plugin::api::ss_plugin_t,
+                owner: *mut falco_plugin::api::ss_plugin_owner_t,
+                handler: falco_plugin::api::ss_plugin_async_event_handler_t,
+            ) -> falco_plugin::api::ss_plugin_rc;
         }
 
         #[allow(dead_code)]
@@ -151,6 +192,7 @@ macro_rules! async_event_plugin {
                 get_async_event_sources: Some(plugin_get_async_event_sources),
                 get_async_events: Some(plugin_get_async_events),
                 set_async_event_handler: Some(plugin_set_async_event_handler),
+                dump_state: Some(plugin_dump_state),
             }
         }
     };

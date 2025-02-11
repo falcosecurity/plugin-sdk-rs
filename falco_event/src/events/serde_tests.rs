@@ -48,9 +48,11 @@ fn test_serde_read_x() {
     let event = PPME_SYSCALL_READ_X {
         res: Some(SyscallResult(5)),
         data: Some(b"hello".as_slice()),
+        fd: Some(Fd(0)),
+        size: Some(10),
     };
     let json = serde_json::to_string(&event).unwrap();
-    assert_eq!(json, r#"{"res":5,"data":"hello"}"#);
+    assert_eq!(json, r#"{"res":5,"data":"hello","fd":0,"size":10}"#);
 
     let event2: owned::PPME_SYSCALL_READ_X = serde_json::from_str(&json).unwrap();
     let json2 = serde_json::to_string(&event2).unwrap();

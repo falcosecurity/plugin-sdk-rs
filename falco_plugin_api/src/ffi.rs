@@ -254,7 +254,7 @@ pub const SCNoPTR: &[u8; 3] = b"lo\0";
 pub const SCNuPTR: &[u8; 3] = b"lu\0";
 pub const SCNxPTR: &[u8; 3] = b"lx\0";
 pub const PLUGIN_API_VERSION_MAJOR: u32 = 3;
-pub const PLUGIN_API_VERSION_MINOR: u32 = 7;
+pub const PLUGIN_API_VERSION_MINOR: u32 = 10;
 pub const PLUGIN_API_VERSION_PATCH: u32 = 0;
 pub const PLUGIN_MAX_ERRLEN: u32 = 1024;
 pub type __u_char = ::std::os::raw::c_uchar;
@@ -1226,11 +1226,14 @@ pub struct ss_plugin_capture_listen_input {
     pub routine: *mut ss_plugin_routine_vtable,
     pub table_reader_ext: *mut ss_plugin_table_reader_vtable_ext,
     pub table_writer_ext: *mut ss_plugin_table_writer_vtable_ext,
+    pub get_owner_last_error: ::std::option::Option<
+        unsafe extern "C-unwind" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
+    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of ss_plugin_capture_listen_input"]
-        [::std::mem::size_of::<ss_plugin_capture_listen_input>() - 32usize];
+        [::std::mem::size_of::<ss_plugin_capture_listen_input>() - 40usize];
     ["Alignment of ss_plugin_capture_listen_input"]
         [::std::mem::align_of::<ss_plugin_capture_listen_input>() - 8usize];
     ["Offset of field: ss_plugin_capture_listen_input::owner"]
@@ -1241,6 +1244,8 @@ const _: () = {
         [::std::mem::offset_of!(ss_plugin_capture_listen_input, table_reader_ext) - 16usize];
     ["Offset of field: ss_plugin_capture_listen_input::table_writer_ext"]
         [::std::mem::offset_of!(ss_plugin_capture_listen_input, table_writer_ext) - 24usize];
+    ["Offset of field: ss_plugin_capture_listen_input::get_owner_last_error"]
+        [::std::mem::offset_of!(ss_plugin_capture_listen_input, get_owner_last_error) - 32usize];
 };
 pub type ss_plugin_async_event_handler_t = ::std::option::Option<
     unsafe extern "C-unwind" fn(
@@ -1438,11 +1443,18 @@ pub struct plugin_api__bindgen_ty_4 {
             handler: ss_plugin_async_event_handler_t,
         ) -> ss_plugin_rc,
     >,
+    pub dump_state: ::std::option::Option<
+        unsafe extern "C-unwind" fn(
+            s: *mut ss_plugin_t,
+            owner: *mut ss_plugin_owner_t,
+            handler: ss_plugin_async_event_handler_t,
+        ) -> ss_plugin_rc,
+    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of plugin_api__bindgen_ty_4"]
-        [::std::mem::size_of::<plugin_api__bindgen_ty_4>() - 24usize];
+        [::std::mem::size_of::<plugin_api__bindgen_ty_4>() - 32usize];
     ["Alignment of plugin_api__bindgen_ty_4"]
         [::std::mem::align_of::<plugin_api__bindgen_ty_4>() - 8usize];
     ["Offset of field: plugin_api__bindgen_ty_4::get_async_event_sources"]
@@ -1451,6 +1463,8 @@ const _: () = {
         [::std::mem::offset_of!(plugin_api__bindgen_ty_4, get_async_events) - 8usize];
     ["Offset of field: plugin_api__bindgen_ty_4::set_async_event_handler"]
         [::std::mem::offset_of!(plugin_api__bindgen_ty_4, set_async_event_handler) - 16usize];
+    ["Offset of field: plugin_api__bindgen_ty_4::dump_state"]
+        [::std::mem::offset_of!(plugin_api__bindgen_ty_4, dump_state) - 24usize];
 };
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1481,7 +1495,7 @@ const _: () = {
 };
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of plugin_api"][::std::mem::size_of::<plugin_api>() - 248usize];
+    ["Size of plugin_api"][::std::mem::size_of::<plugin_api>() - 256usize];
     ["Alignment of plugin_api"][::std::mem::align_of::<plugin_api>() - 8usize];
     ["Offset of field: plugin_api::get_required_api_version"]
         [::std::mem::offset_of!(plugin_api, get_required_api_version) - 0usize];
@@ -1500,7 +1514,7 @@ const _: () = {
     ["Offset of field: plugin_api::get_version"]
         [::std::mem::offset_of!(plugin_api, get_version) - 64usize];
     ["Offset of field: plugin_api::set_config"]
-        [::std::mem::offset_of!(plugin_api, set_config) - 216usize];
+        [::std::mem::offset_of!(plugin_api, set_config) - 224usize];
     ["Offset of field: plugin_api::get_metrics"]
-        [::std::mem::offset_of!(plugin_api, get_metrics) - 224usize];
+        [::std::mem::offset_of!(plugin_api, get_metrics) - 232usize];
 };

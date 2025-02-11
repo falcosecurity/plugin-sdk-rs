@@ -52,6 +52,16 @@ pub trait AsyncEventPlugin: Plugin + AsyncPluginExported {
     /// **Note**: [`AsyncEventPlugin::start_async`] can be called again, with a different [`AsyncHandler`].
     fn stop_async(&mut self) -> Result<(), anyhow::Error>;
 
+    /// # Dump the plugin state as a series of async events
+    ///
+    /// When this method is called, your plugin may save its state via a series of async events
+    /// that will be replayed when a capture file is loaded.
+    ///
+    /// The default implementation does nothing.
+    fn dump_state(&mut self, _handler: AsyncHandler) -> Result<(), anyhow::Error> {
+        Ok(())
+    }
+
     /// # A helper method to create an asynchronous event
     fn async_event<'a>(name: &'a std::ffi::CStr, data: &'a [u8]) -> Event<AsyncEvent<'a>> {
         let event = AsyncEvent {
