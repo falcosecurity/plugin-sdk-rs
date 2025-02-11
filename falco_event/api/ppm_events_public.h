@@ -1521,32 +1521,24 @@ typedef enum {
  * "Tx_" stands for "extra tail call number x for the event after '_'".
  * For example "T1_EXECVE_X" stands for:
  * - `T1` = extra tail call number 1.
- * - `EXECVE` = name of the syscall for which we need an extra tail call.
- * - `X` = means that we need this extra tail call for the exit event, `E` means enter the event.
- *
+ * - `EXECVE_X` = name of the syscall for which we need an extra tail call.
  */
-enum extra_event_prog_code {
-	T1_EXECVE_X = 0,
-	T1_EXECVEAT_X = 1,
-	T1_CLONE_X = 2,
-	T1_CLONE3_X = 3,
-	T1_FORK_X = 4,
-	T1_VFORK_X = 5,
-	T1_SCHED_PROC_EXEC = 6,
-	T1_SCHED_PROC_FORK = 7,
-	T2_SCHED_PROC_FORK = 8,
-	T2_CLONE_X = 9,
-	T2_CLONE3_X = 10,
-	T2_FORK_X = 11,
-	T2_VFORK_X = 12,
-	T1_DROP_E = 13,
-	T1_DROP_X = 14,
-	T1_HOTPLUG_E = 15,
-	T1_OPEN_BY_HANDLE_AT_X = 16,
-	T2_EXECVE_X = 17,
-	T2_EXECVEAT_X = 18,
-	T2_SCHED_PROC_EXEC = 19,
-	TAIL_EXTRA_EVENT_PROG_MAX = 20
+enum sys_exit_extra_code {
+	T1_EXECVE_X,
+	T1_EXECVEAT_X,
+	T1_CLONE_X,
+	T1_CLONE3_X,
+	T1_FORK_X,
+	T1_VFORK_X,
+	T2_CLONE_X,
+	T2_CLONE3_X,
+	T2_FORK_X,
+	T2_VFORK_X,
+	T1_OPEN_BY_HANDLE_AT_X,
+	T2_EXECVE_X,
+	T2_EXECVEAT_X,
+	// Add new codes here...
+	SYS_EXIT_EXTRA_CODE_MAX,
 };
 
 /*
@@ -1997,7 +1989,11 @@ enum extra_event_prog_code {
 	PPM_SC_X(LSM_SET_SELF_ATTR, 440)       \
 	PPM_SC_X(LSM_LIST_MODULES, 441)        \
 	PPM_SC_X(MSEAL, 442)                   \
-	PPM_SC_X(URETPROBE, 443)
+	PPM_SC_X(URETPROBE, 443)               \
+	PPM_SC_X(REMOVEXATTRAT, 444)           \
+	PPM_SC_X(LISTXATTRAT, 445)             \
+	PPM_SC_X(GETXATTRAT, 446)              \
+	PPM_SC_X(SETXATTRAT, 447)
 
 typedef enum {
 #define PPM_SC_X(name, value) PPM_SC_##name = (value),
@@ -2059,6 +2055,8 @@ enum ppm_event_flags {
 	// overhead to full event capture */ SUPPORT DROPPED
 	EF_LARGE_PAYLOAD = (1 << 11), /* This event has a large payload, ie: up to UINT32_MAX bytes. DO
 	                                 NOT USE ON syscalls-driven events!!! */
+	EF_TMP_CONVERTER_MANAGED = (1 << 12), /* todo!: this must be removed when we will mark ENTER
+	                                     events as OLD_VERSION */
 };
 
 /*
