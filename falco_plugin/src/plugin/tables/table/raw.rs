@@ -29,6 +29,40 @@ pub enum TableNameError {
     PtrError(#[from] FromPtrError),
 }
 
+struct TemporaryTableEntry<'a> {
+    tables_input: &'a TablesInput<'a>,
+    table: *mut ss_plugin_table_t,
+    entry: *mut ss_plugin_table_entry_t,
+}
+
+impl TemporaryTableEntry<'_> {
+    fn create<'a>(
+        tables_input: &'a TablesInput<'a>,
+        table: *mut ss_plugin_table_t,
+    ) -> Result<TemporaryTableEntry<'a>, anyhow::Error> {
+        let entry = unsafe { tables_input.writer_ext.create_table_entry(table)? };
+        if entry.is_null() {
+            anyhow::bail!("Failed to create temporary table entry");
+        }
+
+        Ok(TemporaryTableEntry {
+            tables_input,
+            table,
+            entry,
+        })
+    }
+}
+
+impl Drop for TemporaryTableEntry<'_> {
+    fn drop(&mut self) {
+        unsafe {
+            self.tables_input
+                .writer_ext
+                .destroy_table_entry(self.table, self.entry);
+        }
+    }
+}
+
 /// # A low-level representation of a table
 ///
 /// This is a thin wrapper around the Falco plugin API and provides little type safety.
@@ -281,15 +315,12 @@ impl RawTable {
         K: Key,
         F: FnOnce(&RawTable) -> R,
     {
-        let entry = tables_input.writer_ext.create_table_entry(self.table)?;
-        if entry.is_null() {
-            anyhow::bail!("Failed to create temporary table entry");
-        }
+        let entry = TemporaryTableEntry::create(tables_input, self.table)?;
 
         let mut val = ss_plugin_state_data { u64_: 0 };
         let rc = tables_input.reader_ext.read_entry_field(
             self.table,
-            entry,
+            entry.entry,
             field,
             &mut val as *mut _,
         )?;
@@ -300,9 +331,6 @@ impl RawTable {
 
         let input = unsafe { &*(val.table as *mut falco_plugin_api::ss_plugin_table_input) };
         if input.key_type != K::TYPE_ID as ss_plugin_state_type {
-            tables_input
-                .writer_ext
-                .destroy_table_entry(self.table, entry);
             anyhow::bail!(
                 "Bad key type, requested {:?}, table has {:?}",
                 K::TYPE_ID,
@@ -312,9 +340,6 @@ impl RawTable {
 
         let raw_table = unsafe { RawTable { table: val.table } };
         let ret = func(&raw_table);
-        tables_input
-            .writer_ext
-            .destroy_table_entry(self.table, entry);
         Ok(ret)
     }
 
