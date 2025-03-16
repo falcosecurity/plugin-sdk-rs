@@ -68,7 +68,7 @@ pub fn derive_entry(input: TokenStream) -> TokenStream {
     .into()
 }
 
-#[proc_macro_derive(TableMetadata, attributes(entry_type, name, custom))]
+#[proc_macro_derive(TableMetadata, attributes(entry_type, accessors_mod, name, custom))]
 pub fn derive_table_metadata(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let syn::Data::Struct(data) = input.data else {
@@ -126,10 +126,17 @@ pub fn derive_table_metadata(input: TokenStream) -> TokenStream {
         .filter_map(|a| a.parse_args::<Ident>().ok())
         .next();
 
+    let accessors_mod = input
+        .attrs
+        .iter()
+        .filter(|a| a.path().is_ident("accessors_mod"))
+        .filter_map(|a| a.parse_args::<Ident>().ok())
+        .next()
+        .unwrap_or_else(|| Ident::new(&format!("__falco_plugin_private_{}", name), name.span()));
+
     let mut field_traits = Vec::new();
     let mut field_trait_impls = vec![impl_table_metadata];
 
-    let private_ns = Ident::new(&format!("__falco_plugin_private_{}", name), name.span());
     if let Some(entry_type) = entry_type {
         for f in fields {
             let Some(field_name) = f.ident.as_ref() else {
@@ -149,7 +156,7 @@ pub fn derive_table_metadata(input: TokenStream) -> TokenStream {
             ));
             field_trait_impls.push(quote!(
                 ::falco_plugin::impl_import_table_accessor_impls!(
-                    use #private_ns::#field_name;
+                    use #accessors_mod::#field_name;
                     #field_name(#ty) for #entry_type; meta #name =>
                         #getter_name, #table_getter_name, #setter_name
                 );
@@ -159,14 +166,14 @@ pub fn derive_table_metadata(input: TokenStream) -> TokenStream {
 
     quote!(
         #[allow(non_snake_case)]
-        mod #private_ns {
+        pub mod #accessors_mod {
             #(#field_traits)*
         }
 
         #(#field_trait_impls)*
 
         #[allow(unused_imports)]
-        use #private_ns::*;
+        use #accessors_mod::*;
     )
     .into()
 }
