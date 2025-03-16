@@ -329,7 +329,12 @@ impl RawTable {
             anyhow::bail!("Failed to get field value for temporary table entry")
         }
 
-        let input = unsafe { &*(val.table as *mut falco_plugin_api::ss_plugin_table_input) };
+        let input = val.table as *mut falco_plugin_api::ss_plugin_table_input;
+        let input = unsafe { input.as_mut() };
+        let Some(input) = input else {
+            anyhow::bail!("Temporary table entry has a null value for table");
+        };
+
         if input.key_type != K::TYPE_ID as ss_plugin_state_type {
             anyhow::bail!(
                 "Bad key type, requested {:?}, table has {:?}",
