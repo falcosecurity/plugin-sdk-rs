@@ -24,9 +24,9 @@ use std::ffi::CStr;
 pub use std::net::IpAddr as PT_IPADDR;
 pub use std::net::Ipv4Addr as PT_IPV4ADDR;
 pub use std::net::Ipv6Addr as PT_IPV6ADDR;
-pub use std::path::Path as PT_FSPATH;
 pub use std::time::Duration as PT_RELTIME;
 pub use std::time::SystemTime as PT_ABSTIME;
+pub use typed_path::UnixPath as PT_FSPATH;
 
 /// Signed 8-bit value ([i8])
 pub type PT_INT8 = i8;
@@ -97,7 +97,7 @@ pub mod owned {
     pub use crate::types::OwnedSockTuple as PT_SOCKTUPLE;
     pub use std::ffi::CString as PT_CHARBUF;
     use std::ffi::CString;
-    pub use std::path::PathBuf as PT_FSPATH;
+    pub use typed_path::UnixPathBuf as PT_FSPATH;
 
     /// Arbitrary (owned) byte buffer (`Vec<u8>`)
     pub type PT_BYTEBUF = Vec<u8>;

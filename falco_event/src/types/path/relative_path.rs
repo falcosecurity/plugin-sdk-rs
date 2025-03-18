@@ -3,8 +3,7 @@ use crate::types::format::Format;
 use crate::types::{Borrow, Borrowed};
 use std::fmt::Formatter;
 use std::io::Write;
-use std::os::unix::ffi::OsStrExt;
-use std::path::{Path, PathBuf};
+use typed_path::{UnixPath, UnixPathBuf};
 
 /// A relative path
 ///
@@ -13,7 +12,9 @@ use std::path::{Path, PathBuf};
 /// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[derive(Debug)]
-pub struct RelativePath<'a>(pub &'a Path);
+pub struct RelativePath<'a>(
+    #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))] pub &'a UnixPath,
+);
 
 impl<'a> ToBytes for RelativePath<'a> {
     fn binary_size(&self) -> usize {
@@ -25,13 +26,13 @@ impl<'a> ToBytes for RelativePath<'a> {
     }
 
     fn default_repr() -> impl ToBytes {
-        <&'a Path>::default_repr()
+        <&'a UnixPath>::default_repr()
     }
 }
 
 impl<'a> FromBytes<'a> for RelativePath<'a> {
     fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
-        Ok(Self(<&'a Path>::from_bytes(buf)?))
+        Ok(Self(<&'a UnixPath>::from_bytes(buf)?))
     }
 }
 
@@ -42,7 +43,7 @@ where
     fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
         write!(fmt, "<...>")?;
 
-        let bytes = self.0.as_os_str().as_bytes();
+        let bytes = self.0.as_bytes();
         bytes.format(fmt)
     }
 }
@@ -53,7 +54,9 @@ where
 /// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug)]
-pub struct OwnedRelativePath(pub PathBuf);
+pub struct OwnedRelativePath(
+    #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))] pub UnixPathBuf,
+);
 
 impl Borrowed for RelativePath<'_> {
     type Owned = OwnedRelativePath;
@@ -69,7 +72,6 @@ impl Borrow for OwnedRelativePath {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
     use std::str::FromStr;
 
     use crate::event_derive::{FromBytes, ToBytes};
@@ -77,12 +79,11 @@ mod tests {
 
     #[cfg(feature = "serde")]
     use crate::types::OwnedRelativePath;
-    #[cfg(feature = "serde")]
-    use std::path::Path;
+    use typed_path::UnixPathBuf;
 
     #[test]
     fn test_relative_path() {
-        let path = PathBuf::from_str("/foo").unwrap();
+        let path = UnixPathBuf::from_str("/foo").unwrap();
         let rel_path = RelativePath(path.as_path());
         let mut binary = Vec::new();
 
@@ -99,7 +100,8 @@ mod tests {
     #[cfg(feature = "serde")]
     #[test]
     fn test_serde_relative_path() {
-        let path = RelativePath(Path::new("/foo"));
+        use typed_path::UnixPath;
+        let path = RelativePath(UnixPath::new("/foo"));
 
         let json = serde_json::to_string(&path).unwrap();
         assert_eq!(json, "\"/foo\"");

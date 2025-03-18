@@ -11,6 +11,7 @@ pub fn serde_with_tag(ty: &Ident) -> Option<TokenStream> {
         "PT_CHARBUF_PAIR_ARRAY" => {
             Some(quote! { #[serde(with = "crate::event_derive::serde::cstr_pair_array")] })
         }
+        "PT_FSPATH" => Some(quote! { #[serde(with = "crate::event_derive::serde::unix_path")] }),
         _ => None,
     }
 }
@@ -26,6 +27,9 @@ pub fn serde_with_option_tag(ty: &Ident) -> Option<TokenStream> {
         }
         "PT_CHARBUF_PAIR_ARRAY" => {
             Some(quote! { #[serde(with = "crate::event_derive::serde::cstr_pair_array_option")] })
+        }
+        "PT_FSPATH" => {
+            Some(quote! { #[serde(with = "crate::event_derive::serde::unix_path_option")] })
         }
         _ => None,
     }
@@ -45,6 +49,9 @@ pub fn serde_with_option_tag_owned(ty: &Ident) -> Option<TokenStream> {
         "PT_CHARBUF_PAIR_ARRAY" => Some(
             quote! { #[serde(with = "crate::event_derive::serde::cstr_pair_array_option_owned")] },
         ),
+        "PT_FSPATH" => {
+            Some(quote! { #[serde(with = "crate::event_derive::serde::unix_path_option_owned")] })
+        }
         _ => None,
     }
 }

@@ -196,12 +196,16 @@ static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 mod tests {
     use falco_plugin::base::Plugin;
     use falco_plugin_tests::{init_plugin, instantiate_tests, CapturingTestDriver, TestDriver};
+    use std::time::{Duration, UNIX_EPOCH};
+
+    fn epoch_offset_to_rfc3389(offset: Duration) -> String {
+        let st = UNIX_EPOCH + offset;
+        let dt = chrono::DateTime::<chrono::Local>::from(st);
+
+        dt.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, false)
+    }
 
     fn test_dummy_next<D: TestDriver>() {
-        unsafe {
-            std::env::set_var("TZ", "UTC");
-        }
-
         let (mut driver, plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
         driver.add_filterchecks(&plugin, c"dummy").unwrap();
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
@@ -247,16 +251,21 @@ mod tests {
             .unwrap();
         assert!(s == "(10000000,20000000,30000000)" || s == "(10ms,20ms,30ms)");
 
+        let ts_10ms = epoch_offset_to_rfc3389(Duration::from_millis(10));
+        let ts_20ms = epoch_offset_to_rfc3389(Duration::from_millis(20));
+        let ts_30ms = epoch_offset_to_rfc3389(Duration::from_millis(30));
+
         let s = driver
             .event_field_as_string(c"dummy.abstime", &event)
             .unwrap()
             .unwrap();
-        assert!(s == "10000000" || s == "1970-01-01T00:00:00.010+00:00");
+        assert!(s == "10000000" || s == ts_10ms);
         let s = driver
             .event_field_as_string(c"dummy.vec_abstime", &event)
             .unwrap()
             .unwrap();
-        assert!(s == "(10000000,20000000,30000000)" || s == "(1970-01-01T00:00:00.010+00:00,1970-01-01T00:00:00.020+00:00,1970-01-01T00:00:00.030+00:00)");
+        let timestamps = format!("({ts_10ms},{ts_20ms},{ts_30ms})");
+        assert!(s == "(10000000,20000000,30000000)" || s == timestamps);
 
         assert_eq!(
             driver

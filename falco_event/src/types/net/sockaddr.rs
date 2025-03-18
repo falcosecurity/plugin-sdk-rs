@@ -3,11 +3,9 @@ use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL, PPM_AF_UNSPEC};
 use crate::types::format::Format;
 use crate::types::{Borrow, Borrowed, EndpointV4, EndpointV6};
 use byteorder::{ReadBytesExt, WriteBytesExt};
-use std::ffi::OsStr;
 use std::fmt::Formatter;
 use std::io::Write;
-use std::os::unix::ffi::OsStrExt;
-use std::path::{Path, PathBuf};
+use typed_path::{UnixPath, UnixPathBuf};
 
 /// A socket address
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
@@ -15,7 +13,9 @@ use std::path::{Path, PathBuf};
 #[derive(Debug)]
 pub enum SockAddr<'a> {
     /// Unix sockets
-    Unix(&'a Path),
+    Unix(
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))] &'a UnixPath,
+    ),
 
     /// IPv4 sockets
     V4(EndpointV4),
@@ -71,9 +71,9 @@ impl<'a> FromBytes<'a> for SockAddr<'a> {
         let variant = buf.read_u8()?;
         match variant as u32 {
             PPM_AF_LOCAL => {
-                let path = <OsStr as OsStrExt>::from_bytes(buf);
-                *buf = &[];
-                Ok(Self::Unix(Path::new(path)))
+                // TODO embedded NULs
+                let path = std::mem::take(buf);
+                Ok(Self::Unix(UnixPath::new(path)))
             }
             PPM_AF_INET => {
                 let addr = EndpointV4::from_bytes(buf)?;
@@ -97,7 +97,7 @@ where
     fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
         match self {
             SockAddr::Unix(u) => {
-                let bytes = u.as_os_str().as_bytes();
+                let bytes = u.as_bytes();
                 fmt.write_str("unix://")?;
                 bytes.format(fmt)
             }
@@ -114,7 +114,9 @@ where
 #[derive(Debug)]
 pub enum OwnedSockAddr {
     /// Unix sockets
-    Unix(PathBuf),
+    Unix(
+        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))] UnixPathBuf,
+    ),
 
     /// IPv4 sockets
     V4(EndpointV4),
@@ -150,11 +152,11 @@ impl Borrow for OwnedSockAddr {
 mod tests {
     use crate::types::{OwnedSockAddr, Port, SockAddr};
     use std::net::{Ipv4Addr, Ipv6Addr};
-    use std::path::Path;
+    use typed_path::UnixPath;
 
     #[test]
     fn test_serde_sockaddr_unix() {
-        let path = Path::new("/path/to/unix");
+        let path = UnixPath::new("/path/to/unix");
         let sockaddr = SockAddr::Unix(path);
 
         let json = serde_json::to_string(&sockaddr).unwrap();

@@ -32,6 +32,19 @@ jobs:
       - name: Build and test
         run: cargo test ${{ matrix.cargo_test_opts }}
 
+  windows_test:
+    name: Windows test
+    runs-on: windows-latest
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Rust
+        run: rustup update
+      - name: Build and test
+        run: cargo test --all-features
+
   render_docs:
     name: Code checks
     runs-on: ubuntu-latest

@@ -2346,7 +2346,7 @@ struct ppm_autofill_arg {
 #define AF_ID_RETVAL -1
 #define AF_ID_USEDEFAULT -2
 	int16_t id;
-	long default_val;
+	int64_t default_val;
 } _packed;
 
 enum autofill_paramtype {
