@@ -6,6 +6,7 @@ use falco_plugin_api::{
     ss_plugin_routine_t, ss_plugin_routine_vtable, ss_plugin_t,
 };
 use std::collections::VecDeque;
+use std::ffi::c_char;
 use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{Arc, Mutex};
@@ -115,6 +116,10 @@ impl CaptureListenPlugin {
         ss_plugin_rc_SS_PLUGIN_SUCCESS
     }
 
+    extern "C-unwind" fn get_owner_last_error(_owner: *mut ss_plugin_owner_t) -> *const c_char {
+        std::ptr::null()
+    }
+
     pub fn on_capture_start(&mut self) -> Result<(), ss_plugin_rc> {
         let capture_open = self
             .api()
@@ -130,6 +135,7 @@ impl CaptureListenPlugin {
             routine: &mut routine_vtable,
             table_reader_ext: &TABLE_READER_EXT as *const _ as *mut _,
             table_writer_ext: &TABLE_WRITER_EXT as *const _ as *mut _,
+            get_owner_last_error: Some(Self::get_owner_last_error),
         };
         let rc = unsafe { capture_open(self.plugin, &listen_input) };
         if rc == ss_plugin_rc_SS_PLUGIN_SUCCESS {
@@ -154,6 +160,7 @@ impl CaptureListenPlugin {
             routine: &mut routine_vtable,
             table_reader_ext: &TABLE_READER_EXT as *const _ as *mut _,
             table_writer_ext: &TABLE_WRITER_EXT as *const _ as *mut _,
+            get_owner_last_error: Some(Self::get_owner_last_error),
         };
         let rc = unsafe { capture_close(self.plugin, &listen_input) };
         self.shutting_down.store(true, Relaxed);
