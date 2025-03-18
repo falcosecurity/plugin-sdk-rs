@@ -171,6 +171,9 @@ pub unsafe extern "C-unwind" fn plugin_close<T: SourcePlugin>(
     };
 
     let instance = instance as *mut SourcePluginInstanceWrapper<T::Instance>;
+    if instance.is_null() {
+        return;
+    }
     unsafe {
         let mut inst = Box::from_raw(instance);
         actual_plugin.plugin.close(&mut inst.instance);
