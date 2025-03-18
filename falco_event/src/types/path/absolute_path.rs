@@ -5,8 +5,9 @@ use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
 
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::format::FormatType;
 use crate::types::format::Format;
-use crate::types::{Borrow, Borrowed};
+use crate::types::Borrow;
 
 impl<'a> FromBytes<'a> for &'a Path {
     fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
@@ -31,18 +32,11 @@ impl ToBytes for &Path {
     }
 }
 
-impl<F> Format<F> for &Path
-where
-    for<'a> &'a [u8]: Format<F>,
-{
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for &Path {
+    fn format(&self, format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         let bytes = self.as_os_str().as_bytes();
-        bytes.format(fmt)
+        bytes.format(format_type, fmt)
     }
-}
-
-impl Borrowed for Path {
-    type Owned = PathBuf;
 }
 
 impl Borrow for PathBuf {

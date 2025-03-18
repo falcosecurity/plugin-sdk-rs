@@ -5,6 +5,7 @@ use std::net::Ipv4Addr;
 use byteorder::{NetworkEndian, ReadBytesExt};
 
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
+use crate::format::FormatType;
 use crate::types::format::Format;
 
 impl FromBytes<'_> for Ipv4Addr {
@@ -28,8 +29,8 @@ impl ToBytes for Ipv4Addr {
     }
 }
 
-impl<F> Format<F> for Ipv4Addr {
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for Ipv4Addr {
+    fn format(&self, _format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         write!(fmt, "{}", self)
     }
 }

@@ -41,12 +41,11 @@ mod event_derive {
     pub use crate::fields::FromBytesResult;
     pub use crate::fields::NoDefault;
     pub use crate::fields::ToBytes;
-    pub use crate::types::format::format_type;
     pub use crate::types::format::Format;
+    pub use crate::types::format::FormatType;
 
     pub use crate::types::Borrow;
     pub use crate::types::BorrowDeref;
-    pub use crate::types::Borrowed;
 
     #[cfg(feature = "serde")]
     pub use crate::types::serde;

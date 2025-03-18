@@ -10,6 +10,9 @@ readme = "README.md"
 keywords = ["falco", "security"]
 categories = ["external-ffi-bindings"]
 
+[package.metadata."docs.rs"]
+all-features = true
+
 [dependencies]
 
 # cargo install cargo-commander

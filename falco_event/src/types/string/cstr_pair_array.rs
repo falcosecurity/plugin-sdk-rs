@@ -1,6 +1,7 @@
 use crate::event_derive::{FromBytes, FromBytesError, FromBytesResult, ToBytes};
+use crate::format::FormatType;
 use crate::types::format::Format;
-use crate::types::{Borrow, Borrowed};
+use crate::types::Borrow;
 use std::ffi::{CStr, CString};
 use std::fmt::{Formatter, Write as _};
 use std::io::Write;
@@ -42,11 +43,8 @@ impl<'a> FromBytes<'a> for Vec<(&'a CStr, &'a CStr)> {
     }
 }
 
-impl<'a, F> Format<F> for Vec<(&'a CStr, &'a CStr)>
-where
-    &'a CStr: Format<F>,
-{
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl<'a> Format for Vec<(&'a CStr, &'a CStr)> {
+    fn format(&self, format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         let mut is_first = true;
         for (k, v) in self {
             if is_first {
@@ -55,17 +53,13 @@ where
                 fmt.write_char(';')?;
             }
 
-            k.format(fmt)?;
+            k.format(format_type, fmt)?;
             fmt.write_char('=')?;
-            v.format(fmt)?;
+            v.format(format_type, fmt)?;
         }
 
         Ok(())
     }
-}
-
-impl<'a> Borrowed for Vec<(&'a CStr, &'a CStr)> {
-    type Owned = Vec<(CString, CString)>;
 }
 
 impl Borrow for Vec<(CString, CString)> {

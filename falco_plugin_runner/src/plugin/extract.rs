@@ -4,6 +4,7 @@ use crate::plugin::get_last_owner_error;
 use crate::tables::{TABLE_READER, TABLE_READER_EXT};
 use falco_event::fields::types::PT_IPNET;
 use falco_event::fields::FromBytes;
+use falco_event::format::Format;
 use falco_plugin_api::{
     plugin_api__bindgen_ty_2, ss_plugin_extract_field, ss_plugin_extract_field__bindgen_ty_1,
     ss_plugin_field_extract_input, ss_plugin_owner_t, ss_plugin_rc, ss_plugin_rc_SS_PLUGIN_FAILURE,
@@ -98,9 +99,7 @@ impl Display for ExtractedField {
             ExtractedField::RelTime(t) => {
                 write!(f, "{:?}", t)
             }
-            ExtractedField::AbsTime(t) => {
-                falco_event::format::Format::<falco_event::format::format_type::PF_NA>::format(t, f)
-            }
+            ExtractedField::AbsTime(t) => t.format(falco_event::format::FormatType::PF_NA, f),
             ExtractedField::IpAddr(addr) => {
                 write!(f, "{:?}", addr)
             }

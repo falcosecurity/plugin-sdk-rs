@@ -1,17 +1,18 @@
-use crate::event_derive::format_type;
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
+use crate::format::FormatType;
 use crate::types::format::Format;
-use crate::types::{BorrowDeref, Borrowed};
+use crate::types::BorrowDeref;
 use std::fmt::{Debug, Formatter};
 
 macro_rules! default_format {
     ($name:ident($repr:ty)) => {
-        impl<F> Format<F> for $name
-        where
-            $repr: Format<F>,
-        {
-            fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-                self.0.format(fmt)
+        impl Format for $name {
+            fn format(
+                &self,
+                format_type: FormatType,
+                fmt: &mut std::fmt::Formatter,
+            ) -> std::fmt::Result {
+                self.0.format(format_type, fmt)
             }
         }
     };
@@ -48,10 +49,6 @@ macro_rules! newtype {
             }
         }
 
-        impl Borrowed for $name {
-            type Owned = Self;
-        }
-
         impl BorrowDeref for $name {
             type Target<'a> = $name;
 
@@ -69,37 +66,31 @@ newtype!(
 );
 
 #[cfg(target_os = "linux")]
-impl<F> Format<F> for SyscallResult
-where
-    i64: Format<F>,
-{
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for SyscallResult {
+    fn format(&self, format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         if self.0 < 0 {
             let errno = nix::errno::Errno::from_raw(-self.0 as i32);
             if errno == nix::errno::Errno::UnknownErrno {
                 // always format errors as decimal
-                <i64 as Format<format_type::PF_DEC>>::format(&self.0, fmt)
+                self.0.format(FormatType::PF_DEC, fmt)
             } else {
                 write!(fmt, "{}({:?})", self.0, errno)
             }
         } else {
-            self.0.format(fmt)
+            self.0.format(format_type, fmt)
         }
     }
 }
 
 // not on Linux, we don't have the Linux errnos without maintaining the list ourselves
 #[cfg(not(target_os = "linux"))]
-impl<F> Format<F> for SyscallResult
-where
-    i64: Format<F>,
-{
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for SyscallResult {
+    fn format(&self, format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         if self.0 < 0 {
             // always format errors as decimal
-            <i64 as Format<format_type::PF_DEC>>::format(&self.0, fmt)
+            self.0.format(FormatType::PF_DEC, fmt)
         } else {
-            self.0.format(fmt)
+            self.0.format(format_type, fmt)
         }
     }
 }
@@ -117,12 +108,9 @@ newtype!(
     SigType(u8)
 );
 
-impl<F> Format<F> for SigType
-where
-    u8: Format<F>,
-{
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
-        self.0.format(fmt)?;
+impl Format for SigType {
+    fn format(&self, format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
+        self.0.format(format_type, fmt)?;
 
         #[cfg(target_os = "linux")]
         {
@@ -142,15 +130,12 @@ newtype!(
     Fd(i64)
 );
 
-impl<F> Format<F> for Fd
-where
-    i64: Format<F>,
-{
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for Fd {
+    fn format(&self, format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         if self.0 == -100 {
             fmt.write_str("AT_FDCWD")
         } else {
-            self.0.format(fmt)
+            self.0.format(format_type, fmt)
         }
     }
 }
@@ -182,12 +167,9 @@ newtype!(
     SigSet(u32)
 );
 
-impl<F> Format<F> for SigSet
-where
-    SigType: Format<F>,
-{
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
-        <u32 as Format<format_type::PF_HEX>>::format(&self.0, fmt)?;
+impl Format for SigSet {
+    fn format(&self, format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
+        self.0.format(FormatType::PF_HEX, fmt)?;
         if self.0 != 0 {
             let mut first = false;
             for sig in 0..32 {
@@ -199,7 +181,7 @@ where
                         write!(fmt, ",")?;
                     }
                     let sig_type = SigType(sig);
-                    sig_type.format(fmt)?;
+                    sig_type.format(format_type, fmt)?;
                 }
             }
             write!(fmt, ")")?;
@@ -244,8 +226,8 @@ newtype!(
     Bool(u32)
 );
 
-impl<F> Format<F> for Bool {
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for Bool {
+    fn format(&self, _format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         match self.0 {
             0 => fmt.write_str("false"),
             1 => fmt.write_str("true"),

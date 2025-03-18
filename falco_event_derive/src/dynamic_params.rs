@@ -7,13 +7,7 @@ use syn::punctuated::Punctuated;
 use syn::token::{Brace, Bracket};
 use syn::{braced, bracketed, parse_macro_input, LitInt, Token};
 
-#[cfg(feature = "serde")]
 use crate::serde_custom::serde_with_tag;
-
-#[cfg(not(feature = "serde"))]
-fn serde_with_tag(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
-    None
-}
 
 struct DynamicParamVariant {
     _brackets: syn::token::Bracket,
@@ -64,39 +58,37 @@ impl DynamicParamVariant {
         &Ident,
         Option<proc_macro2::TokenStream>,
         Option<proc_macro2::TokenStream>,
-        Option<proc_macro2::TokenStream>,
     ) {
         let disc = &self.discriminant;
         let ty = &self.field_type;
-        let (field_ref, field_lifetime, static_field_lifetime) =
-            match lifetime_type(&self.field_type.to_string()) {
-                LifetimeType::Ref => (Some(quote!(&'a)), None, None),
-                LifetimeType::Generic => (None, Some(quote!(<'a>)), Some(quote!(<'static>))),
-                LifetimeType::None => (None, None, None),
-            };
+        let (field_ref, field_lifetime) = match lifetime_type(&self.field_type.to_string()) {
+            LifetimeType::Ref => (Some(quote!(&'a)), None),
+            LifetimeType::Generic => (None, Some(quote!(<'a>))),
+            LifetimeType::None => (None, None),
+        };
 
-        (disc, ty, field_ref, field_lifetime, static_field_lifetime)
+        (disc, ty, field_ref, field_lifetime)
     }
 
     fn variant_definition(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, field_ref, field_lifetime, _) = self.unpack();
+        let (disc, ty, field_ref, field_lifetime) = self.unpack();
         let serde_tag = serde_with_tag(ty);
 
         quote!(#disc(#serde_tag #field_ref crate::event_derive::event_field_type::#ty #field_lifetime))
     }
 
     fn owned_variant_definition(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, _, _, static_field_lifetime) = self.unpack();
+        let (disc, ty, _, _) = self.unpack();
         let serde_tag = serde_with_tag(ty);
 
         quote!(#disc(
             #serde_tag
-            <crate::event_derive::event_field_type::#ty #static_field_lifetime as crate::event_derive::Borrowed>::Owned
+            crate::event_derive::event_field_type::owned::#ty
         ))
     }
 
     fn variant_read(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, field_ref, field_lifetime, _) = self.unpack();
+        let (disc, ty, field_ref, field_lifetime) = self.unpack();
 
         quote!(crate::ffi:: #disc => {
             Ok(Self:: #disc(
@@ -121,7 +113,7 @@ impl DynamicParamVariant {
     }
 
     fn variant_fmt(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, field_ref, field_lifetime, _) = self.unpack();
+        let (disc, _, _, _) = self.unpack();
         let mut disc_str = disc.to_string();
         if let Some(idx_pos) = disc_str.find("_IDX_") {
             let substr = &disc_str.as_str()[idx_pos + 5..];
@@ -131,8 +123,7 @@ impl DynamicParamVariant {
         quote!(Self:: #disc(val) => {
             fmt.write_str(#disc_str)?;
             fmt.write_char(':')?;
-
-            <#field_ref crate::event_derive::event_field_type::#ty #field_lifetime as crate::event_derive::Format<crate::event_derive::format_type::PF_NA>>::format(val, fmt)
+            val.format(crate::event_derive::FormatType::PF_NA, fmt)
         })
     }
 
@@ -194,37 +185,18 @@ impl DynamicParam {
             None
         };
         let format_generics = if wants_lifetime {
-            quote!(<'a, F>)
+            Some(quote!(<'a>))
         } else {
-            quote!(<F>)
+            None
         };
 
-        #[cfg(feature = "serde")]
         let derives = if wants_lifetime {
-            quote!(#[derive(serde::Serialize)])
+            quote!(#[cfg_attr(feature = "serde", derive(serde::Serialize))])
         } else {
             quote!(
                 #[derive(Clone)]
-                #[derive(serde::Deserialize)]
-                #[derive(serde::Serialize)]
+                #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
             )
-        };
-
-        #[cfg(not(feature = "serde"))]
-        let derives = if wants_lifetime {
-            None
-        } else {
-            Some(quote!(#[derive(Clone)]))
-        };
-
-        let to_owned = if wants_lifetime {
-            Some(quote!(
-                impl #lifetime crate::event_derive::Borrowed for #name #lifetime {
-                    type Owned = owned::#name;
-                }
-            ))
-        } else {
-            None
         };
 
         quote!(
@@ -234,8 +206,6 @@ impl DynamicParam {
             pub enum #name #lifetime {
                 #(#variant_definitions,)*
             }
-
-            #to_owned
 
             impl #lifetime crate::event_derive::ToBytes for #name #lifetime {
                 fn binary_size(&self) -> usize {
@@ -266,8 +236,8 @@ impl DynamicParam {
                 }
             }
 
-            impl #format_generics crate::event_derive::Format<F> for #name #lifetime {
-                fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+            impl #format_generics crate::event_derive::Format for #name #lifetime {
+                fn format(&self, format_type: crate::event_derive::FormatType, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                     use std::fmt::Write;
 
                     match self {
@@ -290,14 +260,9 @@ impl DynamicParam {
             )
         });
 
-        #[cfg(feature = "serde")]
         let serde_derives = quote!(
-            #[derive(serde::Deserialize)]
-            #[derive(serde::Serialize)]
+            #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
         );
-
-        #[cfg(not(feature = "serde"))]
-        let serde_derives = quote!();
 
         if wants_lifetime {
             quote!(

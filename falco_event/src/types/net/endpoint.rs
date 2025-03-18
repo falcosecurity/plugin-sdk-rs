@@ -1,4 +1,5 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::format::FormatType;
 use crate::types::format::Format;
 use crate::types::Port;
 use std::fmt::Formatter;
@@ -29,8 +30,8 @@ impl FromBytes<'_> for EndpointV4 {
     }
 }
 
-impl<F> Format<F> for EndpointV4 {
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for EndpointV4 {
+    fn format(&self, _format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         write!(fmt, "{}:{}", self.0, self.1 .0)
     }
 }
@@ -59,8 +60,8 @@ impl FromBytes<'_> for EndpointV6 {
     }
 }
 
-impl<F> Format<F> for EndpointV6 {
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for EndpointV6 {
+    fn format(&self, _format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         write!(fmt, "[{}]:{}", self.0, self.1 .0)
     }
 }

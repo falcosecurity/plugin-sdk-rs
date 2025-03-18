@@ -10,8 +10,12 @@ readme = "README.md"
 keywords = ["falco", "security"]
 categories = ["api-bindings"]
 
+[package.metadata."docs.rs"]
+all-features = true
+
 [features]
-serde = ["dep:serde", "bitflags/serde", "falco_event_derive/serde"]
+serde = ["dep:serde", "bitflags/serde"]
+full-schema = []
 
 [dependencies]
 byteorder = "1.5.0"

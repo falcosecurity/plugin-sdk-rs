@@ -1,4 +1,5 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::format::FormatType;
 use crate::types::format::Format;
 use std::fmt::Formatter;
 use std::io::Write;
@@ -32,8 +33,8 @@ impl ToBytes for Ipv6Net {
     }
 }
 
-impl<F> Format<F> for Ipv6Net {
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for Ipv6Net {
+    fn format(&self, _format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         write!(fmt, "{}", self.0)
     }
 }

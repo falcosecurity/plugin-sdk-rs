@@ -20,7 +20,7 @@ jobs:
         include:
           - tag: default_features
             name: Test with default features enabled
-            cargo_test_opts: ""
+            cargo_test_opts: "--all-targets"
           - tag: all_features
             name: Test with all features enabled
             cargo_test_opts: "--all-features"

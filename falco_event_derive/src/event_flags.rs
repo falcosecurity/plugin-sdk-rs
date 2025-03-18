@@ -133,14 +133,9 @@ fn render_enum(
         .clone()
         .map(|(variant, value)| quote!(#name::#variant => crate::ffi::#value as #repr_type));
 
-    #[cfg(feature = "serde")]
     let serde_derives = quote!(
-        #[derive(serde::Deserialize)]
-        #[derive(serde::Serialize)]
+        #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
     );
-
-    #[cfg(not(feature = "serde"))]
-    let serde_derives = quote!();
 
     quote!(
         #[repr(#repr_type)]
@@ -196,17 +191,11 @@ fn render_enum(
             }
         }
 
-        impl crate::event_derive::Borrowed for #name {
-            type Owned = Self;
-        }
-
-        impl<F> crate::event_derive::Format<F> for #name
-        where
-            #repr_type: crate::event_derive::Format<F>,
+        impl crate::event_derive::Format for #name
         {
-            fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+            fn format(&self, format_type: crate::event_derive::FormatType, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                 let raw: #repr_type = (*self).into();
-                raw.format(fmt)?;
+                raw.format(format_type, fmt)?;
                 match self {
                     Self::Unknown(_) => Ok(()),
                     _ => write!(fmt, "({:?})", self)
@@ -223,14 +212,9 @@ fn render_bitflags(
 ) -> proc_macro2::TokenStream {
     let items = items.map(|(name, value)| quote!(const #name = crate::ffi::#value as #repr_type));
 
-    #[cfg(feature = "serde")]
     let serde_derives = quote!(
-        #[derive(serde::Deserialize)]
-        #[derive(serde::Serialize)]
+        #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
     );
-
-    #[cfg(not(feature = "serde"))]
-    let serde_derives = quote!();
 
     quote!(
         bitflags::bitflags! {
@@ -268,12 +252,8 @@ fn render_bitflags(
             }
         }
 
-        impl crate::event_derive::Borrowed for #name {
-            type Owned = Self;
-        }
-
-        impl<F> crate::event_derive::Format<F> for #name {
-            fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        impl crate::event_derive::Format for #name {
+            fn format(&self, format_type: crate::event_derive::FormatType, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                 write!(fmt, "{:#x}", self.bits())?;
                 let mut first = true;
 

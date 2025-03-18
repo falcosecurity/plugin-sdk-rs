@@ -10,7 +10,7 @@ impl EventToBytes for &[u8] {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "full-schema"))]
 mod tests {
     use crate::events::types::{AnyEvent, PPME_SYSCALL_OPEN_X};
     use crate::events::{Event, EventMetadata, EventToBytes, RawEvent};

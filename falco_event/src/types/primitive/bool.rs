@@ -1,4 +1,5 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::format::FormatType;
 use crate::types::format::Format;
 use crate::types::primitive::bool;
 use std::fmt::Formatter;
@@ -26,8 +27,8 @@ impl ToBytes for bool {
     }
 }
 
-impl<F> Format<F> for bool {
-    fn format(&self, fmt: &mut Formatter) -> std::fmt::Result {
+impl Format for bool {
+    fn format(&self, _format_type: FormatType, fmt: &mut Formatter) -> std::fmt::Result {
         if *self {
             fmt.write_str("true")
         } else {

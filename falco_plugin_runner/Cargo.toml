@@ -9,6 +9,9 @@ repository = "https://github.com/falcosecurity/plugin-sdk-rs"
 keywords = ["falco", "security"]
 categories = ["api-bindings"]
 
+[package.metadata."docs.rs"]
+all-features = true
+
 [dependencies]
 anyhow = "1.0.89"
 falco_event = { version = "0.4.0", path = "../falco_event" }

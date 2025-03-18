@@ -3,6 +3,7 @@ use std::io::Write;
 
 use crate::fields::event_flags::PT_FLAGS16_file_flags;
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
+use crate::format::FormatType;
 use crate::types::format::Format;
 use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 
@@ -11,11 +12,8 @@ use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct FdList(pub Vec<(u64, PT_FLAGS16_file_flags)>);
 
-impl<F> Format<F> for FdList
-where
-    PT_FLAGS16_file_flags: Format<F>,
-{
-    fn format(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl Format for FdList {
+    fn format(&self, format_type: FormatType, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut first = true;
         for item in &self.0 {
             if first {
@@ -26,7 +24,7 @@ where
             }
             write!(f, "{}:", item.0)?;
             // TODO: this could use a shorter repr (without the bits)
-            item.1.format(f)?;
+            item.1.format(format_type, f)?;
         }
 
         write!(f, "]")?;

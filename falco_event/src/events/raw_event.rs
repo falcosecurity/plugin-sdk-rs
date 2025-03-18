@@ -49,9 +49,9 @@ impl RawEvent<'_> {
         Self::from(buf)
     }
 
-    pub fn load<'a, T: PayloadFromBytes<'a> + EventPayload>(
+    pub fn load_params<'a, T: PayloadFromBytes<'a> + EventPayload>(
         &'a self,
-    ) -> PayloadFromBytesResult<Event<T>> {
+    ) -> PayloadFromBytesResult<T> {
         if self.event_type != T::ID as u16 {
             return Err(PayloadFromBytesError::TypeMismatch);
         }
@@ -62,6 +62,13 @@ impl RawEvent<'_> {
                 T::read(self.params::<u16>()?)
             }
         }?;
+        Ok(params)
+    }
+
+    pub fn load<'a, T: PayloadFromBytes<'a> + EventPayload>(
+        &'a self,
+    ) -> PayloadFromBytesResult<Event<T>> {
+        let params = self.load_params::<T>()?;
         Ok(Event {
             metadata: self.metadata.clone(),
             params,

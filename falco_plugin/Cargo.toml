@@ -10,7 +10,8 @@ readme = "README.md"
 keywords = ["falco", "security"]
 categories = ["api-bindings"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata."docs.rs"]
+all-features = true
 
 # RUSTFLAGS='--cfg linkage="static"' cargo rustc --crate-type=staticlib -p falco_plugin --example dummy_source
 [lints.rust]
@@ -22,6 +23,7 @@ crate-type = ["cdylib"]
 
 [features]
 thread-safe-tables = ["dep:parking_lot"]
+full-schema = ["falco_event/full-schema"]
 
 [dependencies]
 thiserror = "1.0.58"

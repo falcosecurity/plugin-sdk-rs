@@ -4,18 +4,7 @@ use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::{braced, bracketed, parse_macro_input, Token};
 
-#[cfg(feature = "serde")]
 use crate::serde_custom::{serde_with_option_tag, serde_with_option_tag_owned};
-
-#[cfg(not(feature = "serde"))]
-fn serde_with_option_tag(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
-    None
-}
-
-#[cfg(not(feature = "serde"))]
-fn serde_with_option_tag_owned(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
-    None
-}
 
 pub(crate) enum LifetimeType {
     None,
@@ -96,29 +85,26 @@ impl EventArg {
     ) -> (
         Option<proc_macro2::TokenStream>,
         Option<proc_macro2::TokenStream>,
-        Option<proc_macro2::TokenStream>,
     ) {
         let field_type = self.final_field_type_name();
 
         match lifetime_type(&field_type.to_string()) {
-            LifetimeType::Ref => (Some(quote!(&'a)), None, None),
-            LifetimeType::Generic => (None, Some(quote!(<'a>)), Some(quote!(<'static>))),
-            LifetimeType::None => (None, None, None),
+            LifetimeType::Ref => (Some(quote!(&'a)), None),
+            LifetimeType::Generic => (None, Some(quote!(<'a>))),
+            LifetimeType::None => (None, None),
         }
     }
 
     fn field_type(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
         let field_type = self.final_field_type_name();
-        let (field_ref, field_lifetime, static_field_lifetime) = self.lifetimes();
+        let (field_ref, field_lifetime) = self.lifetimes();
 
         match variant {
             CodegenVariant::Borrowed => {
                 quote!(::std::option::Option<#field_ref crate::event_derive::event_field_type::#field_type #field_lifetime>)
             }
             CodegenVariant::Owned => {
-                quote!(::std::option::Option<
-                    <crate::event_derive::event_field_type::#field_type #static_field_lifetime as
-                    crate::event_derive::Borrowed>::Owned>)
+                quote!(::std::option::Option<crate::event_derive::event_field_type::owned::#field_type>)
             }
         }
     }
@@ -237,6 +223,95 @@ impl EventInfo {
             .flat_map(|(_, _, args)| args.into_iter())
     }
 
+    fn impl_from_bytes(
+        &self,
+        lifetime: Option<&proc_macro2::TokenStream>,
+    ) -> proc_macro2::TokenStream {
+        let field_reads = self.args().map(|field| {
+            let name = &field.name;
+            let ident = field.ident();
+            quote!(
+                let mut maybe_next_field = params.next().transpose()
+                    .map_err(|e| PayloadFromBytesError::NamedField(#name, e))?;
+                let #ident = FromBytes::from_maybe_bytes(maybe_next_field.as_mut())
+                    .map_err(|e| PayloadFromBytesError::NamedField(#name, e))?;
+                if let Some(buf) = maybe_next_field {
+                    debug_assert!(buf.is_empty());
+                }
+            )
+        });
+
+        let field_names = self.args().map(|field| {
+            let name = field.ident();
+            quote!(#name)
+        });
+
+        let event_code = &self.event_code;
+
+        quote!(
+        impl<'a> crate::event_derive::PayloadFromBytes<'a> for #event_code #lifetime {
+            fn read(mut params: impl Iterator<Item=crate::event_derive::FromBytesResult<&'a [u8]>>) -> crate::event_derive::PayloadFromBytesResult<Self> {
+                use crate::event_derive::*;
+                #(#field_reads)*
+
+                Ok(#event_code {
+                    #(#field_names),*
+                })
+            }
+        }
+        )
+    }
+
+    fn impl_to_bytes(
+        &self,
+        lifetime: Option<&proc_macro2::TokenStream>,
+    ) -> proc_macro2::TokenStream {
+        let field_sizes = self.args().map(|field| {
+            let name = field.ident();
+            quote!(self.#name.binary_size())
+        });
+
+        let field_writes = self.args().map(|field| {
+            let name = field.ident();
+            quote!(self.#name.write(&mut writer)?;)
+        });
+
+        let event_code = &self.event_code;
+        let num_fields = self.args().count();
+
+        quote!(
+        impl #lifetime crate::event_derive::PayloadToBytes for #event_code #lifetime {
+            fn write<W: std::io::Write>(&self, metadata: &crate::event_derive::EventMetadata, mut writer: W) -> std::io::Result<()> {
+                use crate::event_derive::*;
+                const NUM_FIELDS: usize = #num_fields;
+                let length_size = if Self::LARGE { 4 } else { 2 };
+                let lengths: [usize; NUM_FIELDS] =
+                    [#(#field_sizes),*];
+                let len: usize = 26 + // header
+                    (length_size * NUM_FIELDS) +
+                    lengths.iter().sum::<usize>();
+
+                writer.write_u64::<NativeEndian>(metadata.ts)?;
+                writer.write_i64::<NativeEndian>(metadata.tid)?;
+                writer.write_u32::<NativeEndian>(len as u32)?;
+                writer.write_u16::<NativeEndian>(Self::ID as u16)?;
+                writer.write_u32::<NativeEndian>(NUM_FIELDS as u32)?;
+
+                for param_len in lengths {
+                    if Self::LARGE {
+                        writer.write_u32::<NativeEndian>(param_len as u32)?;
+                    } else {
+                        writer.write_u16::<NativeEndian>(param_len as u16)?;
+                    }
+                }
+
+                #(#field_writes)*
+                Ok(())
+            }
+        }
+        )
+    }
+
     fn typedef(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
         let event_code = &self.event_code;
         let event_type = Ident::new(
@@ -262,16 +337,12 @@ impl EventInfo {
             let name = &field.name;
             let ident = field.ident();
             let fmt = &field.field_format;
-            let field_type = field.field_type(variant);
 
             quote!(
                 fmt.write_char(' ')?;
                 fmt.write_str(#name)?;
                 fmt.write_char('=')?;
-                <#field_type as
-                    crate::event_derive::Format<
-                        crate::event_derive::format_type::#fmt
-                >>::format(&self.#ident, fmt)?;
+                self.#ident.format(crate::event_derive::FormatType::#fmt, fmt)?;
             )
         });
         let dirfd_methods = self.args().map(|a| a.dirfd_method(self));
@@ -279,43 +350,24 @@ impl EventInfo {
         let is_large = self.flags.iter().any(|flag| *flag == "EF_LARGE_PAYLOAD");
         let name = &self.name;
 
-        #[cfg(feature = "serde")]
-        let derive_serde = quote!(
-            #[derive(serde::Deserialize)]
-            #[derive(serde::Serialize)]
-        );
-
-        #[cfg(not(feature = "serde"))]
-        let derive_serde = quote!();
-
-        #[cfg(feature = "serde")]
-        let derive_ser = quote!(
-            #[derive(serde::Serialize)]
-        );
-
-        #[cfg(not(feature = "serde"))]
-        let derive_ser = quote!();
-
-        let derives = match (variant, wants_lifetime) {
+        let serde_derives = match (variant, wants_lifetime) {
             (CodegenVariant::Borrowed, true) => quote!(
-                #[derive(falco_event_derive::FromBytes)]
-                #[derive(falco_event_derive::ToBytes)]
-                #derive_ser
+                #[cfg_attr(feature = "serde", derive(serde::Serialize))]
             ),
-            (CodegenVariant::Borrowed, false) => quote!(
-                #[derive(falco_event_derive::FromBytes)]
-                #[derive(falco_event_derive::ToBytes)]
-                #derive_serde
+            _ => quote!(
+                #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
             ),
-            (CodegenVariant::Owned, _) => quote!(
-                #[derive(falco_event_derive::ToBytes)]
-                #derive_serde
-            ),
+        };
+
+        let impl_to_bytes = self.impl_to_bytes(lifetime.as_ref());
+        let impl_from_bytes = match variant {
+            CodegenVariant::Borrowed => Some(self.impl_from_bytes(lifetime.as_ref())),
+            CodegenVariant::Owned => None,
         };
 
         quote!(
             #[allow(non_camel_case_types)]
-            #derives
+            #serde_derives
             #[derive(Debug)]
             pub struct #event_code #lifetime {
                 #(#fields,)*
@@ -331,8 +383,11 @@ impl EventInfo {
                 const NAME: &'static str = #name;
             }
 
-            impl #lifetime crate::event_derive::Format<crate::event_derive::format_type::PF_NA> for #event_code #lifetime {
-                fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+            #impl_from_bytes
+            #impl_to_bytes
+
+            impl #lifetime crate::event_derive::Format for #event_code #lifetime {
+                fn format(&self, format_type: crate::event_derive::FormatType, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                     use std::fmt::Write;
 
                     match <Self as crate::event_derive::EventPayload>::direction() {
@@ -395,13 +450,7 @@ impl EventInfo {
             self.event_code.span(),
         );
         quote!(crate::ffi:: #raw_ident => {
-            let params = unsafe {
-                if <#event_code as crate::event_derive::EventPayload>::LARGE {
-                    <#event_code as crate::event_derive::PayloadFromBytes>::read(self.params::<u32>()?)?
-                } else {
-                    <#event_code as crate::event_derive::PayloadFromBytes>::read(self.params::<u16>()?)?
-                }
-            };
+            let params = self.load_params::<#event_code>()?;
             AnyEvent::#event_type(params)
         })
     }
@@ -415,7 +464,7 @@ impl EventInfo {
 
         quote!(
             AnyEvent::#event_type(inner) => {
-                inner.format(fmt)
+                inner.format(format_type, fmt)
             }
         )
     }
@@ -489,19 +538,14 @@ fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::
         CodegenVariant::Owned => None,
     };
 
-    #[cfg(feature = "serde")]
     let derives = match variant {
         CodegenVariant::Borrowed => quote!(
-            #[derive(serde::Serialize)]
+            #[cfg_attr(feature = "serde", derive(serde::Serialize))]
         ),
         CodegenVariant::Owned => quote!(
-            #[derive(serde::Serialize)]
-            #[derive(serde::Deserialize)]
+            #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
         ),
     };
-
-    #[cfg(not(feature = "serde"))]
-    let derives = quote!();
 
     quote!(
         #(#typedefs)*
@@ -521,8 +565,8 @@ fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::
             }
         }
 
-        impl #lifetime crate::event_derive::Format<crate::event_derive::format_type::PF_NA> for AnyEvent #lifetime {
-            fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+        impl #lifetime crate::event_derive::Format for AnyEvent #lifetime {
+            fn format(&self, format_type: crate::event_derive::FormatType, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                 match self {
                     #(#variant_fmts)*
                 }

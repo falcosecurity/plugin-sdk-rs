@@ -9,6 +9,9 @@ repository = "https://github.com/falcosecurity/plugin-sdk-rs"
 readme = "README.md"
 keywords = ["falco", "security"]
 
+[package.metadata."docs.rs"]
+all-features = true
+
 [lib]
 proc-macro = true
 

@@ -1,21 +1,9 @@
 use proc_macro::TokenStream;
 
-mod binary_payload;
 mod dynamic_params;
 mod event_flags;
 mod event_info;
-#[cfg(feature = "serde")]
 mod serde_custom;
-
-#[proc_macro_derive(ToBytes)]
-pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
-    binary_payload::derive_to_bytes(input)
-}
-
-#[proc_macro_derive(FromBytes)]
-pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
-    binary_payload::derive_from_bytes(input)
-}
 
 #[proc_macro]
 pub fn event_info(input: TokenStream) -> TokenStream {

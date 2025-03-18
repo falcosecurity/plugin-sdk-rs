@@ -1,31 +1,21 @@
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::format::{format_type, Format};
-use crate::types::{BorrowDeref, Borrowed};
+use crate::types::format::{Format, FormatType};
+use crate::types::BorrowDeref;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 
 macro_rules! impl_format {
     ($ty:ty) => {
-        impl Format<format_type::PF_NA> for $ty {
-            fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-                std::fmt::Display::fmt(self, fmt)
-            }
-        }
-
-        impl Format<format_type::PF_DEC> for $ty {
-            fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-                std::fmt::Display::fmt(self, fmt)
-            }
-        }
-
-        impl Format<format_type::PF_HEX> for $ty {
-            fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(fmt, "{:#x}", self)
-            }
-        }
-
-        impl Format<format_type::PF_OCT> for $ty {
-            fn format(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(fmt, "{:#o}", self)
+        impl Format for $ty {
+            fn format(
+                &self,
+                format_type: FormatType,
+                fmt: &mut std::fmt::Formatter,
+            ) -> std::fmt::Result {
+                match format_type {
+                    FormatType::PF_HEX => write!(fmt, "{:#x}", self),
+                    FormatType::PF_OCT => write!(fmt, "{:#o}", self),
+                    _ => write!(fmt, "{}", self),
+                }
             }
         }
     };
@@ -33,10 +23,6 @@ macro_rules! impl_format {
 
 macro_rules! impl_borrow_deref {
     ($ty:ty) => {
-        impl Borrowed for $ty {
-            type Owned = Self;
-        }
-
         impl BorrowDeref for $ty {
             type Target<'a> = Self;
 

@@ -1,15 +1,6 @@
-/// Trait implemented for borrowed event types
-///
-/// Similar to [`std::borrow::ToOwned`], but different because:
-/// 1. We don't have a to_owned method (we don't need it)
-/// 2. The borrowed type does not need to be a reference
-pub trait Borrowed {
-    type Owned;
-}
-
 /// Trait implemented for owned event types
 ///
-/// Similar to [`std::borrow::Borrow`], but again, different
+/// Similar to [`std::borrow::Borrow`], but different
 /// as the borrowed type does not need to be a reference
 pub trait Borrow {
     type Borrowed<'a>: Sized

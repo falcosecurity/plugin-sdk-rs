@@ -62,4 +62,5 @@ mod to_bytes;
 ///
 /// 2. Arbitrary serialization and deserialization with [`serde`] is only supported when
 ///    the `serde` feature of the crate is enabled.
+#[cfg_attr(not(feature = "full-schema"), path = "types_minimal.rs")]
 pub mod types;

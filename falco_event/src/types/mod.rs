@@ -22,14 +22,12 @@ pub mod serde {
 /// are:
 /// - the output format follows the formatters from `libsinsp` (although it's not exact, as it uses
 ///   e.g. the `Debug` impl for [`std::time::Duration`] for pretty printing time intervals)
-/// - the output can be configured in a limited fashion using the template parameter (see
-///   [`format::format_type`])
+/// - the output can be configured in a limited fashion using [`format::FormatType`].
 pub mod format;
 
 pub use fd_list::*;
 pub use net::*;
 pub use owned::Borrow;
 pub use owned::BorrowDeref;
-pub use owned::Borrowed;
 pub use path::*;
 pub use primitive::*;
