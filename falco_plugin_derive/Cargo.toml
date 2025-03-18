@@ -1,6 +1,6 @@
 [package]
 name = "falco_plugin_derive"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2021"
 license = "Apache-2.0"
 description = "Derive macros for the falco_plugin library"

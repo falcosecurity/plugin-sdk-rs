@@ -1,6 +1,6 @@
 [package]
 name = "falco_event"
-version = "0.4.2"
+version = "0.4.3"
 edition = "2021"
 license = "Apache-2.0"
 description = "Type-safe wrappers for Falco events"
@@ -15,7 +15,7 @@ serde = ["dep:serde", "bitflags/serde", "falco_event_derive/serde"]
 
 [dependencies]
 byteorder = "1.5.0"
-falco_event_derive = { path = "../falco_event_derive", version = "0.4.2" }
+falco_event_derive = { path = "../falco_event_derive", version = "0.4.3" }
 memchr = "2.7.1"
 num-derive = "0.4.2"
 num-traits = "0.2.17"
