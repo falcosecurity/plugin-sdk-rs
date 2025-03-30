@@ -17,7 +17,7 @@ pub struct RawEvent<'a> {
     pub payload: &'a [u8],
 }
 
-impl RawEvent<'_> {
+impl<'e> RawEvent<'e> {
     pub fn from(mut buf: &[u8]) -> std::io::Result<RawEvent> {
         let ts = buf.read_u64::<NativeEndian>()?;
         let tid = buf.read_i64::<NativeEndian>()?;
@@ -84,7 +84,10 @@ impl RawEvent<'_> {
     /// `T` must correspond to the type of the length field (u16 or u32, depending on event type)
     pub unsafe fn params<T>(
         &self,
-    ) -> Result<impl Iterator<Item = Result<&[u8], FromBytesError>>, PayloadFromBytesError> {
+    ) -> Result<
+        impl Iterator<Item = Result<&'e [u8], FromBytesError>> + use<'e, T>,
+        PayloadFromBytesError,
+    > {
         let ll = unsafe { self.lengths_length::<T>() };
 
         if self.payload.len() < ll {
