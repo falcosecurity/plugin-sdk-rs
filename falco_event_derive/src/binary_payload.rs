@@ -102,11 +102,20 @@ pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
             let name = input.ident;
 
             return TokenStream::from(quote!(
-            impl<'a> crate::events::PayloadFromBytes<'a> for #name #ty_generics #where_clause {
-                fn read(mut params: impl Iterator<Item=crate::fields::FromBytesResult<&'a [u8]>>) -> Result<Self, crate::events::PayloadFromBytesError> {
+            impl<'a> crate::events::FromRawEvent<'a> for #name #ty_generics #where_clause {
+                fn parse(raw: &crate::events::RawEvent<'a>) -> Result<Self, crate::events::PayloadFromBytesError> {
+                    use crate::events::EventPayload;
                     use crate::events::PayloadFromBytesError;
+                    use crate::events::RawEvent;
                     use crate::fields::FromBytes;
                     use crate::fields::FromBytesError;
+
+                    if raw.event_type != Self::ID as u16 {
+                        return Err(PayloadFromBytesError::TypeMismatch);
+                    }
+
+                    let mut params = raw.params::<<Self as EventPayload>::LengthType>()?;
+
                     #(#field_reads)*
 
                     Ok(#name {

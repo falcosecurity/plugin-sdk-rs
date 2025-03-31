@@ -1,6 +1,6 @@
 use crate::events::types::EventType;
 use crate::events::EventMetadata;
-use crate::fields::{FromBytesError, FromBytesResult};
+use crate::fields::FromBytesError;
 use std::io::Write;
 use thiserror::Error;
 
@@ -14,6 +14,8 @@ pub trait EventPayload {
     const ID: EventType;
     const LARGE: bool;
     const NAME: &'static str;
+
+    type LengthType;
 
     fn direction() -> EventDirection {
         match Self::ID as u32 % 2 {
@@ -43,14 +45,6 @@ pub enum PayloadFromBytesError {
     UnsupportedEventType(u32),
 }
 
-pub type PayloadFromBytesResult<T> = Result<T, PayloadFromBytesError>;
-
 pub trait PayloadToBytes {
     fn write<W: Write>(&self, metadata: &EventMetadata, writer: W) -> std::io::Result<()>;
-}
-
-pub trait PayloadFromBytes<'a>: Sized {
-    fn read(
-        params: impl Iterator<Item = FromBytesResult<&'a [u8]>>,
-    ) -> PayloadFromBytesResult<Self>;
 }

@@ -247,6 +247,10 @@ impl EventInfo {
 
         let is_large = self.flags.iter().any(|flag| *flag == "EF_LARGE_PAYLOAD");
         let name = &self.name;
+        let length_type = match is_large {
+            true => quote!(u32),
+            false => quote!(u16),
+        };
 
         quote!(
             #[allow(non_camel_case_types)]
@@ -266,6 +270,8 @@ impl EventInfo {
                 const ID: EventType = EventType:: #event_type;
                 const LARGE: bool = #is_large;
                 const NAME: &'static str = #name;
+
+                type LengthType = #length_type;
             }
 
             impl #lifetime ::std::fmt::Debug for #event_code #lifetime {
@@ -340,7 +346,7 @@ impl EventInfo {
             self.event_code.span(),
         );
         quote!(crate::ffi:: #raw_ident => {
-            let params = self.load_params::<#event_code>()?;
+            let params = <#event_code>::parse(self)?;
             AnyEvent::#event_type(params)
         })
     }
@@ -480,6 +486,8 @@ fn raw_event_load_any(events: &Events) -> proc_macro2::TokenStream {
     quote!(
         impl<'e> crate::events::RawEvent<'e> {
             pub fn load_any(&self) -> Result<crate::events::Event<AnyEvent<'e>>, crate::events::PayloadFromBytesError> {
+                use crate::events::FromRawEvent;
+
                 let any: AnyEvent = match self.event_type as u32 {
                     #(#matches,)*
                     other => return Err(crate::events::PayloadFromBytesError::UnsupportedEventType(other)),

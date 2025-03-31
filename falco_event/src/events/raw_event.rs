@@ -2,11 +2,13 @@ use std::io::Write;
 
 use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 
-use crate::events::payload::{
-    EventPayload, PayloadFromBytes, PayloadFromBytesError, PayloadFromBytesResult,
-};
+use crate::events::payload::PayloadFromBytesError;
 use crate::events::{Event, EventMetadata, EventToBytes};
 use crate::fields::FromBytesError;
+
+pub trait FromRawEvent<'a>: Sized {
+    fn parse(raw_event: &RawEvent<'a>) -> Result<Self, PayloadFromBytesError>;
+}
 
 #[derive(Debug)]
 pub struct RawEvent<'a> {
@@ -104,22 +106,8 @@ impl<'e> RawEvent<'e> {
         Self::from(buf)
     }
 
-    pub fn load_params<T: PayloadFromBytes<'e> + EventPayload>(&self) -> PayloadFromBytesResult<T> {
-        if self.event_type != T::ID as u16 {
-            return Err(PayloadFromBytesError::TypeMismatch);
-        }
-        let params = if T::LARGE {
-            T::read(self.params::<u32>()?)
-        } else {
-            T::read(self.params::<u16>()?)
-        }?;
-        Ok(params)
-    }
-
-    pub fn load<'a, T: PayloadFromBytes<'a> + EventPayload>(
-        &'a self,
-    ) -> PayloadFromBytesResult<Event<T>> {
-        let params = self.load_params::<T>()?;
+    pub fn load<'a, T: FromRawEvent<'e>>(&'a self) -> Result<Event<T>, PayloadFromBytesError> {
+        let params = T::parse(self)?;
         Ok(Event {
             metadata: self.metadata.clone(),
             params,
