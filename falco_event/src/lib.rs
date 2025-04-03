@@ -49,10 +49,4 @@ mod event_derive {
     pub use crate::types::CStrFormatter;
     pub use crate::types::CStrPairArrayFormatter;
     pub use crate::types::SystemTimeFormatter;
-
-    pub use crate::types::Borrow;
-    pub use crate::types::BorrowDeref;
-
-    #[cfg(feature = "serde")]
-    pub use crate::types::serde;
 }

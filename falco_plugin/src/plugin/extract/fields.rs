@@ -69,31 +69,41 @@ mod direct {
     }
 }
 
-mod by_pointer {
+mod by_ref {
     use super::*;
 
-    pub(super) fn extract_one<T: ToBytes>(
+    pub(super) fn extract_one<T, U>(
         val: &T,
         storage: &bumpalo::Bump,
-    ) -> Result<(*mut c_void, u64), std::io::Error> {
+    ) -> Result<(*mut c_void, u64), std::io::Error>
+    where
+        for<'a> &'a U: ToBytes,
+        T: AsRef<U>,
+        U: ?Sized,
+    {
         let mut buf = bumpalo::collections::Vec::new_in(storage);
-        val.write(&mut buf)?;
+        val.as_ref().write(&mut buf)?;
 
         let ptr_buf = storage.alloc(buf.as_ptr());
         Ok((ptr_buf as *mut _ as *mut _, 1))
     }
 
-    pub(super) fn extract_many<T: ToBytes>(
+    pub(super) fn extract_many<T, U>(
         val: &[T],
         storage: &bumpalo::Bump,
-    ) -> Result<(*mut c_void, u64), std::io::Error> {
+    ) -> Result<(*mut c_void, u64), std::io::Error>
+    where
+        for<'a> &'a U: ToBytes,
+        T: AsRef<U>,
+        U: ?Sized,
+    {
         let mut sizes = bumpalo::collections::Vec::new_in(storage);
         sizes.reserve(val.len());
 
         let mut buf = bumpalo::collections::Vec::new_in(storage);
         for item in val.iter() {
-            item.write(&mut buf)?;
-            sizes.push(item.binary_size());
+            item.as_ref().write(&mut buf)?;
+            sizes.push(item.as_ref().binary_size());
         }
 
         let mut ptr_buf = bumpalo::collections::Vec::new_in(storage);
@@ -241,6 +251,6 @@ extract!(u64: direct => ExtractFieldTypeId::U64);
 extract!(Duration: direct => ExtractFieldTypeId::RelTime);
 extract!(SystemTime: direct => ExtractFieldTypeId::AbsTime);
 extract!(bool: direct => ExtractFieldTypeId::Bool);
-extract!(CString: by_pointer => ExtractFieldTypeId::String);
+extract!(CString: by_ref => ExtractFieldTypeId::String);
 extract!(IpAddr: by_bytebuf => ExtractFieldTypeId::IpAddr);
 extract!(PT_IPNET: by_bytebuf => ExtractFieldTypeId::IpNet);

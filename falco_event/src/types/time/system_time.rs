@@ -40,21 +40,3 @@ impl Debug for SystemTimeFormatter {
         f.write_str(&dt.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, false))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use std::time::{Duration, SystemTime};
-
-    #[test]
-    fn test_serde_systemtime() {
-        let st = SystemTime::UNIX_EPOCH + Duration::from_secs(100 * 86400);
-        let json = serde_json::to_string(&st).unwrap();
-
-        assert_eq!(
-            json,
-            r#"{"secs_since_epoch":8640000,"nanos_since_epoch":0}"#
-        );
-        let st2: SystemTime = serde_json::from_str(&json).unwrap();
-        assert_eq!(st, st2);
-    }
-}

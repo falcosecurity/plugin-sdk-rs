@@ -4,13 +4,10 @@ use std::io::Write;
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL};
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
 use crate::types::net::endpoint::{EndpointV4, EndpointV6};
-use crate::types::Borrow;
 use byteorder::{ReadBytesExt, WriteBytesExt};
-use typed_path::{UnixPath, UnixPathBuf};
+use typed_path::UnixPath;
 
 /// Socket tuple: describing both endpoints of a connection
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
 #[derive(Eq, PartialEq)]
 pub enum SockTuple<'a> {
     /// Unix socket connection
@@ -20,7 +17,6 @@ pub enum SockTuple<'a> {
         /// destination socket kernel pointer
         dest_ptr: u64,
         /// filesystem path to the socket
-        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))]
         path: &'a UnixPath,
     },
 
@@ -41,31 +37,28 @@ pub enum SockTuple<'a> {
     },
 
     /// Unknown/other socket family: `PPM_AF_*` id and a raw byte buffer
-    Other(
-        u8,
-        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::bytebuf"))] &'a [u8],
-    ),
+    Other(u8, &'a [u8]),
 }
 
 impl Debug for SockTuple<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            SockTuple::Unix {
+            Self::Unix {
                 source_ptr,
                 dest_ptr,
                 path,
             } => write!(f, "{:x}->{:x} {}", source_ptr, dest_ptr, path.display()),
-            SockTuple::V4 { source, dest } => write!(
+            Self::V4 { source, dest } => write!(
                 f,
                 "{}:{} -> {}:{}",
                 source.0, source.1 .0, dest.0, dest.1 .0
             ),
-            SockTuple::V6 { source, dest } => write!(
+            Self::V6 { source, dest } => write!(
                 f,
                 "[{}]:{} -> [{}]:{}",
                 source.0, source.1 .0, dest.0, dest.1 .0
             ),
-            SockTuple::Other(af, buf) => f
+            Self::Other(af, buf) => f
                 .debug_struct("SockTuple")
                 .field("af", &af)
                 .field("addr", buf)
@@ -77,20 +70,20 @@ impl Debug for SockTuple<'_> {
 impl ToBytes for SockTuple<'_> {
     fn binary_size(&self) -> usize {
         match self {
-            SockTuple::Unix {
+            Self::Unix {
                 source_ptr: source_addr,
                 dest_ptr: dest_addr,
                 path,
             } => 1 + source_addr.binary_size() + dest_addr.binary_size() + path.binary_size(),
-            SockTuple::V4 { source, dest } => 1 + source.binary_size() + dest.binary_size(),
-            SockTuple::V6 { source, dest } => 1 + source.binary_size() + dest.binary_size(),
-            SockTuple::Other(_, buf) => 1 + buf.len(),
+            Self::V4 { source, dest } => 1 + source.binary_size() + dest.binary_size(),
+            Self::V6 { source, dest } => 1 + source.binary_size() + dest.binary_size(),
+            Self::Other(_, buf) => 1 + buf.len(),
         }
     }
 
     fn write<W: Write>(&self, mut writer: W) -> std::io::Result<()> {
         match self {
-            SockTuple::Unix {
+            Self::Unix {
                 source_ptr: source_addr,
                 dest_ptr: dest_addr,
                 path,
@@ -100,17 +93,17 @@ impl ToBytes for SockTuple<'_> {
                 dest_addr.write(&mut writer)?;
                 path.write(writer)
             }
-            SockTuple::V4 { source, dest } => {
+            Self::V4 { source, dest } => {
                 writer.write_u8(PPM_AF_INET as u8)?;
                 source.write(&mut writer)?;
                 dest.write(writer)
             }
-            SockTuple::V6 { source, dest } => {
+            Self::V6 { source, dest } => {
                 writer.write_u8(PPM_AF_INET6 as u8)?;
                 source.write(&mut writer)?;
                 dest.write(writer)
             }
-            SockTuple::Other(af, buf) => {
+            Self::Other(af, buf) => {
                 writer.write_u8(*af)?;
                 ToBytes::write(buf, writer)
             }
@@ -141,77 +134,6 @@ impl<'a> FromBytes<'a> for SockTuple<'a> {
             }),
             _ => Ok(Self::Other(variant, std::mem::take(buf))),
         }
-    }
-}
-
-/// Socket tuple: describing both endpoints of a connection (owned)
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
-pub enum OwnedSockTuple {
-    /// Unix socket connection
-    Unix {
-        /// source socket kernel pointer
-        source_ptr: u64,
-        /// destination socket kernel pointer
-        dest_ptr: u64,
-        /// filesystem path to the socket
-        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))]
-        path: UnixPathBuf,
-    },
-
-    /// IPv4 connection
-    V4 {
-        /// source address and port
-        source: EndpointV4,
-        /// destination address and port
-        dest: EndpointV4,
-    },
-
-    /// IPv6 connection
-    V6 {
-        /// source address and port
-        source: EndpointV6,
-        /// destination address and port
-        dest: EndpointV6,
-    },
-
-    /// Unknown/other socket family: `PPM_AF_*` id and a raw byte buffer
-    Other(
-        u8,
-        #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::bytebuf"))] Vec<u8>,
-    ),
-}
-
-impl Borrow for OwnedSockTuple {
-    type Borrowed<'b> = SockTuple<'b>;
-
-    fn borrow(&self) -> Self::Borrowed<'_> {
-        match self {
-            OwnedSockTuple::Unix {
-                source_ptr,
-                dest_ptr,
-                path,
-            } => SockTuple::Unix {
-                source_ptr: *source_ptr,
-                dest_ptr: *dest_ptr,
-                path: path.as_path(),
-            },
-            OwnedSockTuple::V4 { source, dest } => SockTuple::V4 {
-                source: *source,
-                dest: *dest,
-            },
-            OwnedSockTuple::V6 { source, dest } => SockTuple::V6 {
-                source: *source,
-                dest: *dest,
-            },
-            OwnedSockTuple::Other(af, raw) => SockTuple::Other(*af, raw.as_slice()),
-        }
-    }
-}
-
-impl Debug for OwnedSockTuple {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Debug::fmt(&self.borrow(), f)
     }
 }
 
@@ -297,81 +219,5 @@ mod tests {
         assert_eq!(path.as_bytes(), b"/var/run/nscd/socket".as_slice());
 
         assert_eq!(binary, binary2.as_slice(),);
-    }
-}
-
-#[cfg(all(test, feature = "serde"))]
-mod serde_tests {
-    use crate::types::{OwnedSockTuple, Port, SockTuple};
-    use std::net::{Ipv4Addr, Ipv6Addr};
-    use std::str::FromStr;
-    use typed_path::UnixPath;
-
-    #[test]
-    fn test_serde_socktuple_unix() {
-        let path = UnixPath::new("/path/to/unix");
-        let sockaddr = SockTuple::Unix {
-            source_ptr: 1,
-            dest_ptr: 2,
-            path,
-        };
-
-        let json = serde_json::to_string(&sockaddr).unwrap();
-        assert_eq!(
-            json,
-            r#"{"unix":{"source_ptr":1,"dest_ptr":2,"path":"/path/to/unix"}}"#
-        );
-        let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
-
-        let json2 = serde_json::to_string(&sockaddr2).unwrap();
-        assert_eq!(json, json2);
-    }
-
-    #[test]
-    fn test_serde_socktuple_v4() {
-        let sockaddr = SockTuple::V4 {
-            source: (Ipv4Addr::LOCALHOST, Port(8080)),
-            dest: (Ipv4Addr::new(192, 168, 0, 1), Port(8081)),
-        };
-
-        let json = serde_json::to_string(&sockaddr).unwrap();
-        assert_eq!(
-            json,
-            r#"{"v4":{"source":["127.0.0.1",8080],"dest":["192.168.0.1",8081]}}"#
-        );
-        let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
-
-        let json2 = serde_json::to_string(&sockaddr2).unwrap();
-        assert_eq!(json, json2);
-    }
-
-    #[test]
-    fn test_serde_sockaddr_v6() {
-        let sockaddr = SockTuple::V6 {
-            source: (Ipv6Addr::LOCALHOST, Port(8080)),
-            dest: (Ipv6Addr::from_str("::2").unwrap(), Port(8081)),
-        };
-
-        let json = serde_json::to_string(&sockaddr).unwrap();
-        assert_eq!(
-            json,
-            r#"{"v6":{"source":["::1",8080],"dest":["::2",8081]}}"#
-        );
-        let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
-
-        let json2 = serde_json::to_string(&sockaddr2).unwrap();
-        assert_eq!(json, json2);
-    }
-
-    #[test]
-    fn test_serde_socktuple_other() {
-        let sockaddr = SockTuple::Other(123, b"foo");
-
-        let json = serde_json::to_string(&sockaddr).unwrap();
-        assert_eq!(json, r#"{"other":[123,"foo"]}"#);
-        let sockaddr2: OwnedSockTuple = serde_json::from_str(&json).unwrap();
-
-        let json2 = serde_json::to_string(&sockaddr2).unwrap();
-        assert_eq!(json, json2);
     }
 }

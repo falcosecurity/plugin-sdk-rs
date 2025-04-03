@@ -1,5 +1,4 @@
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::{Borrow, BorrowDeref};
 use std::fmt::{Debug, Formatter, Write as _};
 use std::io::Write;
 
@@ -51,76 +50,6 @@ impl Debug for ByteBufFormatter<'_> {
         }
 
         Ok(())
-    }
-}
-
-impl Borrow for Vec<u8> {
-    type Borrowed<'a> = &'a [u8];
-
-    fn borrow(&self) -> Self::Borrowed<'_> {
-        self.as_slice()
-    }
-}
-
-impl BorrowDeref for Vec<u8> {
-    type Target<'c>
-        = &'c [u8]
-    where
-        Self: 'c;
-
-    fn borrow_deref(&self) -> Self::Target<'_> {
-        self.as_slice()
-    }
-}
-
-#[cfg(feature = "serde")]
-pub mod serde {
-    pub mod bytebuf {
-        use crate::types::utf_chunked::{OwnedUtfChunked, UtfChunked};
-        use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-        pub fn serialize<S: Serializer>(buf: &[u8], ser: S) -> Result<S::Ok, S::Error> {
-            if ser.is_human_readable() {
-                let chunks = UtfChunked::from(buf);
-                chunks.serialize(ser)
-            } else {
-                buf.serialize(ser)
-            }
-        }
-
-        pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<Vec<u8>, D::Error> {
-            let chunks: OwnedUtfChunked = Deserialize::deserialize(de)?;
-            Ok(chunks.into_vec())
-        }
-    }
-
-    pub mod bytebuf_option {
-        use crate::types::utf_chunked::UtfChunked;
-        use serde::{Serialize, Serializer};
-
-        pub fn serialize<S: Serializer>(buf: &Option<&[u8]>, ser: S) -> Result<S::Ok, S::Error> {
-            if ser.is_human_readable() {
-                let chunks = buf.as_ref().map(|buf| UtfChunked::from(*buf));
-                chunks.serialize(ser)
-            } else {
-                buf.serialize(ser)
-            }
-        }
-    }
-
-    pub mod bytebuf_option_owned {
-        use crate::types::utf_chunked::{OwnedUtfChunked, UtfChunked};
-        use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-        pub fn serialize<S: Serializer>(buf: &Option<Vec<u8>>, ser: S) -> Result<S::Ok, S::Error> {
-            let chunks = buf.as_ref().map(|buf| UtfChunked::from(buf.as_slice()));
-            chunks.serialize(ser)
-        }
-
-        pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<Option<Vec<u8>>, D::Error> {
-            let chunks: Option<OwnedUtfChunked> = Deserialize::deserialize(de)?;
-            Ok(chunks.map(OwnedUtfChunked::into_vec))
-        }
     }
 }
 

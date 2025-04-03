@@ -1,18 +1,5 @@
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::BorrowDeref;
 use byteorder::{ReadBytesExt, WriteBytesExt};
-
-macro_rules! impl_borrow_deref {
-    ($ty:ty) => {
-        impl BorrowDeref for $ty {
-            type Target<'a> = Self;
-
-            fn borrow_deref(&self) -> Self::Target<'_> {
-                *self
-            }
-        }
-    };
-}
 
 macro_rules! impl_int_type {
     ($ty:ty) => {
@@ -39,8 +26,6 @@ macro_rules! impl_int_type {
                 0 as $ty
             }
         }
-
-        impl_borrow_deref!($ty);
     };
 }
 
@@ -69,8 +54,6 @@ macro_rules! impl_uint_type {
                 0 as $ty
             }
         }
-
-        impl_borrow_deref!($ty);
     };
 }
 

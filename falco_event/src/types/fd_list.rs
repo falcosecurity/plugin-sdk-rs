@@ -6,7 +6,6 @@ use crate::fields::{FromBytes, FromBytesResult, ToBytes};
 use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 
 /// A list of file descriptors with flags
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Eq, PartialEq)]
 pub struct FdList(pub Vec<(u64, PT_FLAGS16_file_flags)>);
 
@@ -86,24 +85,5 @@ mod tests {
         let fdlist2 = <FdList>::from_bytes(&mut buf).unwrap();
 
         assert_eq!(fdlist, fdlist2)
-    }
-}
-
-#[cfg(all(test, feature = "serde"))]
-mod serde_tests {
-    use super::*;
-
-    #[test]
-    fn test_serde_fd_list() {
-        let fd_list = FdList(vec![
-            (13, PT_FLAGS16_file_flags::O_RDONLY),
-            (15, PT_FLAGS16_file_flags::O_WRONLY),
-        ]);
-        let json = serde_json::to_string(&fd_list).unwrap();
-
-        assert_eq!(json, r#"[[13,"O_RDONLY"],[15,"O_WRONLY"]]"#);
-        let fd_list2: FdList = serde_json::from_str(&json).unwrap();
-
-        assert_eq!(fd_list, fd_list2)
     }
 }

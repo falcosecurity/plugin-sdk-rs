@@ -1,7 +1,5 @@
 use crate::event_info::{lifetime_type, LifetimeType};
 use crate::format::formatter_for;
-#[cfg(feature = "serde")]
-use crate::serde_custom::serde_with_tag;
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
@@ -9,11 +7,6 @@ use syn::parse::{Parse, ParseStream};
 use syn::punctuated::Punctuated;
 use syn::token::{Brace, Bracket};
 use syn::{braced, bracketed, parse_macro_input, LitInt, Token};
-
-#[cfg(not(feature = "serde"))]
-fn serde_with_tag(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
-    None
-}
 
 struct DynamicParamVariant {
     _brackets: syn::token::Bracket,
@@ -76,29 +69,26 @@ impl DynamicParamVariant {
         (disc, ty, field_ref, field_lifetime)
     }
 
-    fn variant_definition(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, field_ref, field_lifetime) = self.unpack();
-        let serde_tag = serde_with_tag(ty);
+    fn variant_type(&self) -> proc_macro2::TokenStream {
+        let (_, ty, field_ref, field_lifetime) = self.unpack();
 
-        quote!(#disc(#serde_tag #field_ref crate::event_derive::event_field_type::#ty #field_lifetime))
+        quote!(#field_ref crate::event_derive::event_field_type::#ty #field_lifetime)
     }
 
-    fn owned_variant_definition(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, _, _) = self.unpack();
-        let serde_tag = serde_with_tag(ty);
+    fn variant_definition(&self) -> proc_macro2::TokenStream {
+        let disc = &self.discriminant;
 
-        quote!(#disc(
-            #serde_tag
-            crate::event_derive::event_field_type::owned::#ty
-        ))
+        let ty = self.variant_type();
+        quote!(#disc(#ty))
     }
 
     fn variant_read(&self) -> proc_macro2::TokenStream {
-        let (disc, ty, field_ref, field_lifetime) = self.unpack();
+        let disc = &self.discriminant;
+        let ty = self.variant_type();
 
         quote!(crate::ffi:: #disc => {
             Ok(Self:: #disc(
-                <#field_ref crate::event_derive::event_field_type::#ty #field_lifetime as crate::event_derive::FromBytes>::from_bytes(buf)?
+                <#ty as crate::event_derive::FromBytes>::from_bytes(buf)?
             ))
         })
     }
@@ -135,12 +125,6 @@ impl DynamicParamVariant {
             #format_val
         })
     }
-
-    fn variant_borrow(&self) -> proc_macro2::TokenStream {
-        let disc = &self.discriminant;
-
-        quote!(Self::#disc(val) => #disc(val.borrow_deref()),)
-    }
 }
 
 struct DynamicParam {
@@ -174,7 +158,7 @@ impl Parse for DynamicParam {
 }
 
 impl DynamicParam {
-    fn borrowed(&self) -> proc_macro2::TokenStream {
+    fn render(&self) -> proc_macro2::TokenStream {
         let name = Ident::new(&format!("PT_DYN_{}", self.name), self.name.span());
         let variant_definitions = self.items.iter().map(|v| v.variant_definition());
         let variant_reads = self.items.iter().map(|v| v.variant_read());
@@ -188,33 +172,12 @@ impl DynamicParam {
                 LifetimeType::None
             )
         });
-        let lifetime = if wants_lifetime {
-            Some(quote!(<'a>))
-        } else {
-            None
-        };
 
-        #[cfg(feature = "serde")]
-        let derives = if wants_lifetime {
-            quote!(#[derive(serde::Serialize)])
-        } else {
-            quote!(
-                #[derive(Clone)]
-                #[derive(serde::Deserialize)]
-                #[derive(serde::Serialize)]
-            )
-        };
-
-        #[cfg(not(feature = "serde"))]
-        let derives = if wants_lifetime {
-            None
-        } else {
-            Some(quote!(#[derive(Clone)]))
-        };
+        let lifetime = wants_lifetime.then_some(quote!(<'a>));
 
         quote!(
             #[allow(non_camel_case_types)]
-            #derives
+            #[derive(Clone)]
             pub enum #name #lifetime {
                 #(#variant_definitions,)*
             }
@@ -265,67 +228,6 @@ impl DynamicParam {
             }
         )
     }
-
-    fn owned(&self) -> proc_macro2::TokenStream {
-        let name = Ident::new(&format!("PT_DYN_{}", self.name), self.name.span());
-        let variant_definitions = self.items.iter().map(|v| v.owned_variant_definition());
-        let variant_borrows = self.items.iter().map(|v| v.variant_borrow());
-
-        let wants_lifetime = !self.items.iter().all(|arg| {
-            matches!(
-                lifetime_type(&arg.field_type.to_string()),
-                LifetimeType::None
-            )
-        });
-
-        #[cfg(feature = "serde")]
-        let serde_derives = quote!(
-            #[derive(serde::Deserialize)]
-            #[derive(serde::Serialize)]
-        );
-
-        #[cfg(not(feature = "serde"))]
-        let serde_derives = quote!();
-
-        if wants_lifetime {
-            quote!(
-                #[allow(non_camel_case_types)]
-                #serde_derives
-                pub enum #name {
-                    #(#variant_definitions,)*
-                }
-
-                impl crate::event_derive::Borrow for #name {
-                    type Borrowed<'a> = super::#name<'a>;
-
-                    fn borrow(&self) -> Self::Borrowed<'_> {
-                        use crate::event_derive::BorrowDeref;
-                        use super::#name::*;
-
-                        match self {
-                            #(#variant_borrows)*
-                        }
-                    }
-                }
-
-                impl ::std::fmt::Debug for #name {
-                    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                        use crate::event_derive::Borrow;
-                        ::std::fmt::Debug::fmt(&self.borrow(), f)
-                    }
-                }
-
-                impl ::std::fmt::LowerHex for #name {
-                    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-                        use crate::event_derive::Borrow;
-                        ::std::fmt::LowerHex::fmt(&self.borrow(), f)
-                    }
-                }
-            )
-        } else {
-            quote!(pub use super::#name;)
-        }
-    }
 }
 
 struct DynamicParams {
@@ -343,14 +245,9 @@ impl Parse for DynamicParams {
 pub fn dynamic_params(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DynamicParams);
 
-    let borrowed = input.params.iter().map(|param| param.borrowed());
-    let owned = input.params.iter().map(|param| param.owned());
+    let borrowed = input.params.iter().map(|param| param.render());
     quote!(
         #(#borrowed)*
-
-        pub mod owned {
-            #(#owned)*
-        }
     )
     .into()
 }

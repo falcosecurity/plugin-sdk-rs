@@ -1,6 +1,6 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::{Borrow, CStrFormatter};
-use std::ffi::{CStr, CString};
+use crate::types::CStrFormatter;
+use std::ffi::CStr;
 use std::fmt::{Debug, Formatter, Write as _};
 use std::io::Write;
 
@@ -47,111 +47,6 @@ impl<T: AsRef<CStr>> Debug for CStrArrayFormatter<'_, T> {
         }
 
         Ok(())
-    }
-}
-
-impl Borrow for Vec<CString> {
-    type Borrowed<'a>
-        = Vec<&'a CStr>
-    where
-        Self: 'a;
-
-    fn borrow(&self) -> Self::Borrowed<'_> {
-        self.iter().map(|s| s.as_c_str()).collect()
-    }
-}
-
-#[cfg(feature = "serde")]
-pub mod serde {
-    #[allow(dead_code)]
-    pub mod cstr_array {
-        use crate::types::utf_chunked::{OwnedUtfChunked, UtfChunked};
-        use serde::de::Error;
-        use serde::{Deserialize, Deserializer, Serialize, Serializer};
-        use std::ffi::{CStr, CString};
-
-        pub fn serialize<S: Serializer>(arr: &[&CStr], ser: S) -> Result<S::Ok, S::Error> {
-            if ser.is_human_readable() {
-                let chunks: Vec<_> = arr
-                    .iter()
-                    .map(|buf| UtfChunked::from(buf.to_bytes()))
-                    .collect();
-                chunks.serialize(ser)
-            } else {
-                arr.serialize(ser)
-            }
-        }
-
-        pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<Vec<CString>, D::Error> {
-            let chunks: Vec<OwnedUtfChunked> = Deserialize::deserialize(de)?;
-            let s: Result<Vec<CString>, D::Error> = chunks
-                .into_iter()
-                .map(|c| CString::new(c.into_vec()).map_err(|e| D::Error::custom(e.to_string())))
-                .collect();
-            s
-        }
-    }
-
-    pub mod cstr_array_option {
-        use crate::types::utf_chunked::UtfChunked;
-        use serde::{Serialize, Serializer};
-        use std::ffi::CStr;
-
-        pub fn serialize<S: Serializer>(
-            arr: &Option<Vec<&CStr>>,
-            ser: S,
-        ) -> Result<S::Ok, S::Error> {
-            if ser.is_human_readable() {
-                let chunks: Option<Vec<_>> = arr.as_ref().map(|arr| {
-                    arr.iter()
-                        .map(|buf| UtfChunked::from(buf.to_bytes()))
-                        .collect()
-                });
-                chunks.serialize(ser)
-            } else {
-                arr.serialize(ser)
-            }
-        }
-    }
-
-    pub mod cstr_array_option_owned {
-        use crate::types::utf_chunked::{OwnedUtfChunked, UtfChunked};
-        use serde::de::Error;
-        use serde::{Deserialize, Deserializer, Serialize, Serializer};
-        use std::ffi::CString;
-
-        pub fn serialize<S: Serializer>(
-            arr: &Option<Vec<CString>>,
-            ser: S,
-        ) -> Result<S::Ok, S::Error> {
-            if ser.is_human_readable() {
-                let chunks: Option<Vec<_>> = arr.as_ref().map(|arr| {
-                    arr.iter()
-                        .map(|buf| UtfChunked::from(buf.to_bytes()))
-                        .collect()
-                });
-                chunks.serialize(ser)
-            } else {
-                arr.serialize(ser)
-            }
-        }
-
-        pub fn deserialize<'de, D: Deserializer<'de>>(
-            de: D,
-        ) -> Result<Option<Vec<CString>>, D::Error> {
-            let chunks: Option<Vec<OwnedUtfChunked>> = Deserialize::deserialize(de)?;
-            let s: Result<Option<Vec<CString>>, D::Error> = chunks
-                .map(|chunks| {
-                    chunks
-                        .into_iter()
-                        .map(|c| {
-                            CString::new(c.into_vec()).map_err(|e| D::Error::custom(e.to_string()))
-                        })
-                        .collect()
-                })
-                .transpose();
-            s
-        }
     }
 }
 

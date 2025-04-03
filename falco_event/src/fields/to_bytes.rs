@@ -1,4 +1,3 @@
-use crate::types::Borrow;
 use std::io::Write;
 
 /// Convert a field to binary representation
@@ -59,23 +58,5 @@ impl<T: ToBytes> ToBytes for Option<T> {
 
     fn default_repr() -> impl ToBytes {
         T::default_repr()
-    }
-}
-
-impl<T> ToBytes for T
-where
-    T: Borrow + 'static,
-    for<'a> <T as Borrow>::Borrowed<'a>: ToBytes,
-{
-    fn binary_size(&self) -> usize {
-        self.borrow().binary_size()
-    }
-
-    fn write<W: Write>(&self, writer: W) -> std::io::Result<()> {
-        self.borrow().write(writer)
-    }
-
-    fn default_repr() -> impl ToBytes {
-        <T as Borrow>::Borrowed::default_repr()
     }
 }

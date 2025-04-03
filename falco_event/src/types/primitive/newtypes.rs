@@ -1,5 +1,4 @@
 use crate::fields::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::BorrowDeref;
 use std::fmt::{Debug, Formatter, LowerHex};
 
 macro_rules! default_debug {
@@ -16,8 +15,6 @@ macro_rules! newtype {
     ($(#[$attr:meta])* $name:ident($repr:ty)) => {
         $(#[$attr])*
         #[derive(Default, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
-        #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-        #[cfg_attr(feature = "serde", serde(transparent))]
         pub struct $name(pub $repr);
 
         impl FromBytes<'_> for $name {
@@ -40,14 +37,6 @@ macro_rules! newtype {
 
             fn default_repr() -> impl ToBytes {
                 <$repr>::default_repr()
-            }
-        }
-
-        impl BorrowDeref for $name {
-            type Target<'a> = $name;
-
-            fn borrow_deref(&self) -> Self::Target<'_> {
-                *self
             }
         }
     };
@@ -352,20 +341,5 @@ mod bool_tests {
         assert_eq!(format!("{:?}", Bool(0)), "false");
         assert_eq!(format!("{:?}", Bool(1)), "true");
         assert_eq!(format!("{:?}", Bool(10)), "true(10)");
-    }
-}
-
-#[cfg(all(test, feature = "serde"))]
-mod serde_tests {
-    use crate::types::SyscallResult;
-
-    #[test]
-    fn test_serde_newtype() {
-        let val = SyscallResult(-2);
-        let json = serde_json::to_string(&val).unwrap();
-
-        assert_eq!(json, "-2");
-        let val2: SyscallResult = serde_json::from_str(&json).unwrap();
-        assert_eq!(val, val2);
     }
 }

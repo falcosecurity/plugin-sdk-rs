@@ -7,7 +7,6 @@ use std::net::Ipv6Addr;
 ///
 /// This is a wrapper around [Ipv6Addr] that makes it a distinct type, suitable for storing
 /// IPv6 subnets.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Ipv6Net(pub Ipv6Addr);
 
@@ -34,21 +33,5 @@ impl ToBytes for Ipv6Net {
 impl Debug for Ipv6Net {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Debug::fmt(&self.0, f)
-    }
-}
-
-#[cfg(all(test, feature = "serde"))]
-mod serde_tests {
-    use std::net::Ipv6Addr;
-
-    #[test]
-    fn test_serde_ipv6net() {
-        let endpoint = super::Ipv6Net(Ipv6Addr::LOCALHOST);
-
-        let json = serde_json::to_string(&endpoint).unwrap();
-        assert_eq!(json, "\"::1\"");
-
-        let endpoint2: super::Ipv6Net = serde_json::from_str(&json).unwrap();
-        assert_eq!(endpoint, endpoint2);
     }
 }

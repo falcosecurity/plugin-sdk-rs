@@ -13,9 +13,6 @@ categories = ["api-bindings"]
 [lints]
 workspace = true
 
-[features]
-serde = ["dep:serde", "bitflags/serde", "falco_event_derive/serde"]
-
 [dependencies]
 byteorder = "1.5.0"
 falco_event_derive = { path = "../falco_event_derive", version = "0.4.0" }
@@ -26,7 +23,6 @@ thiserror = "1.0.58"
 bitflags = { version = "2.4.2" }
 anyhow = "1.0.81"
 chrono = "0.4.38"
-serde = { version = "1.0.210", features = ["derive"], optional = true }
 typed-path = "0.9.3"
 
 [target.'cfg(target_os = "linux")'.dependencies]
@@ -34,4 +30,3 @@ nix = { version = "0.29.0", features = ["signal"] }
 
 [dev-dependencies]
 hexdump = "0.1.1"
-serde_json = "1.0.128"

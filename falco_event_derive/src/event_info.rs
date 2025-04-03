@@ -1,32 +1,14 @@
 use crate::format::{display_wrapper_for, formatter_for};
-#[cfg(feature = "serde")]
-use crate::serde_custom::{serde_with_option_tag, serde_with_option_tag_owned};
 use proc_macro::TokenStream;
 use proc_macro2::Ident;
 use quote::quote;
 use syn::parse::{Parse, ParseStream};
 use syn::{braced, bracketed, parse_macro_input, Token};
 
-#[cfg(not(feature = "serde"))]
-fn serde_with_option_tag(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
-    None
-}
-
-#[cfg(not(feature = "serde"))]
-fn serde_with_option_tag_owned(_ty: &Ident) -> Option<proc_macro2::TokenStream> {
-    None
-}
-
 pub(crate) enum LifetimeType {
     None,
     Ref,
     Generic,
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
-enum CodegenVariant {
-    Borrowed,
-    Owned,
 }
 
 pub(crate) fn lifetime_type(name: &str) -> LifetimeType {
@@ -106,29 +88,18 @@ impl EventArg {
         }
     }
 
-    fn field_type(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
+    fn field_type(&self) -> proc_macro2::TokenStream {
         let field_type = self.final_field_type_name();
         let (field_ref, field_lifetime) = self.lifetimes();
 
-        match variant {
-            CodegenVariant::Borrowed => {
-                quote!(::std::option::Option<#field_ref crate::event_derive::event_field_type::#field_type #field_lifetime>)
-            }
-            CodegenVariant::Owned => {
-                quote!(::std::option::Option<crate::event_derive::event_field_type::owned::#field_type>)
-            }
-        }
+        quote!(::std::option::Option<#field_ref crate::event_derive::event_field_type::#field_type #field_lifetime>)
     }
 
-    fn field_definition(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
+    fn field_definition(&self) -> proc_macro2::TokenStream {
         let name = self.ident();
-        let serde_tag = match variant {
-            CodegenVariant::Borrowed => serde_with_option_tag(&self.field_type),
-            CodegenVariant::Owned => serde_with_option_tag_owned(&self.field_type),
-        };
 
-        let field_type = self.field_type(variant);
-        quote!(#[allow(non_snake_case)] #serde_tag pub #name: #field_type)
+        let field_type = self.field_type();
+        quote!(#[allow(non_snake_case)] pub #name: #field_type)
     }
 
     fn dirfd_method(&self, event_info: &EventInfo) -> Option<proc_macro2::TokenStream> {
@@ -234,14 +205,14 @@ impl EventInfo {
             .flat_map(|(_, _, args)| args.into_iter())
     }
 
-    fn typedef(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
+    fn typedef(&self) -> proc_macro2::TokenStream {
         let event_code = &self.event_code;
         let event_type = Ident::new(
             &event_code.to_string().replace("PPME_", ""),
             event_code.span(),
         );
 
-        let fields = self.args().map(|arg| arg.field_definition(variant));
+        let fields = self.args().map(|arg| arg.field_definition());
         let wants_lifetime = !self.args().all(|arg| {
             matches!(
                 lifetime_type(&arg.final_field_type_name().to_string()),
@@ -249,12 +220,7 @@ impl EventInfo {
             )
         });
 
-        if variant == CodegenVariant::Owned && !wants_lifetime {
-            return quote!(pub use super::#event_code;);
-        }
-
-        let lifetime =
-            (variant == CodegenVariant::Borrowed && wants_lifetime).then_some(quote!(<'a>));
+        let lifetime = wants_lifetime.then_some(quote!(<'a>));
         let field_fmts = self.args().map(|field| {
             let name = &field.name;
             let ident = field.ident();
@@ -282,43 +248,10 @@ impl EventInfo {
         let is_large = self.flags.iter().any(|flag| *flag == "EF_LARGE_PAYLOAD");
         let name = &self.name;
 
-        #[cfg(feature = "serde")]
-        let derive_serde = quote!(
-            #[derive(serde::Deserialize)]
-            #[derive(serde::Serialize)]
-        );
-
-        #[cfg(not(feature = "serde"))]
-        let derive_serde = quote!();
-
-        #[cfg(feature = "serde")]
-        let derive_ser = quote!(
-            #[derive(serde::Serialize)]
-        );
-
-        #[cfg(not(feature = "serde"))]
-        let derive_ser = quote!();
-
-        let derives = match (variant, wants_lifetime) {
-            (CodegenVariant::Borrowed, true) => quote!(
-                #[derive(falco_event_derive::FromBytes)]
-                #[derive(falco_event_derive::ToBytes)]
-                #derive_ser
-            ),
-            (CodegenVariant::Borrowed, false) => quote!(
-                #[derive(falco_event_derive::FromBytes)]
-                #[derive(falco_event_derive::ToBytes)]
-                #derive_serde
-            ),
-            (CodegenVariant::Owned, _) => quote!(
-                #[derive(falco_event_derive::ToBytes)]
-                #derive_serde
-            ),
-        };
-
         quote!(
             #[allow(non_camel_case_types)]
-            #derives
+            #[derive(falco_event_derive::FromBytes)]
+            #[derive(falco_event_derive::ToBytes)]
             pub struct #event_code #lifetime {
                 #(#fields,)*
             }
@@ -363,19 +296,18 @@ impl EventInfo {
         quote!(#event_type = crate::ffi::#raw_ident as u16)
     }
 
-    fn enum_variant(&self, variant: CodegenVariant) -> proc_macro2::TokenStream {
+    fn enum_variant(&self) -> proc_macro2::TokenStream {
         let event_code = &self.event_code;
         let event_type = Ident::new(
             &event_code.to_string().replace("PPME_", ""),
             event_code.span(),
         );
-        let wants_lifetime = variant == CodegenVariant::Borrowed
-            && !self.args().all(|arg| {
-                matches!(
-                    lifetime_type(&arg.final_field_type_name().to_string()),
-                    LifetimeType::None
-                )
-            });
+        let wants_lifetime = !self.args().all(|arg| {
+            matches!(
+                lifetime_type(&arg.final_field_type_name().to_string()),
+                LifetimeType::None
+            )
+        });
 
         let lifetime = if wants_lifetime {
             Some(quote!(<'a>))
@@ -448,22 +380,16 @@ impl Parse for Events {
 }
 
 impl Events {
-    fn typedefs(
-        &self,
-        variant: CodegenVariant,
-    ) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
-        self.events.iter().map(move |e| e.typedef(variant))
+    fn typedefs(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
+        self.events.iter().map(move |e| e.typedef())
     }
 
     fn type_variants(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
         self.events.iter().map(|e| e.type_variant())
     }
 
-    fn enum_variants(
-        &self,
-        variant: CodegenVariant,
-    ) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
-        self.events.iter().map(move |e| e.enum_variant(variant))
+    fn enum_variants(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
+        self.events.iter().map(move |e| e.enum_variant())
     }
 
     fn enum_matches(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
@@ -479,34 +405,16 @@ impl Events {
     }
 }
 
-fn event_info_variant(events: &Events, variant: CodegenVariant) -> proc_macro2::TokenStream {
-    let typedefs = events.typedefs(variant);
-    let variants = events.enum_variants(variant);
+fn event_info_variant(events: &Events) -> proc_macro2::TokenStream {
+    let typedefs = events.typedefs();
+    let variants = events.enum_variants();
     let variant_fmts = events.variant_fmts();
     let variants_to_bytes = events.variants_to_bytes();
-    let lifetime = match variant {
-        CodegenVariant::Borrowed => Some(quote!(<'a>)),
-        CodegenVariant::Owned => None,
-    };
-
-    #[cfg(feature = "serde")]
-    let derives = match variant {
-        CodegenVariant::Borrowed => quote!(
-            #[derive(serde::Serialize)]
-        ),
-        CodegenVariant::Owned => quote!(
-            #[derive(serde::Serialize)]
-            #[derive(serde::Deserialize)]
-        ),
-    };
-
-    #[cfg(not(feature = "serde"))]
-    let derives = quote!();
+    let lifetime = quote!(<'a>);
 
     quote!(
         #(#typedefs)*
 
-        #derives
         #[allow(non_camel_case_types)]
         pub enum AnyEvent #lifetime {
             #(#variants,)*
@@ -568,8 +476,7 @@ fn raw_event_load_any(events: &Events) -> proc_macro2::TokenStream {
 pub fn event_info(input: TokenStream) -> TokenStream {
     let events = parse_macro_input!(input as Events);
 
-    let event_info_borrowed = event_info_variant(&events, CodegenVariant::Borrowed);
-    let event_info_owned = event_info_variant(&events, CodegenVariant::Owned);
+    let event_info_borrowed = event_info_variant(&events);
     let event_type_enum = event_type_enum(&events);
     let raw_event_load_any = raw_event_load_any(&events);
 
@@ -577,13 +484,6 @@ pub fn event_info(input: TokenStream) -> TokenStream {
         #event_info_borrowed
         #event_type_enum
         #raw_event_load_any
-
-        pub mod owned
-        {
-            use super::EventType;
-
-            #event_info_owned
-        }
     )
     .into()
 }

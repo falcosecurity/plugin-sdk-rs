@@ -3,7 +3,6 @@ use crate::types::SystemTimeFormatter;
 use std::fmt::{Debug, Formatter};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone)]
 pub struct EventMetadata {
     pub ts: u64,

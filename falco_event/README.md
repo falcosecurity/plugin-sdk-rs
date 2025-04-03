@@ -128,16 +128,3 @@ you're not interested in.
 
 There is a trait ([events::EventToBytes]) that writes a serialized form of an event to a writer
 (i.e. a type that implements [std::io::Write], for example `Vec<u8>`).
-
-## Serialization and deserialization with [`serde`]
-
-Once you enable the `serde` feature of this crate, the following types gain serialization and deserialization
-support:
-
-* all the `PT_*` field types (many are Rust stdlib built-ins and support (de)serialization regardless)
-* all the [`events::types`] events (see the module documentation for details regarding owned/borrowed types)
-* `Event<AnyEvent>` (but *not* other `Event<T>` types, to avoid ambiguous serialization results and subsequent
-  deserialization issues)
-
-**Note**: you can serialize an event wrapping either the [borrowed](`events::types::AnyEvent`) or
-[owned](`events::types::owned::AnyEvent`) variant of `AnyEvent`, but can only deserialize to the owned variant.

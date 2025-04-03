@@ -31,30 +31,3 @@ impl ToBytes for IpAddr {
         IpAddr::V4(Ipv4Addr::from(0))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use std::net::{Ipv4Addr, Ipv6Addr};
-
-    #[test]
-    fn test_serde_ipv4() {
-        let endpoint = Ipv4Addr::LOCALHOST;
-
-        let json = serde_json::to_string(&endpoint).unwrap();
-        assert_eq!(json, "\"127.0.0.1\"");
-
-        let endpoint2: Ipv4Addr = serde_json::from_str(&json).unwrap();
-        assert_eq!(endpoint, endpoint2);
-    }
-
-    #[test]
-    fn test_serde_ipv6() {
-        let endpoint = Ipv6Addr::LOCALHOST;
-
-        let json = serde_json::to_string(&endpoint).unwrap();
-        assert_eq!(json, "\"::1\"");
-
-        let endpoint2: Ipv6Addr = serde_json::from_str(&json).unwrap();
-        assert_eq!(endpoint, endpoint2);
-    }
-}

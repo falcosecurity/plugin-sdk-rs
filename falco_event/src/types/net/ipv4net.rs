@@ -7,7 +7,6 @@ use std::net::Ipv4Addr;
 ///
 /// This is a wrapper around [Ipv4Addr] that makes it a distinct type, suitable for storing
 /// IPv4 subnets.
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Ipv4Net(pub Ipv4Addr);
 
@@ -34,21 +33,5 @@ impl ToBytes for Ipv4Net {
 impl Debug for Ipv4Net {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Debug::fmt(&self.0, f)
-    }
-}
-
-#[cfg(all(test, feature = "serde"))]
-mod serde_tests {
-    use std::net::Ipv4Addr;
-
-    #[test]
-    fn test_serde_ipv4net() {
-        let endpoint = super::Ipv4Net(Ipv4Addr::LOCALHOST);
-
-        let json = serde_json::to_string(&endpoint).unwrap();
-        assert_eq!(json, "\"127.0.0.1\"");
-
-        let endpoint2: super::Ipv4Net = serde_json::from_str(&json).unwrap();
-        assert_eq!(endpoint, endpoint2);
     }
 }

@@ -1,5 +1,4 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::BorrowDeref;
 use byteorder::{NativeEndian, ReadBytesExt};
 use std::io::Write;
 use std::time::Duration;
@@ -24,28 +23,5 @@ impl ToBytes for Duration {
 
     fn default_repr() -> impl ToBytes {
         0u64
-    }
-}
-
-impl BorrowDeref for Duration {
-    type Target<'a> = Duration;
-
-    fn borrow_deref(&self) -> Self::Target<'_> {
-        *self
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::time::Duration;
-
-    #[test]
-    fn test_serde_duration() {
-        let duration = Duration::from_nanos(1_234_567_890);
-        let json = serde_json::to_string(&duration).unwrap();
-        assert_eq!(json, r#"{"secs":1,"nanos":234567890}"#);
-
-        let duration2: Duration = serde_json::from_str(&json).unwrap();
-        assert_eq!(duration, duration2);
     }
 }

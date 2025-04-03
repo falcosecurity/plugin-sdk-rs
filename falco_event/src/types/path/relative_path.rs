@@ -1,18 +1,14 @@
 use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
-use crate::types::Borrow;
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
-use typed_path::{UnixPath, UnixPathBuf};
+use typed_path::UnixPath;
 
 /// A relative path
 ///
 /// Events containing a parameter of this type will have an extra method available, derived
 /// from the field name. For example, if the field is called `name`, the event type will have
 /// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
-#[cfg_attr(feature = "serde", derive(serde::Serialize))]
-pub struct RelativePath<'a>(
-    #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))] pub &'a UnixPath,
-);
+pub struct RelativePath<'a>(pub &'a UnixPath);
 
 impl<'a> ToBytes for RelativePath<'a> {
     fn binary_size(&self) -> usize {
@@ -40,30 +36,6 @@ impl Debug for RelativePath<'_> {
     }
 }
 
-/// A relative path
-///
-/// Events containing a parameter of this type will have an extra method available, derived
-/// from the field name. For example, if the field is called `name`, the event type will have
-/// a method called `name_dirfd` that returns the corresponding `dirfd` (as an `Option<PT_FD>`)
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-pub struct OwnedRelativePath(
-    #[cfg_attr(feature = "serde", serde(with = "crate::types::serde::unix_path"))] pub UnixPathBuf,
-);
-
-impl Borrow for OwnedRelativePath {
-    type Borrowed<'b> = RelativePath<'b>;
-
-    fn borrow(&self) -> Self::Borrowed<'_> {
-        RelativePath(self.0.as_path())
-    }
-}
-
-impl Debug for OwnedRelativePath {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "<...>{}", self.0.display())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
@@ -71,8 +43,6 @@ mod tests {
     use crate::event_derive::{FromBytes, ToBytes};
     use crate::types::path::relative_path::RelativePath;
 
-    #[cfg(feature = "serde")]
-    use crate::types::OwnedRelativePath;
     use typed_path::UnixPathBuf;
 
     #[test]
@@ -89,19 +59,5 @@ mod tests {
         let mut buf = binary.as_slice();
         let path = RelativePath::from_bytes(&mut buf).unwrap();
         assert_eq!(path.0.to_str().unwrap(), "/foo");
-    }
-
-    #[cfg(feature = "serde")]
-    #[test]
-    fn test_serde_relative_path() {
-        use typed_path::UnixPath;
-        let path = RelativePath(UnixPath::new("/foo"));
-
-        let json = serde_json::to_string(&path).unwrap();
-        assert_eq!(json, "\"/foo\"");
-
-        let path2: OwnedRelativePath = serde_json::from_str(&json).unwrap();
-        let json2 = serde_json::to_string(&path2).unwrap();
-        assert_eq!(json, json2);
     }
 }

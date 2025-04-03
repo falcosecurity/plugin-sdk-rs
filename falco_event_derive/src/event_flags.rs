@@ -138,21 +138,11 @@ fn render_enum(
         quote!(Self::#variant => write!(f, "({})", #variant_str))
     });
 
-    #[cfg(feature = "serde")]
-    let serde_derives = quote!(
-        #[derive(serde::Deserialize)]
-        #[derive(serde::Serialize)]
-    );
-
-    #[cfg(not(feature = "serde"))]
-    let serde_derives = quote!();
-
     quote!(
         #[repr(#repr_type)]
         #[allow(non_camel_case_types)]
         #[non_exhaustive]
         #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-        #serde_derives
         pub enum #name {
             #(#tags,)*
             Unknown(usize),
@@ -232,20 +222,10 @@ fn render_bitflags(
 ) -> proc_macro2::TokenStream {
     let items = items.map(|(name, value)| quote!(const #name = crate::ffi::#value as #repr_type));
 
-    #[cfg(feature = "serde")]
-    let serde_derives = quote!(
-        #[derive(serde::Deserialize)]
-        #[derive(serde::Serialize)]
-    );
-
-    #[cfg(not(feature = "serde"))]
-    let serde_derives = quote!();
-
     quote!(
         bitflags::bitflags! {
             #[allow(non_camel_case_types)]
             #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-            #serde_derives
             pub struct #name: #repr_type {
                 #(#items;)*
                 const _ = !0;
