@@ -273,8 +273,8 @@ impl EventInfo {
                     use std::fmt::Write;
 
                     match <Self as crate::events::EventPayload>::direction() {
-                        crate::event_derive::EventDirection::Entry => f.write_str("> ")?,
-                        crate::event_derive::EventDirection::Exit => f.write_str("< ")?,
+                        crate::events::EventDirection::Entry => f.write_str("> ")?,
+                        crate::events::EventDirection::Exit => f.write_str("< ")?,
                     }
                     f.write_str(#name)?;
                     #(#field_fmts)*

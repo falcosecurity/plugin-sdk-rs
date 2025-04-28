@@ -33,7 +33,6 @@ mod event_derive {
     pub use crate::events::payload::PayloadFromBytesError;
     pub use crate::events::payload::PayloadFromBytesResult;
     pub use crate::events::Event;
-    pub use crate::events::EventDirection;
     pub use crate::events::EventMetadata;
     pub use crate::events::PayloadFromBytes;
     pub use crate::events::PayloadToBytes;
