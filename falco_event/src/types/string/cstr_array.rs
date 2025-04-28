@@ -33,6 +33,9 @@ impl<'a> FromBytes<'a> for Vec<&'a CStr> {
     }
 }
 
+/// Falco-style array-of-CStr formatter
+///
+/// Formats the array as `;`-separated strings (see [`CStrFormatter`]).
 pub struct CStrArrayFormatter<'a, T: AsRef<CStr>>(pub &'a Vec<T>);
 
 impl<T: AsRef<CStr>> Debug for CStrArrayFormatter<'_, T> {

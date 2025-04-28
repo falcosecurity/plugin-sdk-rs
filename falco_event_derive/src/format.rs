@@ -10,7 +10,7 @@ pub fn display_wrapper_for(
         "PT_BYTEBUF" => quote!(#val_tt.map(|t| crate::format::ByteBufFormatter(t))),
         "PT_CHARBUF" => quote!(#val_tt.map(|t| crate::event_derive::CStrFormatter(t))),
         "PT_CHARBUFARRAY" => {
-            quote!(#val_tt.map(|t| crate::event_derive::CStrArrayFormatter(&t)))
+            quote!(#val_tt.map(|t| crate::format::CStrArrayFormatter(&t)))
         }
         "PT_CHARBUF_PAIR_ARRAY" => {
             quote!(#val_tt.map(|t| crate::event_derive::CStrPairArrayFormatter(&t)))
