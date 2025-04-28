@@ -447,7 +447,7 @@ fn event_info_variant(events: &Events) -> proc_macro2::TokenStream {
             #(#variants,)*
         }
 
-        impl #lifetime crate::event_derive::PayloadToBytes for AnyEvent #lifetime {
+        impl #lifetime crate::events::PayloadToBytes for AnyEvent #lifetime {
             fn write<W: std::io::Write>(&self, metadata: &crate::events::EventMetadata, writer: W) -> std::io::Result<()> {
                 match self {
                     #(#variants_to_bytes)*

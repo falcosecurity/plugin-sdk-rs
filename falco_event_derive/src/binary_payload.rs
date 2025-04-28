@@ -26,7 +26,7 @@ pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
             let num_fields = fields.named.len();
 
             return TokenStream::from(quote!(
-            impl #impl_generics #crate_path::PayloadToBytes for #name #ty_generics #where_clause {
+            impl #impl_generics crate::events::PayloadToBytes for #name #ty_generics #where_clause {
                 fn write<W: std::io::Write>(&self, metadata: &crate::events::EventMetadata, mut writer: W) -> std::io::Result<()> {
                     use #crate_path::*;
                     use crate::events::EventPayload;
