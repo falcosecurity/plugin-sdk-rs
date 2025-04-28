@@ -20,6 +20,7 @@ pub mod format {
     pub use crate::types::format::OptionFormatter;
     pub use crate::types::ByteBufFormatter;
     pub use crate::types::CStrArrayFormatter;
+    pub use crate::types::CStrFormatter;
 }
 
 pub use crate::types::SystemTimeFormatter;
@@ -38,7 +39,6 @@ mod event_derive {
     pub use crate::events::Event;
     pub use crate::events::PayloadFromBytes;
     pub use crate::events::RawEvent;
-    pub use crate::types::CStrFormatter;
     pub use crate::types::CStrPairArrayFormatter;
     pub use crate::types::SystemTimeFormatter;
     pub use byteorder::NativeEndian;
