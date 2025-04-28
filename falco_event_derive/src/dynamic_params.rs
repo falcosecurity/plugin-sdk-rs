@@ -203,7 +203,7 @@ impl DynamicParam {
             }
 
             impl<'a> crate::fields::FromBytes<'a> for #name #lifetime {
-                fn from_bytes(buf: &mut &'a [u8]) -> crate::event_derive::FromBytesResult<Self> {
+                fn from_bytes(buf: &mut &'a [u8]) -> crate::fields::FromBytesResult<Self> {
                     use crate::event_derive::ReadBytesExt;
                     let variant = buf.read_u8()?;
                     match variant as u32 {

@@ -1,4 +1,5 @@
-use crate::fields::{FromBytes, FromBytesError, ToBytes};
+use crate::fields::ToBytes;
+use crate::fields::{FromBytes, FromBytesError};
 use crate::types::CStrFormatter;
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter, Write as _};

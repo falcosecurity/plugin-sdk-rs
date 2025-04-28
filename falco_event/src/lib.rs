@@ -30,7 +30,6 @@ mod event_derive {
     pub use crate::events::PayloadFromBytes;
     pub use crate::events::RawEvent;
     pub use crate::fields::FromBytesError;
-    pub use crate::fields::FromBytesResult;
     pub use crate::fields::NoDefault;
     pub use crate::fields::ToBytes;
     pub use crate::types::format::OptionFormatter;
