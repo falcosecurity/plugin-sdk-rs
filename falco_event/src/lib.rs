@@ -29,7 +29,6 @@ mod event_derive {
     pub use crate::events::Event;
     pub use crate::events::PayloadFromBytes;
     pub use crate::events::RawEvent;
-    pub use crate::fields::FromBytes;
     pub use crate::fields::FromBytesError;
     pub use crate::fields::FromBytesResult;
     pub use crate::fields::NoDefault;

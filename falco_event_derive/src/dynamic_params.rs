@@ -88,7 +88,7 @@ impl DynamicParamVariant {
 
         quote!(crate::ffi:: #disc => {
             Ok(Self:: #disc(
-                <#ty as crate::event_derive::FromBytes>::from_bytes(buf)?
+                <#ty as crate::fields::FromBytes>::from_bytes(buf)?
             ))
         })
     }
@@ -202,7 +202,7 @@ impl DynamicParam {
                 fn default_repr() -> impl crate::event_derive::ToBytes { crate::event_derive::NoDefault }
             }
 
-            impl<'a> crate::event_derive::FromBytes<'a> for #name #lifetime {
+            impl<'a> crate::fields::FromBytes<'a> for #name #lifetime {
                 fn from_bytes(buf: &mut &'a [u8]) -> crate::event_derive::FromBytesResult<Self> {
                     use crate::event_derive::ReadBytesExt;
                     let variant = buf.read_u8()?;

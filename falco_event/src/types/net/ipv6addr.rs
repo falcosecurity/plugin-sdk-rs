@@ -1,4 +1,5 @@
-use crate::fields::{FromBytes, FromBytesError, ToBytes};
+use crate::fields::FromBytes;
+use crate::fields::{FromBytesError, ToBytes};
 use std::io::{Read, Write};
 use std::net::Ipv6Addr;
 

@@ -1,4 +1,5 @@
-use crate::fields::{FromBytes, FromBytesError, ToBytes};
+use crate::fields::FromBytes;
+use crate::fields::{FromBytesError, ToBytes};
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use std::net::IpAddr;

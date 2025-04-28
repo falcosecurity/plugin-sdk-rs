@@ -193,7 +193,7 @@ fn render_enum(
             }
         }
 
-        impl crate::event_derive::FromBytes<'_> for #name {
+        impl crate::fields::FromBytes<'_> for #name {
             fn from_bytes(buf: &mut &[u8]) -> crate::event_derive::FromBytesResult<Self>
             where
                 Self: Sized,
@@ -260,7 +260,7 @@ fn render_bitflags(
             }
         }
 
-        impl crate::event_derive::FromBytes<'_> for #name {
+        impl crate::fields::FromBytes<'_> for #name {
             fn from_bytes(buf: &mut &[u8]) -> crate::event_derive::FromBytesResult<Self>
             where
                 Self: Sized,

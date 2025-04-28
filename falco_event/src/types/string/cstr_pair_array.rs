@@ -63,7 +63,8 @@ impl<T: AsRef<CStr>> Debug for CStrPairArrayFormatter<'_, T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::fields::{FromBytes, ToBytes};
+    use crate::fields::FromBytes;
+    use crate::fields::ToBytes;
     use std::ffi::CStr;
 
     #[test]
