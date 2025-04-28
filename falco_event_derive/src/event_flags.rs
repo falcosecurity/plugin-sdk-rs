@@ -178,7 +178,7 @@ fn render_enum(
             }
         }
 
-        impl crate::event_derive::ToBytes for #name {
+        impl crate::fields::ToBytes for #name {
             fn binary_size(&self) -> usize {
                 std::mem::size_of::<#repr_type>()
             }
@@ -188,7 +188,7 @@ fn render_enum(
                 repr.write(writer)
             }
 
-            fn default_repr() -> impl crate::event_derive::ToBytes {
+            fn default_repr() -> impl crate::fields::ToBytes {
                 0 as #repr_type
             }
         }
@@ -246,7 +246,7 @@ fn render_bitflags(
             }
         }
 
-        impl crate::event_derive::ToBytes for #name {
+        impl crate::fields::ToBytes for #name {
             fn binary_size(&self) -> usize {
                 std::mem::size_of::<#repr_type>()
             }
@@ -255,7 +255,7 @@ fn render_bitflags(
                 (self.bits() as #repr_type).write(writer)
             }
 
-            fn default_repr() -> impl crate::event_derive::ToBytes {
+            fn default_repr() -> impl crate::fields::ToBytes {
                 0 as #repr_type
             }
         }

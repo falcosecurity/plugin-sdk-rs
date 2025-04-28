@@ -104,7 +104,7 @@ impl DynamicParamVariant {
 
         quote!(Self:: #disc(val) => {
             writer.write_u8(crate::ffi::#disc as u8)?;
-            crate::event_derive::ToBytes::write(val, writer)
+            crate::fields::ToBytes::write(val, writer)
         })
     }
 
@@ -184,9 +184,9 @@ impl DynamicParam {
                 #(#variant_definitions,)*
             }
 
-            impl #lifetime crate::event_derive::ToBytes for #name #lifetime {
+            impl #lifetime crate::fields::ToBytes for #name #lifetime {
                 fn binary_size(&self) -> usize {
-                    use crate::event_derive::ToBytes;
+                    use crate::fields::ToBytes;
                     match self {
                         #(#variant_binary_size,)*
                     }
@@ -199,7 +199,7 @@ impl DynamicParam {
                     }
                 }
 
-                fn default_repr() -> impl crate::event_derive::ToBytes { crate::fields::NoDefault }
+                fn default_repr() -> impl crate::fields::ToBytes { crate::fields::NoDefault }
             }
 
             impl<'a> crate::fields::FromBytes<'a> for #name #lifetime {

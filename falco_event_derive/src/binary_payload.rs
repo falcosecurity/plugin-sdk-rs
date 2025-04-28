@@ -30,6 +30,7 @@ pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
                 fn write<W: std::io::Write>(&self, metadata: &crate::events::EventMetadata, mut writer: W) -> std::io::Result<()> {
                     use #crate_path::*;
                     use crate::events::EventPayload;
+                    use crate::fields::ToBytes;
 
                     const NUM_FIELDS: usize = #num_fields;
                     let length_size = if Self::LARGE { 4 } else { 2 };

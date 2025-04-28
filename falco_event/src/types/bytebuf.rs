@@ -55,8 +55,7 @@ impl Debug for ByteBufFormatter<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::fields::FromBytes;
-    use crate::fields::ToBytes;
+    use crate::fields::{FromBytes, ToBytes};
 
     #[test]
     fn test_bytebuf() {

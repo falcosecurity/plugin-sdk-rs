@@ -1,5 +1,4 @@
-use crate::event_derive::ToBytes;
-use crate::fields::{FromBytes, FromBytesError};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use chrono::Local;
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
