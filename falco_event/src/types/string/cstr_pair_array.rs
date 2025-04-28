@@ -41,6 +41,10 @@ impl<'a> FromBytes<'a> for Vec<(&'a CStr, &'a CStr)> {
     }
 }
 
+/// Falco-style array-of-CStr-pair formatter
+///
+/// Formats the array as `;`-separated `key=value` pair, where each key and value is formatted
+/// as a string (see [`CStrFormatter`]).
 pub struct CStrPairArrayFormatter<'a, T: AsRef<CStr>>(pub &'a Vec<(T, T)>);
 
 impl<T: AsRef<CStr>> Debug for CStrPairArrayFormatter<'_, T> {
