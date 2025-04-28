@@ -199,7 +199,7 @@ impl DynamicParam {
                     }
                 }
 
-                fn default_repr() -> impl crate::event_derive::ToBytes { crate::event_derive::NoDefault }
+                fn default_repr() -> impl crate::event_derive::ToBytes { crate::fields::NoDefault }
             }
 
             impl<'a> crate::fields::FromBytes<'a> for #name #lifetime {
