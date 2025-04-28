@@ -208,7 +208,7 @@ impl DynamicParam {
                     let variant = buf.read_u8()?;
                     match variant as u32 {
                         #(#variant_reads,)*
-                        _ => Err(crate::event_derive::FromBytesError::InvalidDynDiscriminant),
+                        _ => Err(crate::fields::FromBytesError::InvalidDynDiscriminant),
                     }
                 }
             }
