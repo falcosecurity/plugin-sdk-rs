@@ -22,6 +22,12 @@ impl ToBytes for &[u8] {
     }
 }
 
+/// Falco-style byte buffer formatter
+///
+/// The default [`Debug`] impl prints out the buffer as an ASCII string, replacing non-printable
+/// characters with dots (`.`).
+///
+/// The hex debug implementation (`{:x?}`) generates a hex dump of the whole buffer.
 pub struct ByteBufFormatter<'a>(pub &'a [u8]);
 
 impl Debug for ByteBufFormatter<'_> {

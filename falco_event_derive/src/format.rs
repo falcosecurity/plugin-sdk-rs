@@ -7,7 +7,7 @@ pub fn display_wrapper_for(
 ) -> proc_macro2::TokenStream {
     match pt_type.to_string().as_str() {
         "PT_ABSTIME" => quote!(#val_tt.map(|t| crate::event_derive::SystemTimeFormatter(*t))),
-        "PT_BYTEBUF" => quote!(#val_tt.map(|t| crate::event_derive::ByteBufFormatter(t))),
+        "PT_BYTEBUF" => quote!(#val_tt.map(|t| crate::format::ByteBufFormatter(t))),
         "PT_CHARBUF" => quote!(#val_tt.map(|t| crate::event_derive::CStrFormatter(t))),
         "PT_CHARBUFARRAY" => {
             quote!(#val_tt.map(|t| crate::event_derive::CStrArrayFormatter(&t)))
