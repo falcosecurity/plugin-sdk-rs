@@ -262,7 +262,7 @@ impl EventInfo {
                 #(#dirfd_methods)*
             }
 
-            impl #lifetime crate::event_derive::EventPayload for #event_code #lifetime {
+            impl #lifetime crate::events::EventPayload for #event_code #lifetime {
                 const ID: EventType = EventType:: #event_type;
                 const LARGE: bool = #is_large;
                 const NAME: &'static str = #name;
@@ -272,7 +272,7 @@ impl EventInfo {
                 fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
                     use std::fmt::Write;
 
-                    match <Self as crate::event_derive::EventPayload>::direction() {
+                    match <Self as crate::events::EventPayload>::direction() {
                         crate::event_derive::EventDirection::Entry => f.write_str("> ")?,
                         crate::event_derive::EventDirection::Exit => f.write_str("< ")?,
                     }
@@ -341,7 +341,7 @@ impl EventInfo {
         );
         quote!(crate::ffi:: #raw_ident => {
             let params = unsafe {
-                if <#event_code as crate::event_derive::EventPayload>::LARGE {
+                if <#event_code as crate::events::EventPayload>::LARGE {
                     <#event_code as crate::event_derive::PayloadFromBytes>::read(self.params::<u32>()?)?
                 } else {
                     <#event_code as crate::event_derive::PayloadFromBytes>::read(self.params::<u16>()?)?
