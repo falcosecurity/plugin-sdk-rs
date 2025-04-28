@@ -12,8 +12,15 @@ pub mod events;
 pub mod fields;
 mod types;
 
-pub use types::format;
-pub use types::SystemTimeFormatter;
+/// Formatting wrappers
+///
+/// This module provides wrappers for various types that format the inner type according
+/// to Falco style.
+pub mod format {
+    pub use crate::types::format::OptionFormatter;
+}
+
+pub use crate::types::SystemTimeFormatter;
 
 #[allow(dead_code)]
 #[allow(non_snake_case)]
@@ -29,7 +36,6 @@ mod event_derive {
     pub use crate::events::Event;
     pub use crate::events::PayloadFromBytes;
     pub use crate::events::RawEvent;
-    pub use crate::types::format::OptionFormatter;
     pub use crate::types::ByteBufFormatter;
     pub use crate::types::CStrArrayFormatter;
     pub use crate::types::CStrFormatter;

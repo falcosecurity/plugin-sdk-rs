@@ -227,7 +227,7 @@ impl EventInfo {
 
             let display_wrapper =
                 display_wrapper_for(&field.field_type, quote!(self.#ident.as_ref()));
-            let display_val = quote!(crate::event_derive::OptionFormatter(#display_wrapper));
+            let display_val = quote!(crate::format::OptionFormatter(#display_wrapper));
 
             let format_val = formatter_for(
                 &field.field_type,
