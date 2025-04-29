@@ -1,9 +1,8 @@
 use crate::fields::{FromBytes, FromBytesError, ToBytes};
-use crate::types::Port;
 use std::io::Write;
 use std::net::{Ipv4Addr, Ipv6Addr};
 
-pub type EndpointV4 = (Ipv4Addr, Port);
+pub type EndpointV4 = (Ipv4Addr, u16);
 
 impl ToBytes for EndpointV4 {
     #[inline]
@@ -20,7 +19,7 @@ impl ToBytes for EndpointV4 {
 
     #[inline]
     fn default_repr() -> impl ToBytes {
-        (Ipv4Addr::from(0), Port(0))
+        (Ipv4Addr::from(0), 0)
     }
 }
 
@@ -31,7 +30,7 @@ impl FromBytes<'_> for EndpointV4 {
     }
 }
 
-pub type EndpointV6 = (Ipv6Addr, Port);
+pub type EndpointV6 = (Ipv6Addr, u16);
 
 impl ToBytes for EndpointV6 {
     #[inline]
@@ -48,7 +47,7 @@ impl ToBytes for EndpointV6 {
 
     #[inline]
     fn default_repr() -> impl ToBytes {
-        (Ipv6Addr::from(0), Port(0))
+        (Ipv6Addr::from(0), 0)
     }
 }
 

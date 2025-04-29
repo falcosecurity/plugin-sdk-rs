@@ -47,16 +47,12 @@ impl Debug for SockTuple<'_> {
                 dest_ptr,
                 path,
             } => write!(f, "{:x}->{:x} {}", source_ptr, dest_ptr, path.display()),
-            Self::V4 { source, dest } => write!(
-                f,
-                "{}:{} -> {}:{}",
-                source.0, source.1 .0, dest.0, dest.1 .0
-            ),
-            Self::V6 { source, dest } => write!(
-                f,
-                "[{}]:{} -> [{}]:{}",
-                source.0, source.1 .0, dest.0, dest.1 .0
-            ),
+            Self::V4 { source, dest } => {
+                write!(f, "{}:{} -> {}:{}", source.0, source.1, dest.0, dest.1)
+            }
+            Self::V6 { source, dest } => {
+                write!(f, "[{}]:{} -> [{}]:{}", source.0, source.1, dest.0, dest.1)
+            }
             Self::Other(af, buf) => f
                 .debug_struct("SockTuple")
                 .field("af", &af)
@@ -140,15 +136,14 @@ impl<'a> FromBytes<'a> for SockTuple<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::Port;
     use std::net::{Ipv4Addr, Ipv6Addr};
     use std::str::FromStr;
 
     #[test]
     fn test_socktuple_ipv4() {
         let socktuple = SockTuple::V4 {
-            source: (Ipv4Addr::from_str("172.31.33.48").unwrap(), Port(47263)),
-            dest: (Ipv4Addr::from_str("172.31.0.2").unwrap(), Port(53)),
+            source: (Ipv4Addr::from_str("172.31.33.48").unwrap(), 47263),
+            dest: (Ipv4Addr::from_str("172.31.0.2").unwrap(), 53),
         };
 
         dbg!(&socktuple);
@@ -169,14 +164,8 @@ mod tests {
     #[test]
     fn test_socktuple_ipv6() {
         let socktuple = SockTuple::V6 {
-            source: (
-                Ipv6Addr::from_str("2001:4860:4860::8844").unwrap(),
-                Port(47263),
-            ),
-            dest: (
-                Ipv6Addr::from_str("2001:4860:4860::8800").unwrap(),
-                Port(53),
-            ),
+            source: (Ipv6Addr::from_str("2001:4860:4860::8844").unwrap(), 47263),
+            dest: (Ipv6Addr::from_str("2001:4860:4860::8800").unwrap(), 53),
         };
 
         dbg!(&socktuple);

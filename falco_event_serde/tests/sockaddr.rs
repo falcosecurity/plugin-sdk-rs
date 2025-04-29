@@ -1,5 +1,5 @@
 use falco_event::events::types::PPME_SOCKET_CONNECT_E;
-use falco_event::fields::types::{PT_FD, PT_PORT, PT_SOCKADDR};
+use falco_event::fields::types::{PT_FD, PT_SOCKADDR};
 
 #[test]
 fn test_deserialize_sockaddr_v4() {
@@ -22,7 +22,7 @@ fn test_deserialize_sockaddr_v4() {
     match event.params.addr {
         Some(PT_SOCKADDR::V4((addr, port))) => {
             assert_eq!(addr.to_string(), "192.168.1.2");
-            assert_eq!(port, PT_PORT(8080));
+            assert_eq!(port, 8080);
         }
         _ => panic!("Expected PT_SOCKADDR::V4, got {:?}", event.params.addr),
     }
@@ -50,7 +50,7 @@ fn test_roundtrip_sockaddr_v4() {
     match event.params.addr {
         Some(PT_SOCKADDR::V4((addr, port))) => {
             assert_eq!(addr.to_string(), "192.168.1.2");
-            assert_eq!(port, PT_PORT(8080));
+            assert_eq!(port, 8080);
         }
         _ => panic!("Expected PT_SOCKADDR::V4, got {:?}", event.params.addr),
     }
@@ -80,7 +80,7 @@ fn test_deserialize_sockaddr_v6() {
     match event.params.addr {
         Some(PT_SOCKADDR::V6((addr, port))) => {
             assert_eq!(addr.to_string(), "bad:beef:cafe::f00d");
-            assert_eq!(port, PT_PORT(8080));
+            assert_eq!(port, 8080);
         }
         _ => panic!("Expected PT_SOCKADDR::V6, got {:?}", event.params.addr),
     }
@@ -107,7 +107,7 @@ fn test_roundtrip_sockaddr_v6() {
     match event.params.addr {
         Some(PT_SOCKADDR::V6((addr, port))) => {
             assert_eq!(addr.to_string(), "bad:beef:cafe::f00d");
-            assert_eq!(port, PT_PORT(8080));
+            assert_eq!(port, 8080);
         }
         _ => panic!("Expected PT_SOCKADDR::V6, got {:?}", event.params.addr),
     }

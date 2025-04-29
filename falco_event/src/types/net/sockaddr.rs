@@ -83,8 +83,8 @@ impl Debug for SockAddr<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             SockAddr::Unix(u) => write!(f, "unix://{}", u.display()),
-            SockAddr::V4(v4) => write!(f, "{}:{}", v4.0, v4.1 .0),
-            SockAddr::V6(v6) => write!(f, "[{}]:{}", v6.0, v6.1 .0),
+            SockAddr::V4(v4) => write!(f, "{}:{}", v4.0, v4.1),
+            SockAddr::V6(v6) => write!(f, "[{}]:{}", v6.0, v6.1),
             SockAddr::Other(af, raw) => write!(f, "<af={af}>{raw:02x?}"),
         }
     }

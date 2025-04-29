@@ -1,5 +1,5 @@
 use falco_event::events::types::PPME_SOCKET_CONNECT_X;
-use falco_event::fields::types::{PT_ERRNO, PT_FD, PT_PORT, PT_SOCKTUPLE};
+use falco_event::fields::types::{PT_ERRNO, PT_FD, PT_SOCKTUPLE};
 
 #[test]
 fn test_deserialize_socktuple_v4() {
@@ -26,9 +26,9 @@ fn test_deserialize_socktuple_v4() {
             dest: (daddr, dport),
         }) => {
             assert_eq!(saddr.to_string(), "192.168.1.2");
-            assert_eq!(sport, PT_PORT(8080));
+            assert_eq!(sport, 8080);
             assert_eq!(daddr.to_string(), "192.168.88.1");
-            assert_eq!(dport, PT_PORT(9090));
+            assert_eq!(dport, 9090);
         }
         _ => panic!("Expected PT_SOCKTUPLE::V4, got {:?}", event.params.tuple),
     }
@@ -59,9 +59,9 @@ fn test_deserialize_socktuple_v6() {
             dest: (daddr, dport),
         }) => {
             assert_eq!(saddr.to_string(), "bad:beef:cafe::f00d");
-            assert_eq!(sport, PT_PORT(8080));
+            assert_eq!(sport, 8080);
             assert_eq!(daddr.to_string(), "f00d::c0ff:ee");
-            assert_eq!(dport, PT_PORT(9090));
+            assert_eq!(dport, 9090);
         }
         _ => panic!("Expected PT_SOCKTUPLE::V6, got {:?}", event.params.tuple),
     }
@@ -154,9 +154,9 @@ fn test_roundtrip_socktuple_v4() {
             dest: (daddr, dport),
         }) => {
             assert_eq!(saddr.to_string(), "192.168.1.2");
-            assert_eq!(sport, PT_PORT(8080));
+            assert_eq!(sport, 8080);
             assert_eq!(daddr.to_string(), "192.168.88.1");
-            assert_eq!(dport, PT_PORT(9090));
+            assert_eq!(dport, 9090);
         }
         _ => panic!("Expected PT_SOCKTUPLE::V4, got {:?}", event.params.tuple),
     }
@@ -192,9 +192,9 @@ fn test_roundtrip_socktuple_v6() {
             dest: (daddr, dport),
         }) => {
             assert_eq!(saddr.to_string(), "bad:beef:cafe::f00d");
-            assert_eq!(sport, PT_PORT(8080));
+            assert_eq!(sport, 8080);
             assert_eq!(daddr.to_string(), "f00d::c0ff:ee");
-            assert_eq!(dport, PT_PORT(9090));
+            assert_eq!(dport, 9090);
         }
         _ => panic!("Expected PT_SOCKTUPLE::V6, got {:?}", event.params.tuple),
     }
