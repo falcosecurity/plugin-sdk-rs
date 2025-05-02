@@ -72,6 +72,10 @@ pub fn serialize_field_type<S: Serializer>(
     }
 }
 
+fn is_false(b: &bool) -> bool {
+    !*b
+}
+
 /// # A description of an extracted field
 ///
 /// You should create instances of this struct by calling [`field`].
@@ -96,6 +100,10 @@ pub struct ExtractFieldInfo<P: ExtractPlugin> {
     #[serde(rename = "desc")]
     /// a description for the extracted field, mandatory but defaults to the name
     pub description: &'static str,
+    #[serde(rename = "addOutput")]
+    #[serde(skip_serializing_if = "is_false")]
+    /// suggest that this field be included in output for compatible event sources
+    pub add_output: bool,
     #[serde(skip)]
     /// the function implementing the actual extraction
     pub func: ExtractLambda<P>,
@@ -120,6 +128,12 @@ impl<P: ExtractPlugin> ExtractFieldInfo<P> {
         self.description = description;
         self
     }
+
+    /// Suggest this field to be appended to the output string for compatible event sources
+    pub const fn add_output(mut self) -> Self {
+        self.add_output = true;
+        self
+    }
 }
 
 /// Wrap a function or method to make it usable as a field extractor
@@ -139,6 +153,7 @@ where
         arg: F::ARG_TYPE,
         display_name: None,
         description: name,
+        add_output: false,
         func: ExtractLambda {
             obj: func as *const _ as *const (),
             func: F::extract,
