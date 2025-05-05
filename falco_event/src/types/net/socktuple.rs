@@ -3,7 +3,7 @@ use std::io::Write;
 
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL};
 use crate::fields::{FromBytes, FromBytesError, ToBytes};
-use crate::types::net::endpoint::{EndpointV6, SocketAddrV4};
+use crate::types::net::endpoint::{SocketAddrV4, SocketAddrV6};
 use typed_path::UnixPath;
 
 /// Socket tuple: describing both endpoints of a connection
@@ -30,9 +30,9 @@ pub enum SockTuple<'a> {
     /// IPv6 connection
     V6 {
         /// source address and port
-        source: EndpointV6,
+        source: SocketAddrV6,
         /// destination address and port
-        dest: EndpointV6,
+        dest: SocketAddrV6,
     },
 
     /// Unknown/other socket family: `PPM_AF_*` id and a raw byte buffer

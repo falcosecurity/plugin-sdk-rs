@@ -1,6 +1,6 @@
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL, PPM_AF_UNSPEC};
 use crate::fields::{FromBytes, FromBytesError, ToBytes};
-use crate::types::{EndpointV6, SocketAddrV4};
+use crate::types::{SocketAddrV4, SocketAddrV6};
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use typed_path::UnixPath;
@@ -15,7 +15,7 @@ pub enum SockAddr<'a> {
     V4(SocketAddrV4),
 
     /// IPv6 socket
-    V6(EndpointV6),
+    V6(SocketAddrV6),
 
     /// any other address family is represented as the number (`PPM_AF_*` constant) and the raw data
     Other(u8, &'a [u8]),
@@ -71,7 +71,7 @@ impl<'a> FromBytes<'a> for SockAddr<'a> {
                 Ok(Self::V4(addr))
             }
             PPM_AF_INET6 => {
-                let addr = EndpointV6::from_bytes(buf)?;
+                let addr = SocketAddrV6::from_bytes(buf)?;
                 Ok(Self::V6(addr))
             }
             _ => Ok(Self::Other(*variant, std::mem::take(buf))),
