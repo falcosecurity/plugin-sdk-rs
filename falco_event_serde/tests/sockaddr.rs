@@ -78,9 +78,9 @@ fn test_deserialize_sockaddr_v6() {
 
     assert_eq!(event.params.fd, Some(PT_FD(1)));
     match event.params.addr {
-        Some(PT_SOCKADDR::V6((addr, port))) => {
-            assert_eq!(addr.to_string(), "bad:beef:cafe::f00d");
-            assert_eq!(port, 8080);
+        Some(PT_SOCKADDR::V6(addr)) => {
+            assert_eq!(addr.ip().to_string(), "bad:beef:cafe::f00d");
+            assert_eq!(addr.port(), 8080);
         }
         _ => panic!("Expected PT_SOCKADDR::V6, got {:?}", event.params.addr),
     }
@@ -105,9 +105,9 @@ fn test_roundtrip_sockaddr_v6() {
 
     assert_eq!(event.params.fd, Some(PT_FD(1)));
     match event.params.addr {
-        Some(PT_SOCKADDR::V6((addr, port))) => {
-            assert_eq!(addr.to_string(), "bad:beef:cafe::f00d");
-            assert_eq!(port, 8080);
+        Some(PT_SOCKADDR::V6(addr)) => {
+            assert_eq!(addr.ip().to_string(), "bad:beef:cafe::f00d");
+            assert_eq!(addr.port(), 8080);
         }
         _ => panic!("Expected PT_SOCKADDR::V6, got {:?}", event.params.addr),
     }

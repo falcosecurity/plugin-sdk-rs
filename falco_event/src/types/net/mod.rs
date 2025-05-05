@@ -8,7 +8,6 @@ mod ipv6net;
 mod sockaddr;
 mod socktuple;
 
-pub use endpoint::*;
 pub use ipnet::*;
 pub use ipv4net::*;
 pub use ipv6net::*;

@@ -51,14 +51,11 @@ fn test_deserialize_socktuple_v6() {
     assert_eq!(event.params.res, Some(PT_ERRNO(0)));
     assert_eq!(event.params.fd, Some(PT_FD(1)));
     match event.params.tuple {
-        Some(PT_SOCKTUPLE::V6 {
-            source: (saddr, sport),
-            dest: (daddr, dport),
-        }) => {
-            assert_eq!(saddr.to_string(), "bad:beef:cafe::f00d");
-            assert_eq!(sport, 8080);
-            assert_eq!(daddr.to_string(), "f00d::c0ff:ee");
-            assert_eq!(dport, 9090);
+        Some(PT_SOCKTUPLE::V6 { source, dest }) => {
+            assert_eq!(source.ip().to_string(), "bad:beef:cafe::f00d");
+            assert_eq!(source.port(), 8080);
+            assert_eq!(dest.ip().to_string(), "f00d::c0ff:ee");
+            assert_eq!(dest.port(), 9090);
         }
         _ => panic!("Expected PT_SOCKTUPLE::V6, got {:?}", event.params.tuple),
     }
@@ -181,14 +178,11 @@ fn test_roundtrip_socktuple_v6() {
     assert_eq!(event.params.res, Some(PT_ERRNO(0)));
     assert_eq!(event.params.fd, Some(PT_FD(1)));
     match event.params.tuple {
-        Some(PT_SOCKTUPLE::V6 {
-            source: (saddr, sport),
-            dest: (daddr, dport),
-        }) => {
-            assert_eq!(saddr.to_string(), "bad:beef:cafe::f00d");
-            assert_eq!(sport, 8080);
-            assert_eq!(daddr.to_string(), "f00d::c0ff:ee");
-            assert_eq!(dport, 9090);
+        Some(PT_SOCKTUPLE::V6 { source, dest }) => {
+            assert_eq!(source.ip().to_string(), "bad:beef:cafe::f00d");
+            assert_eq!(source.port(), 8080);
+            assert_eq!(dest.ip().to_string(), "f00d::c0ff:ee");
+            assert_eq!(dest.port(), 9090);
         }
         _ => panic!("Expected PT_SOCKTUPLE::V6, got {:?}", event.params.tuple),
     }

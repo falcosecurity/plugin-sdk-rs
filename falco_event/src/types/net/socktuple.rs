@@ -1,9 +1,8 @@
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL};
 use crate::fields::{FromBytes, FromBytesError, ToBytes};
-use crate::types::SocketAddrV6;
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
-use std::net::SocketAddrV4;
+use std::net::{SocketAddrV4, SocketAddrV6};
 use typed_path::UnixPath;
 
 /// Socket tuple: describing both endpoints of a connection
@@ -51,7 +50,7 @@ impl Debug for SockTuple<'_> {
                 write!(f, "{source} -> {dest}")
             }
             Self::V6 { source, dest } => {
-                write!(f, "[{}]:{} -> [{}]:{}", source.0, source.1, dest.0, dest.1)
+                write!(f, "{source} -> {dest}")
             }
             Self::Other(af, buf) => f
                 .debug_struct("SockTuple")
@@ -164,8 +163,18 @@ mod tests {
     #[test]
     fn test_socktuple_ipv6() {
         let socktuple = SockTuple::V6 {
-            source: (Ipv6Addr::from_str("2001:4860:4860::8844").unwrap(), 47263),
-            dest: (Ipv6Addr::from_str("2001:4860:4860::8800").unwrap(), 53),
+            source: SocketAddrV6::new(
+                Ipv6Addr::from_str("2001:4860:4860::8844").unwrap(),
+                47263,
+                0,
+                0,
+            ),
+            dest: SocketAddrV6::new(
+                Ipv6Addr::from_str("2001:4860:4860::8800").unwrap(),
+                53,
+                0,
+                0,
+            ),
         };
 
         dbg!(&socktuple);
