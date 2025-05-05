@@ -1,8 +1,9 @@
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL, PPM_AF_UNSPEC};
 use crate::fields::{FromBytes, FromBytesError, ToBytes};
-use crate::types::{SocketAddrV4, SocketAddrV6};
+use crate::types::SocketAddrV6;
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
+use std::net::SocketAddrV4;
 use typed_path::UnixPath;
 
 /// A socket address
@@ -83,7 +84,7 @@ impl Debug for SockAddr<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             SockAddr::Unix(u) => write!(f, "unix://{}", u.display()),
-            SockAddr::V4(v4) => write!(f, "{}:{}", v4.0, v4.1),
+            SockAddr::V4(v4) => write!(f, "{v4}"),
             SockAddr::V6(v6) => write!(f, "[{}]:{}", v6.0, v6.1),
             SockAddr::Other(af, raw) => write!(f, "<af={af}>{raw:02x?}"),
         }

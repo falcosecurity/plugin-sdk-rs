@@ -21,14 +21,11 @@ fn test_deserialize_socktuple_v4() {
     assert_eq!(event.params.res, Some(PT_ERRNO(0)));
     assert_eq!(event.params.fd, Some(PT_FD(1)));
     match event.params.tuple {
-        Some(PT_SOCKTUPLE::V4 {
-            source: (saddr, sport),
-            dest: (daddr, dport),
-        }) => {
-            assert_eq!(saddr.to_string(), "192.168.1.2");
-            assert_eq!(sport, 8080);
-            assert_eq!(daddr.to_string(), "192.168.88.1");
-            assert_eq!(dport, 9090);
+        Some(PT_SOCKTUPLE::V4 { source, dest }) => {
+            assert_eq!(source.ip().to_string(), "192.168.1.2");
+            assert_eq!(source.port(), 8080);
+            assert_eq!(dest.ip().to_string(), "192.168.88.1");
+            assert_eq!(dest.port(), 9090);
         }
         _ => panic!("Expected PT_SOCKTUPLE::V4, got {:?}", event.params.tuple),
     }
@@ -149,14 +146,11 @@ fn test_roundtrip_socktuple_v4() {
     assert_eq!(event.params.res, Some(PT_ERRNO(0)));
     assert_eq!(event.params.fd, Some(PT_FD(1)));
     match event.params.tuple {
-        Some(PT_SOCKTUPLE::V4 {
-            source: (saddr, sport),
-            dest: (daddr, dport),
-        }) => {
-            assert_eq!(saddr.to_string(), "192.168.1.2");
-            assert_eq!(sport, 8080);
-            assert_eq!(daddr.to_string(), "192.168.88.1");
-            assert_eq!(dport, 9090);
+        Some(PT_SOCKTUPLE::V4 { source, dest }) => {
+            assert_eq!(source.ip().to_string(), "192.168.1.2");
+            assert_eq!(source.port(), 8080);
+            assert_eq!(dest.ip().to_string(), "192.168.88.1");
+            assert_eq!(dest.port(), 9090);
         }
         _ => panic!("Expected PT_SOCKTUPLE::V4, got {:?}", event.params.tuple),
     }

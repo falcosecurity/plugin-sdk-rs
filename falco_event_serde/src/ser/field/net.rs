@@ -9,9 +9,7 @@ impl Serialize for SerializedField<&types::PT_SOCKADDR<'_>> {
     {
         match self.0 {
             types::PT_SOCKADDR::Unix(path) => SerializedField(path).serialize(serializer),
-            types::PT_SOCKADDR::V4((addr, port)) => {
-                (addr, SerializedField(port)).serialize(serializer)
-            }
+            types::PT_SOCKADDR::V4(v4) => (v4.ip(), v4.port()).serialize(serializer),
             types::PT_SOCKADDR::V6((addr, port)) => {
                 (addr, SerializedField(port)).serialize(serializer)
             }
@@ -31,13 +29,9 @@ impl Serialize for SerializedField<&types::PT_SOCKTUPLE<'_>> {
                 dest_ptr,
                 path,
             } => (source_ptr, dest_ptr, SerializedField(path)).serialize(serializer),
-            types::PT_SOCKTUPLE::V4 { source, dest } => (
-                source.0,
-                SerializedField(&source.1),
-                dest.0,
-                SerializedField(&dest.1),
-            )
-                .serialize(serializer),
+            types::PT_SOCKTUPLE::V4 { source, dest } => {
+                (source.ip(), source.port(), dest.ip(), dest.port()).serialize(serializer)
+            }
             types::PT_SOCKTUPLE::V6 { source, dest } => (
                 source.0,
                 SerializedField(&source.1),
