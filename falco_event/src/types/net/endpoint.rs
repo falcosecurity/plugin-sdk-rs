@@ -2,9 +2,9 @@ use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use std::io::Write;
 use std::net::{Ipv4Addr, Ipv6Addr};
 
-pub type EndpointV4 = (Ipv4Addr, u16);
+pub type SocketAddrV4 = (Ipv4Addr, u16);
 
-impl ToBytes for EndpointV4 {
+impl ToBytes for SocketAddrV4 {
     #[inline]
     fn binary_size(&self) -> usize {
         self.0.binary_size() + self.1.binary_size()
@@ -23,7 +23,7 @@ impl ToBytes for EndpointV4 {
     }
 }
 
-impl FromBytes<'_> for EndpointV4 {
+impl FromBytes<'_> for SocketAddrV4 {
     #[inline]
     fn from_bytes(buf: &mut &'_ [u8]) -> Result<Self, FromBytesError> {
         Ok((FromBytes::from_bytes(buf)?, FromBytes::from_bytes(buf)?))
