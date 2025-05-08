@@ -27,7 +27,7 @@ pub mod base {
 
 /// # Field extraction plugin support
 ///
-/// Plugins with field extraction capability have the ability to extract information from events
+/// Plugins with field extraction capability can extract information from events
 /// based on fields. For example, a field (e.g. `proc.name`) extracts a value (e.g. process name
 /// like `nginx`) from a syscall event. The plugin returns a set of supported fields, and there are
 /// functions to extract a value given an event and field. The plugin framework can then build

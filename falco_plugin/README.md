@@ -195,7 +195,7 @@ static_plugin!(#[no_capabilities] MY_PLUGIN = MyPlugin);
 
 ## Event sourcing plugins
 
-Source plugins are used to generate events. The implementation comes in two parts:
+[Source plugins](`source`) are used to generate events. The implementation comes in two parts:
 
 1. An implementation of [`source::SourcePlugin`] on the plugin type, which mostly serves
    to create a plugin instance
@@ -217,7 +217,7 @@ to the value of [`source::SourcePlugin::EVENT_SOURCE`], for example (in `falco_r
 
 ## Field extraction plugins
 
-Field extraction plugins add extra fields to be used in rule matching and rule output. Each
+[Field extraction plugins](`extract`) add extra fields to be used in rule matching and rule output. Each
 field has a name, type and a function or method that returns the actual extracted data.
 
 Extraction plugins are created by implementing the [`extract::ExtractPlugin`] trait and calling
@@ -228,7 +228,7 @@ Rules involving fields from extract plugins must match against the correct sourc
 
 ## Event parsing plugins
 
-Event parsing plugins are invoked on every event (modulo some filtering) and can be used to
+[Event parsing plugins](`parse`) are invoked on every event (modulo some filtering) and can be used to
 maintain some state across events, e.g. for extraction plugins to return later.
 
 Event parsing plugins are created by implementing [`parse::ParsePlugin`] and calling [`parse_plugin!`]
@@ -236,7 +236,7 @@ with the plugin type.
 
 ## Asynchronous event plugins
 
-Asynchronous event plugins can be used to inject events outside the flow of the main event loop,
+[Asynchronous event plugins](`async_event`) can be used to inject events outside the flow of the main event loop,
 for example from a separate thread.
 
 They are created by implementing [`async_event::AsyncEventPlugin`] and calling [`async_event_plugin!`]
@@ -244,7 +244,7 @@ with the plugin type.
 
 ## Capture listening plugins
 
-Plugins with this capability provide `capture_open` and `capture_close` callbacks that are called
+[Capture listening plugins](`listen`) provide `capture_open` and `capture_close` callbacks that are called
 when the capture is started/stopped, respectively. Note this is *not* equivalent to plugin init/shutdown
 as the capture may be stopped/restarted several times over the lifetime of a plugin.
 
