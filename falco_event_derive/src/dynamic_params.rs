@@ -203,10 +203,9 @@ impl DynamicParam {
             }
 
             impl<'a> crate::fields::FromBytes<'a> for #name #lifetime {
-                fn from_bytes(buf: &mut &'a [u8]) -> crate::fields::FromBytesResult<Self> {
-                    use byteorder::ReadBytesExt;
-                    let variant = buf.read_u8()?;
-                    match variant as u32 {
+                fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, crate::fields::FromBytesError> {
+                    let variant = buf.split_off_first().ok_or_else(|| crate::fields::FromBytesError::InvalidLength)?;
+                    match *variant as u32 {
                         #(#variant_reads,)*
                         _ => Err(crate::fields::FromBytesError::InvalidDynDiscriminant),
                     }

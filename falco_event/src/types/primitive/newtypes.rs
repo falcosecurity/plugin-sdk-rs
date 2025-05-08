@@ -1,4 +1,4 @@
-use crate::fields::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use std::fmt::{Debug, Formatter, LowerHex};
 
 macro_rules! default_debug {
@@ -18,7 +18,7 @@ macro_rules! newtype {
         pub struct $name(pub $repr);
 
         impl FromBytes<'_> for $name {
-            fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self>
+            fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError>
             where
                 Self: Sized,
             {

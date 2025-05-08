@@ -1,6 +1,5 @@
 pub use from_bytes::FromBytes;
 pub use from_bytes::FromBytesError;
-pub use from_bytes::FromBytesResult;
 pub use to_bytes::NoDefault;
 pub use to_bytes::ToBytes;
 

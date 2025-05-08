@@ -1,10 +1,10 @@
-use crate::fields::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use byteorder::{ReadBytesExt, WriteBytesExt};
 
 macro_rules! impl_int_type {
     ($ty:ty) => {
         impl FromBytes<'_> for $ty {
-            fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self>
+            fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError>
             where
                 Self: Sized,
             {
@@ -32,7 +32,7 @@ macro_rules! impl_int_type {
 macro_rules! impl_uint_type {
     ($ty:ty) => {
         impl FromBytes<'_> for $ty {
-            fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self>
+            fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError>
             where
                 Self: Sized,
             {

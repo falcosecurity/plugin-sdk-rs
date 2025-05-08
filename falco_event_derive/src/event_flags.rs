@@ -194,7 +194,8 @@ fn render_enum(
         }
 
         impl crate::fields::FromBytes<'_> for #name {
-            fn from_bytes(buf: &mut &[u8]) -> crate::fields::FromBytesResult<Self>
+            #[inline(always)]
+            fn from_bytes(buf: &mut &[u8]) -> Result<Self, crate::fields::FromBytesError>
             where
                 Self: Sized,
             {
@@ -261,7 +262,8 @@ fn render_bitflags(
         }
 
         impl crate::fields::FromBytes<'_> for #name {
-            fn from_bytes(buf: &mut &[u8]) -> crate::fields::FromBytesResult<Self>
+            #[inline(always)]
+            fn from_bytes(buf: &mut &[u8]) -> Result<Self, crate::fields::FromBytesError>
             where
                 Self: Sized,
             {

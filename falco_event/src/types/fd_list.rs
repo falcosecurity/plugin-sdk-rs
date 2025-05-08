@@ -1,9 +1,8 @@
+use crate::fields::event_flags::PT_FLAGS16_file_flags;
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
+use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
-
-use crate::fields::event_flags::PT_FLAGS16_file_flags;
-use crate::fields::{FromBytes, FromBytesResult, ToBytes};
-use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 
 /// A list of file descriptors with flags
 #[derive(Clone, Eq, PartialEq)]
@@ -49,7 +48,7 @@ impl ToBytes for FdList {
 }
 
 impl FromBytes<'_> for FdList {
-    fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError> {
         let mut fds = Vec::new();
         let len = buf.read_u16::<NativeEndian>()?;
         for _ in 0..len as usize {

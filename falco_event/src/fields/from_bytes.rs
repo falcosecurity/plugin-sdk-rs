@@ -45,9 +45,6 @@ pub enum FromBytesError {
     LeftoverData,
 }
 
-/// The result of a deserialization
-pub type FromBytesResult<T> = Result<T, FromBytesError>;
-
 /// Deserialize a field from a byte buffer
 pub trait FromBytes<'a>: Sized {
     /// Read the binary representation of a field and return the parsed representation
@@ -55,13 +52,13 @@ pub trait FromBytes<'a>: Sized {
     /// **Note**: the argument is a mutable reference to an immutable slice. While the contents
     /// of the slice cannot be modified, the slice itself can. Every call to `from_bytes` consumes
     /// a number of bytes from the beginning of the slice.
-    fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self>;
+    fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError>;
 
     /// Read the binary representation of a field from a buffer that may or may not exist
     ///
     /// The default implementation returns an error when the buffer does not exist, but the blanket
     /// impl for `Option<T>` effectively returns `Ok(None)`
-    fn from_maybe_bytes(buf: Option<&mut &'a [u8]>) -> FromBytesResult<Self> {
+    fn from_maybe_bytes(buf: Option<&mut &'a [u8]>) -> Result<Self, FromBytesError> {
         match buf {
             Some(buf) => Self::from_bytes(buf),
             None => Err(FromBytesError::RequiredFieldNotFound),
@@ -73,11 +70,11 @@ impl<'a, T: FromBytes<'a> + 'a> FromBytes<'a> for Option<T>
 where
     T: Sized,
 {
-    fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError> {
         T::from_bytes(buf).map(Some)
     }
 
-    fn from_maybe_bytes(buf: Option<&mut &'a [u8]>) -> FromBytesResult<Self> {
+    fn from_maybe_bytes(buf: Option<&mut &'a [u8]>) -> Result<Self, FromBytesError> {
         match buf {
             Some([]) => Ok(None),
             Some(buf) => Self::from_bytes(buf),
