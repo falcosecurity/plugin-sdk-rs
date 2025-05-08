@@ -1,5 +1,3 @@
-# Falco plugin SDK
-
 This crate provides a framework for writing [Falco](https://github.com/falcosecurity/falco)
 plugins. There are several types of plugins available. Learn more about Falco plugins
 and plugin types in the [Falco plugin documentation](https://falco.org/docs/plugins/).
@@ -7,9 +5,7 @@ and plugin types in the [Falco plugin documentation](https://falco.org/docs/plug
 All plugins must implement the base plugin trait (see [`base::Plugin`]) and at least one of the plugin
 capabilities.
 
-## Linking
-
-### Dynamically linked plugins
+# Building a Falco plugin
 
 The typical way to distribute a Falco plugin is to build a shared library. To build a plugin as a shared
 library, you need to:
@@ -51,7 +47,7 @@ source_plugin!(MyPlugin);
 // or get Falco to do it via the configuration file
 ```
 
-#### Loading and configuring plugins in Falco
+# Loading and configuring plugins in Falco
 
 To load a plugin in Falco, you need to add them to the `plugins` and `load_plugins` sections in the config
 file, for example:
@@ -69,11 +65,16 @@ The plugin name in `plugins.name` and in `load_plugins` must match [`base::Plugi
 and may contain either a string or a YAML object (which will be converted to JSON before passing it to your plugin).
 In any case, the configuration must match [`base::Plugin::ConfigType`].
 
-### Statically linked plugins
+# Statically linked plugins
 
 In some circumstances, you might prefer to link plugins statically into your application. This changes
 the interface somewhat (instead of using predefined symbol names, you register your plugin by directly
 passing a [`falco_plugin_api::plugin_api`] struct to `sinsp::register_plugin`).
+
+This is only relevant if you're building your own application that uses libsinsp, not when building plugins
+to use with Falco, so feel free to skip this section.
+
+<details><summary>How to build statically linked plugins</summary>
 
 For a statically linked plugin, you need to:
 
@@ -113,7 +114,7 @@ static_plugin!(MY_PLUGIN_API = MyPlugin);
 
 Loading and configuring a statically linked plugin entirely depends on the application you're linking it into.
 
-### Building static and dynamic plugins from a single codebase
+## Building static and dynamic plugins from a single codebase
 
 This is a more complex problem, but still doable. As the SDK has validation to ensure the required macros
 are invoked, we cannot split the plugin `impl`s from the export macros. We also cannot conditionally compile
@@ -166,7 +167,9 @@ cargo build --release
 RUSTFLAGS='--cfg linkage="static"' cargo rustc --crate-type=staticlib --release
 ```
 
-## Plugin capabilities
+</details>
+
+# Plugin capabilities
 
 Plugin functionality is split across several independent capabilities. You will want to implement at least one,
 otherwise your plugin won't do anything at all (and will be rejected by Falco when trying to load it).
@@ -190,7 +193,7 @@ plugin!(#[no_capabilities] MyPlugin);
 static_plugin!(#[no_capabilities] MY_PLUGIN = MyPlugin);
 ```
 
-### Event sourcing plugins
+## Event sourcing plugins
 
 Source plugins are used to generate events. The implementation comes in two parts:
 
@@ -212,7 +215,7 @@ to the value of [`source::SourcePlugin::EVENT_SOURCE`], for example (in `falco_r
   source: my_plugin
 ```
 
-### Field extraction plugins
+## Field extraction plugins
 
 Field extraction plugins add extra fields to be used in rule matching and rule output. Each
 field has a name, type and a function or method that returns the actual extracted data.
@@ -223,7 +226,7 @@ Extraction plugins are created by implementing the [`extract::ExtractPlugin`] tr
 Rules involving fields from extract plugins must match against the correct source (one of [
 `extract::ExtractPlugin::EVENT_SOURCES`]).
 
-### Event parsing plugins
+## Event parsing plugins
 
 Event parsing plugins are invoked on every event (modulo some filtering) and can be used to
 maintain some state across events, e.g. for extraction plugins to return later.
@@ -231,7 +234,7 @@ maintain some state across events, e.g. for extraction plugins to return later.
 Event parsing plugins are created by implementing [`parse::ParsePlugin`] and calling [`parse_plugin!`]
 with the plugin type.
 
-### Asynchronous event plugins
+## Asynchronous event plugins
 
 Asynchronous event plugins can be used to inject events outside the flow of the main event loop,
 for example from a separate thread.
@@ -239,7 +242,7 @@ for example from a separate thread.
 They are created by implementing [`async_event::AsyncEventPlugin`] and calling [`async_event_plugin!`]
 with the plugin type.
 
-### Capture listening plugins
+## Capture listening plugins
 
 Plugins with this capability provide `capture_open` and `capture_close` callbacks that are called
 when the capture is started/stopped, respectively. Note this is *not* equivalent to plugin init/shutdown
@@ -248,14 +251,14 @@ as the capture may be stopped/restarted several times over the lifetime of a plu
 They are created by implementing [`listen::CaptureListenPlugin`] and calling [`capture_listen_plugin!`]
 with the plugin type.
 
-## Logging in plugins
+# Logging in plugins
 
 The SDK uses the [`log`] crate for logging, redirecting all messages to the Falco libs logger, so you can use
 e.g. `log::info!` in your plugin without any explicit initialization. The log level defaults to `Trace`
 in debug builds and to `Info` in release builds, but can be overridden by calling [`log::set_max_level`]
 in your [plugin init method](`base::Plugin::new`).
 
-## Versioning and MSRV
+# Versioning and MSRV
 
 The SDK consists of several crates, some are more coupled to each other, some are mostly independent. However,
 to keep packaging manageable, all the crates are versioned together, i.e. a version bump in one causes
