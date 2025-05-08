@@ -11,7 +11,7 @@ pub mod open_params;
 #[doc(hidden)]
 pub mod wrappers;
 
-/// # Support for event sourcing plugins
+/// Support for event sourcing plugins
 pub trait SourcePlugin: Plugin + SourcePluginExported {
     /// # Instance type
     ///

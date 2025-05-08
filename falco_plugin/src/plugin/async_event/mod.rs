@@ -10,7 +10,7 @@ pub mod background_task;
 #[doc(hidden)]
 pub mod wrappers;
 
-/// # Support for asynchronous event plugins
+/// Support for asynchronous event plugins
 pub trait AsyncEventPlugin: Plugin + AsyncPluginExported {
     /// # Event names coming from this plugin
     ///

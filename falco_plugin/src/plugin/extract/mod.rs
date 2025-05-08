@@ -143,7 +143,7 @@ pub struct ExtractRequest<'c, 'e, 't, P: ExtractPlugin> {
     pub offset: &'c mut ExtractByteRange,
 }
 
-/// # Support for field extraction plugins
+/// Support for field extraction plugins
 pub trait ExtractPlugin: Plugin + ExtractPluginExported + Sized
 where
     Self: 'static,
