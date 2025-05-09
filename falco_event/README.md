@@ -120,11 +120,10 @@ types.
 
 Please note that the available methods in this case are very limited. Realistically, you can
 only expect a [std::fmt::Debug] implementation, though this may change over time. You can
-still match each individual variant and access its fields, but note that explicit matching
-might be preferred: you do not pay the cost of building the type-safe representation of events
-you're not interested in.
+still match each variant and access its fields, but note that explicit matching might be preferred:
+you do not pay the cost of building the type-safe representation of events you're not interested in.
 
 ### Event (raw or typed) to byte buffer
 
 There is a trait ([events::EventToBytes]) that writes a serialized form of an event to a writer
-(i.e. a type that implements [std::io::Write], for example `Vec<u8>`).
+(i.e., a type that implements [std::io::Write], for example `Vec<u8>`).
