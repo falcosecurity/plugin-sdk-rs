@@ -82,115 +82,241 @@ impl SourcePlugin for DummyPlugin {
     }
 }
 
+macro_rules! gen_dummy_extractor_fn_impls {
+    ($field_name:ident, $ty:ty, $val_expr:expr, $vec_expr:expr) => {
+        paste::paste! {
+            fn [<extract_ $field_name>](
+                &mut self,
+                _req: ExtractRequest<Self>
+            ) -> Result<$ty, Error> {
+                Ok($val_expr)
+            }
+
+            fn [<extract_ $field_name _opt>](
+                &mut self,
+                _req: ExtractRequest<Self>
+            ) -> Result<Option<$ty>, Error> {
+                Ok(Some($val_expr))
+            }
+
+            fn [<extract_ $field_name _opt_none>](
+                &mut self,
+                _req: ExtractRequest<Self>
+            ) -> Result<Option<$ty>, Error> {
+                Ok(None)
+            }
+
+            fn [<extract_vec_ $field_name>](
+                &mut self,
+                _req: ExtractRequest<Self>
+            ) -> Result<Vec<$ty>, Error> {
+                Ok($vec_expr)
+            }
+
+            fn [<extract_vec_ $field_name _opt>](
+                &mut self,
+                _req: ExtractRequest<Self>,
+            ) -> Result<Option<Vec<$ty>>, Error> {
+                Ok(Some($vec_expr))
+            }
+
+            fn [<extract_vec_ $field_name _opt_none>](
+                &mut self,
+                _req: ExtractRequest<Self>,
+            ) -> Result<Option<Vec<$ty>>, Error> {
+                Ok(None)
+            }
+        }
+    };
+}
+
 impl DummyPlugin {
-    fn extract_u64(&mut self, _req: ExtractRequest<Self>) -> Result<u64, Error> {
-        Ok(5u64)
-    }
-
-    fn extract_vec_u64(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<u64>, Error> {
-        Ok(vec![5u64, 6u64, 7u64])
-    }
-
-    fn extract_string(&mut self, _req: ExtractRequest<Self>) -> Result<CString, Error> {
-        Ok(CString::new("Hello, World!")?)
-    }
-
-    fn extract_vec_string(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<CString>, Error> {
-        let s = CString::new("Hello, World!")?;
-        Ok(vec![s.clone(), s.clone(), s.clone()])
-    }
-
-    fn extract_reltime(&mut self, _req: ExtractRequest<Self>) -> Result<Duration, Error> {
-        Ok(Duration::from_millis(10))
-    }
-
-    fn extract_vec_reltime(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<Duration>, Error> {
-        Ok(vec![
+    gen_dummy_extractor_fn_impls!(u64, u64, 5u64, vec![5u64, 6u64, 7u64]);
+    gen_dummy_extractor_fn_impls!(
+        string,
+        CString,
+        CString::new("Hello, World!")?,
+        vec![
+            CString::new("Hello, World!")?,
+            CString::new("Hello, World!")?,
+            CString::new("Hello, World!")?
+        ]
+    );
+    gen_dummy_extractor_fn_impls!(
+        reltime,
+        Duration,
+        Duration::from_millis(10),
+        vec![
             Duration::from_millis(10),
             Duration::from_millis(20),
-            Duration::from_millis(30),
-        ])
-    }
-
-    fn extract_abstime(&mut self, _req: ExtractRequest<Self>) -> Result<SystemTime, Error> {
-        Ok(UNIX_EPOCH + Duration::from_millis(10))
-    }
-
-    fn extract_vec_abstime(
-        &mut self,
-        _req: ExtractRequest<Self>,
-    ) -> Result<Vec<SystemTime>, Error> {
-        Ok(vec![
+            Duration::from_millis(30)
+        ]
+    );
+    gen_dummy_extractor_fn_impls!(
+        abstime,
+        SystemTime,
+        UNIX_EPOCH + Duration::from_millis(10),
+        vec![
             UNIX_EPOCH + Duration::from_millis(10),
             UNIX_EPOCH + Duration::from_millis(20),
             UNIX_EPOCH + Duration::from_millis(30),
-        ])
-    }
-
-    fn extract_bool(&mut self, _req: ExtractRequest<Self>) -> Result<bool, Error> {
-        Ok(true)
-    }
-
-    fn extract_vec_bool(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<bool>, Error> {
-        Ok(vec![true, false, true])
-    }
-
-    fn extract_ipaddr_v4(&mut self, _req: ExtractRequest<Self>) -> Result<IpAddr, Error> {
-        Ok(IpAddr::V4(Ipv4Addr::LOCALHOST))
-    }
-
-    fn extract_ipaddr_v6(&mut self, _req: ExtractRequest<Self>) -> Result<IpAddr, Error> {
-        Ok(IpAddr::V6(Ipv6Addr::LOCALHOST))
-    }
-
-    fn extract_vec_ipaddr(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<IpAddr>, Error> {
-        Ok(vec![
+        ]
+    );
+    gen_dummy_extractor_fn_impls!(bool, bool, true, vec![true, false, true]);
+    gen_dummy_extractor_fn_impls!(
+        ipaddr_v4,
+        IpAddr,
+        IpAddr::V4(Ipv4Addr::LOCALHOST),
+        vec![
             IpAddr::V4(Ipv4Addr::LOCALHOST),
+            IpAddr::V4(Ipv4Addr::BROADCAST),
+            IpAddr::V4(Ipv4Addr::UNSPECIFIED)
+        ]
+    );
+    gen_dummy_extractor_fn_impls!(
+        ipaddr_v6,
+        IpAddr,
+        IpAddr::V6(Ipv6Addr::LOCALHOST),
+        vec![
             IpAddr::V6(Ipv6Addr::LOCALHOST),
-        ])
-    }
-
-    fn extract_ipnet_v4(&mut self, _req: ExtractRequest<Self>) -> Result<PT_IPNET, Error> {
-        Ok(PT_IPNET(IpAddr::V4(Ipv4Addr::LOCALHOST)))
-    }
-
-    fn extract_ipnet_v6(&mut self, _req: ExtractRequest<Self>) -> Result<PT_IPNET, Error> {
-        Ok(PT_IPNET(IpAddr::V6(Ipv6Addr::LOCALHOST)))
-    }
-
-    fn extract_vec_ipnet(&mut self, _req: ExtractRequest<Self>) -> Result<Vec<PT_IPNET>, Error> {
-        Ok(vec![
+            IpAddr::V6(Ipv6Addr::UNSPECIFIED)
+        ]
+    );
+    gen_dummy_extractor_fn_impls!(
+        ipaddr,
+        IpAddr,
+        IpAddr::V4(Ipv4Addr::LOCALHOST),
+        vec![
+            IpAddr::V4(Ipv4Addr::LOCALHOST),
+            IpAddr::V6(Ipv6Addr::UNSPECIFIED)
+        ]
+    );
+    gen_dummy_extractor_fn_impls!(
+        ipnet_v4,
+        PT_IPNET,
+        PT_IPNET(IpAddr::V4(Ipv4Addr::LOCALHOST)),
+        vec![
             PT_IPNET(IpAddr::V4(Ipv4Addr::LOCALHOST)),
+            PT_IPNET(IpAddr::V4(Ipv4Addr::BROADCAST)),
+            PT_IPNET(IpAddr::V4(Ipv4Addr::UNSPECIFIED))
+        ]
+    );
+    gen_dummy_extractor_fn_impls!(
+        ipnet_v6,
+        PT_IPNET,
+        PT_IPNET(IpAddr::V6(Ipv6Addr::LOCALHOST)),
+        vec![
             PT_IPNET(IpAddr::V6(Ipv6Addr::LOCALHOST)),
-        ])
-    }
+            PT_IPNET(IpAddr::V6(Ipv6Addr::UNSPECIFIED))
+        ]
+    );
+    gen_dummy_extractor_fn_impls!(
+        ipnet,
+        PT_IPNET,
+        PT_IPNET(IpAddr::V4(Ipv4Addr::LOCALHOST)),
+        vec![
+            PT_IPNET(IpAddr::V4(Ipv4Addr::LOCALHOST)),
+            PT_IPNET(IpAddr::V6(Ipv6Addr::UNSPECIFIED))
+        ]
+    );
+}
+
+macro_rules! gen_fields_variants {
+    ($($field_name:ident),*) => {
+        &[
+            $(
+            field(concat!("dummy.", stringify!($field_name)), paste::paste!(&Self::[<extract_ $field_name>])),
+            field(concat!("dummy.", stringify!($field_name), "_opt"), paste::paste!(&Self::[<extract_ $field_name _opt>])),
+            field(concat!("dummy.", stringify!($field_name), "_opt_none"), paste::paste!(&Self::[<extract_ $field_name _opt_none>])),
+            field(concat!("dummy.vec_", stringify!($field_name)), paste::paste!(&Self::[<extract_vec_ $field_name>])),
+            field(concat!("dummy.vec_", stringify!($field_name), "_opt"), paste::paste!(&Self::[<extract_vec_ $field_name _opt>])),
+            field(concat!("dummy.vec_", stringify!($field_name), "_opt_none"), paste::paste!(&Self::[<extract_vec_ $field_name _opt_none>]))
+            ),*
+        ]
+    };
 }
 
 impl ExtractPlugin for DummyPlugin {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
     const EVENT_SOURCES: &'static [&'static str] = &["dummy"];
     type ExtractContext = ();
-    const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] = &[
-        field("dummy.u64", &Self::extract_u64),
-        field("dummy.vec_u64", &Self::extract_vec_u64),
-        field("dummy.string", &Self::extract_string),
-        field("dummy.vec_string", &Self::extract_vec_string),
-        field("dummy.reltime", &Self::extract_reltime),
-        field("dummy.vec_reltime", &Self::extract_vec_reltime),
-        field("dummy.abstime", &Self::extract_abstime),
-        field("dummy.vec_abstime", &Self::extract_vec_abstime),
-        field("dummy.bool", &Self::extract_bool),
-        field("dummy.vec_bool", &Self::extract_vec_bool),
-        field("dummy.ipaddr_v4", &Self::extract_ipaddr_v4),
-        field("dummy.ipaddr_v6", &Self::extract_ipaddr_v6),
-        field("dummy.vec_ipaddr", &Self::extract_vec_ipaddr),
-        field("dummy.ipnet_v4", &Self::extract_ipnet_v4),
-        field("dummy.ipnet_v6", &Self::extract_ipnet_v6),
-        field("dummy.vec_ipnet", &Self::extract_vec_ipnet),
-    ];
+    const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] = gen_fields_variants!(
+        u64, string, reltime, abstime, bool, ipaddr_v4, ipaddr_v6, ipaddr, ipnet_v4, ipnet_v6,
+        ipnet
+    );
 }
 
 static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
+
+macro_rules! assert_field_eq {
+    ($driver:expr, $event:expr, $field_name:ident, $expected_val_expr:expr,
+        $expected_vec_expr:expr) => {
+        assert_eq!(
+            $driver
+                .event_field_as_string(
+                    c_str_macro::c_str!(concat!("dummy.", stringify!($field_name))),
+                    &$event
+                )
+                .unwrap()
+                .unwrap(),
+            $expected_val_expr,
+        );
+        assert_eq!(
+            $driver
+                .event_field_as_string(
+                    c_str_macro::c_str!(concat!("dummy.", stringify!($field_name), "_opt")),
+                    &$event
+                )
+                .unwrap()
+                .unwrap(),
+            $expected_val_expr,
+        );
+        assert_eq!(
+            $driver
+                .event_field_as_string(
+                    c_str_macro::c_str!(concat!("dummy.", stringify!($field_name), "_opt_none")),
+                    &$event
+                )
+                .unwrap()
+                .unwrap(),
+            "<NA>",
+        );
+        assert_eq!(
+            $driver
+                .event_field_as_string(
+                    c_str_macro::c_str!(concat!("dummy.vec_", stringify!($field_name))),
+                    &$event
+                )
+                .unwrap()
+                .unwrap(),
+            $expected_vec_expr,
+        );
+        assert_eq!(
+            $driver
+                .event_field_as_string(
+                    c_str_macro::c_str!(concat!("dummy.vec_", stringify!($field_name), "_opt")),
+                    &$event
+                )
+                .unwrap()
+                .unwrap(),
+            $expected_vec_expr,
+        );
+        assert_eq!(
+            $driver
+                .event_field_as_string(
+                    c_str_macro::c_str!(concat!(
+                        "dummy.vec_",
+                        stringify!($field_name),
+                        "_opt_none"
+                    )),
+                    &$event
+                )
+                .unwrap()
+                .unwrap(),
+            "<NA>",
+        );
+    };
+}
 
 #[cfg(test)]
 mod tests {
@@ -211,32 +337,14 @@ mod tests {
         let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
 
         let event = driver.next_event().unwrap();
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.u64", &event)
-                .unwrap()
-                .unwrap(),
-            "5"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.vec_u64", &event)
-                .unwrap()
-                .unwrap(),
-            "(5,6,7)"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.string", &event)
-                .unwrap()
-                .unwrap(),
-            "Hello, World!"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.vec_string", &event)
-                .unwrap()
-                .unwrap(),
+
+        assert_field_eq!(driver, event, u64, "5", "(5,6,7)");
+
+        assert_field_eq!(
+            driver,
+            event,
+            string,
+            "Hello, World!",
             "(Hello, World!,Hello, World!,Hello, World!)"
         );
 
@@ -246,84 +354,91 @@ mod tests {
             .unwrap();
         assert!(s == "10000000" || s == "10ms");
         let s = driver
+            .event_field_as_string(c"dummy.reltime_opt", &event)
+            .unwrap()
+            .unwrap();
+        assert!(s == "10000000" || s == "10ms");
+        let s = driver
+            .event_field_as_string(c"dummy.reltime_opt_none", &event)
+            .unwrap()
+            .unwrap();
+        assert_eq!(s, "<NA>");
+        let s = driver
             .event_field_as_string(c"dummy.vec_reltime", &event)
             .unwrap()
             .unwrap();
         assert!(s == "(10000000,20000000,30000000)" || s == "(10ms,20ms,30ms)");
+        let s = driver
+            .event_field_as_string(c"dummy.vec_reltime_opt", &event)
+            .unwrap()
+            .unwrap();
+        assert!(s == "(10000000,20000000,30000000)" || s == "(10ms,20ms,30ms)");
+        let s = driver
+            .event_field_as_string(c"dummy.vec_reltime_opt_none", &event)
+            .unwrap()
+            .unwrap();
+        assert_eq!(s, "<NA>");
 
         let ts_10ms = epoch_offset_to_rfc3389(Duration::from_millis(10));
         let ts_20ms = epoch_offset_to_rfc3389(Duration::from_millis(20));
         let ts_30ms = epoch_offset_to_rfc3389(Duration::from_millis(30));
-
         let s = driver
             .event_field_as_string(c"dummy.abstime", &event)
             .unwrap()
             .unwrap();
         assert!(s == "10000000" || s == ts_10ms);
         let s = driver
+            .event_field_as_string(c"dummy.abstime_opt", &event)
+            .unwrap()
+            .unwrap();
+        assert!(s == "10000000" || s == ts_10ms);
+        let s = driver
+            .event_field_as_string(c"dummy.abstime_opt_none", &event)
+            .unwrap()
+            .unwrap();
+        assert_eq!(s, "<NA>");
+        let timestamps = format!("({ts_10ms},{ts_20ms},{ts_30ms})");
+        let s = driver
             .event_field_as_string(c"dummy.vec_abstime", &event)
             .unwrap()
             .unwrap();
-        let timestamps = format!("({ts_10ms},{ts_20ms},{ts_30ms})");
         assert!(s == "(10000000,20000000,30000000)" || s == timestamps);
+        let s = driver
+            .event_field_as_string(c"dummy.vec_abstime_opt", &event)
+            .unwrap()
+            .unwrap();
+        assert!(s == "(10000000,20000000,30000000)" || s == timestamps);
+        let s = driver
+            .event_field_as_string(c"dummy.vec_abstime_opt_none", &event)
+            .unwrap()
+            .unwrap();
+        assert_eq!(s, "<NA>");
 
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.bool", &event)
-                .unwrap()
-                .unwrap(),
-            "true"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.vec_bool", &event)
-                .unwrap()
-                .unwrap(),
-            "(true,false,true)"
+        assert_field_eq!(driver, event, bool, "true", "(true,false,true)");
+
+        assert_field_eq!(
+            driver,
+            event,
+            ipaddr_v4,
+            "127.0.0.1",
+            "(127.0.0.1,255.255.255.255,0.0.0.0)"
         );
 
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.ipaddr_v4", &event)
-                .unwrap()
-                .unwrap(),
-            "127.0.0.1"
+        assert_field_eq!(driver, event, ipaddr_v6, "::1", "(::1,::)");
+
+        assert_field_eq!(driver, event, ipaddr, "127.0.0.1", "(127.0.0.1,::)");
+
+        assert_field_eq!(
+            driver,
+            event,
+            ipnet_v4,
+            "<IPNET>",
+            "(<IPNET>,<IPNET>,<IPNET>)"
         );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.ipaddr_v6", &event)
-                .unwrap()
-                .unwrap(),
-            "::1"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.vec_ipaddr", &event)
-                .unwrap()
-                .unwrap(),
-            "(127.0.0.1,::1)"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.ipnet_v4", &event)
-                .unwrap()
-                .unwrap(),
-            "<IPNET>"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.ipnet_v6", &event)
-                .unwrap()
-                .unwrap(),
-            "<IPNET>"
-        );
-        assert_eq!(
-            driver
-                .event_field_as_string(c"dummy.vec_ipnet", &event)
-                .unwrap()
-                .unwrap(),
-            "(<IPNET>,<IPNET>)"
-        );
+
+        assert_field_eq!(driver, event, ipnet_v6, "<IPNET>", "(<IPNET>,<IPNET>)");
+
+        assert_field_eq!(driver, event, ipnet, "<IPNET>", "(<IPNET>,<IPNET>)");
     }
 
     instantiate_tests!(test_dummy_next);

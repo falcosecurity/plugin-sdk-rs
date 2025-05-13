@@ -9,6 +9,7 @@ use falco_plugin_api::{
 use num_derive::FromPrimitive;
 use std::ffi::{c_void, CString};
 use std::net::IpAddr;
+use std::ptr::null_mut;
 use std::time::{Duration, SystemTime};
 
 #[non_exhaustive]
@@ -170,6 +171,30 @@ macro_rules! extract {
             }
         }
 
+        impl Extract for Option<$ty> {
+            const IS_LIST: bool = false;
+            const TYPE_ID: ExtractFieldTypeId = $type_id;
+
+            fn extract_to(
+                &self,
+                req: &mut ss_plugin_extract_field,
+                storage: &mut bumpalo::Bump,
+            ) -> Result<(), std::io::Error> {
+                match &self {
+                    Some(val) => {
+                        let (buf, len) = $strategy_mod::extract_one(val, storage)?;
+                        req.res.u64_ = buf as *mut _;
+                        req.res_len = len;
+                    }
+                    None => {
+                        req.res.u64_ = null_mut();
+                        req.res_len = 0;
+                    }
+                }
+                Ok(())
+            }
+        }
+
         impl Extract for Vec<$ty> {
             const IS_LIST: bool = true;
             const TYPE_ID: ExtractFieldTypeId = $type_id;
@@ -182,6 +207,30 @@ macro_rules! extract {
                 let (buf, len) = $strategy_mod::extract_many(self.as_slice(), storage)?;
                 req.res.u64_ = buf as *mut _;
                 req.res_len = len;
+                Ok(())
+            }
+        }
+
+        impl Extract for Option<Vec<$ty>> {
+            const IS_LIST: bool = true;
+            const TYPE_ID: ExtractFieldTypeId = $type_id;
+
+            fn extract_to(
+                &self,
+                req: &mut ss_plugin_extract_field,
+                storage: &mut bumpalo::Bump,
+            ) -> Result<(), std::io::Error> {
+                match &self {
+                    Some(val) => {
+                        let (buf, len) = $strategy_mod::extract_many(val.as_slice(), storage)?;
+                        req.res.u64_ = buf as *mut _;
+                        req.res_len = len;
+                    }
+                    None => {
+                        req.res.u64_ = null_mut();
+                        req.res_len = 0;
+                    }
+                }
                 Ok(())
             }
         }

@@ -12,6 +12,8 @@ falco_plugin = { version = "0.4.0", path = "../falco_plugin", features = ["threa
 falco_plugin_runner = { version = "0.4.0", path = "../falco_plugin_runner" }
 log = "0.4.22"
 typed-path = "0.9.3"
+paste = "1.0.15"
+c_str_macro = "1.0.3"
 
 [build-dependencies]
 cxx-build = "1.0.124"
