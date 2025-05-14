@@ -71,7 +71,7 @@ pub enum ExtractedField {
 impl Display for ExtractedField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            ExtractedField::None => write!(f, "None"),
+            ExtractedField::None => write!(f, "<NA>"),
             ExtractedField::U64(value) => write!(f, "{}", value),
             ExtractedField::String(cstr) => write!(f, "{}", cstr.to_string_lossy()),
             ExtractedField::Vec(vector) => {
