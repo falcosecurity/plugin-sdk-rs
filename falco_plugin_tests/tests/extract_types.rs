@@ -250,14 +250,17 @@ static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 
 macro_rules! assert_field_variant_eq {
     ($driver:expr, $event:expr, $field_name:expr, $expected:expr) => {
+        let expected = $expected.as_slice();
         let actual = $driver
             .event_field_as_string(c_str_macro::c_str!($field_name), &$event)
             .unwrap()
             .unwrap();
-        assert_eq!(
-            $expected, actual,
-            "expected {:?} from {}, got {:?}",
-            $expected, $field_name, actual
+        assert!(
+            expected.contains(&actual.as_str()),
+            "expected one of {:?} from {}, got {:?}",
+            $expected,
+            $field_name,
+            actual
         );
     };
 }
@@ -320,14 +323,14 @@ mod tests {
 
         let event = driver.next_event().unwrap();
 
-        assert_field_eq!(driver, event, u64, "5", "(5,6,7)");
+        assert_field_eq!(driver, event, u64, ["5"], ["(5,6,7)"]);
 
         assert_field_eq!(
             driver,
             event,
             string,
-            "Hello, World!",
-            "(Hello, World!,Hello, World!,Hello, World!)"
+            ["Hello, World!"],
+            ["(Hello, World!,Hello, World!,Hello, World!)"]
         );
 
         let s = driver
@@ -380,31 +383,31 @@ mod tests {
         assert!(s == "(10000000,20000000,30000000)" || s == timestamps);
         assert!(driver.event_field_is_none(c"dummy.vec_abstime_opt_none", &event));
 
-        assert_field_eq!(driver, event, bool, "true", "(true,false,true)");
+        assert_field_eq!(driver, event, bool, ["true"], ["(true,false,true)"]);
 
         assert_field_eq!(
             driver,
             event,
             ipaddr_v4,
-            "127.0.0.1",
-            "(127.0.0.1,255.255.255.255,0.0.0.0)"
+            ["127.0.0.1"],
+            ["(127.0.0.1,255.255.255.255,0.0.0.0)"]
         );
 
-        assert_field_eq!(driver, event, ipaddr_v6, "::1", "(::1,::)");
+        assert_field_eq!(driver, event, ipaddr_v6, ["::1"], ["(::1,::)"]);
 
-        assert_field_eq!(driver, event, ipaddr, "127.0.0.1", "(127.0.0.1,::)");
+        assert_field_eq!(driver, event, ipaddr, ["127.0.0.1"], ["(127.0.0.1,::)"]);
 
         assert_field_eq!(
             driver,
             event,
             ipnet_v4,
-            "<IPNET>",
-            "(<IPNET>,<IPNET>,<IPNET>)"
+            ["<IPNET>"],
+            ["(<IPNET>,<IPNET>,<IPNET>)"]
         );
 
-        assert_field_eq!(driver, event, ipnet_v6, "<IPNET>", "(<IPNET>,<IPNET>)");
+        assert_field_eq!(driver, event, ipnet_v6, ["<IPNET>"], ["(<IPNET>,<IPNET>)"]);
 
-        assert_field_eq!(driver, event, ipnet, "<IPNET>", "(<IPNET>,<IPNET>)");
+        assert_field_eq!(driver, event, ipnet, ["<IPNET>"], ["(<IPNET>,<IPNET>)"]);
     }
 
     instantiate_tests!(test_dummy_next);
