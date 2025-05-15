@@ -1,5 +1,5 @@
 use crate::{CapturingTestDriver, ScapStatus, SinspMetric, TestDriver};
-use falco_plugin_runner::{CapturingPluginRunner, MetricValue, PluginRunner};
+use falco_plugin_runner::{CapturingPluginRunner, ExtractedField, MetricValue, PluginRunner};
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
 
@@ -91,6 +91,16 @@ impl CapturingTestDriver for NativeCapturingTestDriver {
             None => Ok(None),
             Some(Err(e)) => Err(anyhow::anyhow!("failed to extract field: {}", e)),
             Some(Ok(s)) => Ok(Some(s.to_string())),
+        }
+    }
+
+    fn event_field_is_none(&mut self, field_name: &CStr, event: &Self::Event) -> bool {
+        let s = std::str::from_utf8(field_name.to_bytes()).unwrap();
+        match self.0.extract_field(event, s) {
+            None => false,         // no such field
+            Some(Err(_)) => false, // extraction failed
+            Some(Ok(ExtractedField::None)) => true,
+            Some(Ok(_)) => false,
         }
     }
 

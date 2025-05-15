@@ -214,6 +214,20 @@ impl CapturingTestDriver for SinspTestDriver<CaptureStarted> {
         }
     }
 
+    // `sinsp` does not distinguish between a failed extraction and a successful one
+    // that does not return any data. Our wrapper (c++/sinsp_test_driver.cpp) then considers
+    // "no result" from sinsp an error, so we treat that error as an indicator of extracting
+    // a None value.
+    fn event_field_is_none(&mut self, field_name: &CStr, event: &Self::Event) -> bool {
+        unsafe {
+            self.driver
+                .as_mut()
+                .unwrap()
+                .event_field_as_string(field_name.as_ptr(), &event.event)
+                .is_err()
+        }
+    }
+
     fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>> {
         let mut out = Vec::new();
         let metrics = self.driver.as_mut().unwrap().get_metrics()?;

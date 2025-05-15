@@ -63,6 +63,8 @@ pub trait CapturingTestDriver {
         event: &Self::Event,
     ) -> anyhow::Result<Option<String>>;
 
+    fn event_field_is_none(&mut self, field_name: &CStr, event: &Self::Event) -> bool;
+
     fn get_metrics(&mut self) -> anyhow::Result<Vec<SinspMetric>>;
 
     fn next_event_as_str(&mut self) -> anyhow::Result<Option<String>> {
