@@ -248,52 +248,50 @@ impl ExtractPlugin for DummyPlugin {
 
 static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 
+macro_rules! assert_field_variant_eq {
+    ($driver:expr, $event:expr, $field_name:expr, $expected:expr) => {
+        let actual = $driver
+            .event_field_as_string(c_str_macro::c_str!($field_name), &$event)
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            $expected, actual,
+            "expected {:?} from {}, got {:?}",
+            $expected, $field_name, actual
+        );
+    };
+}
+
 macro_rules! assert_field_eq {
     ($driver:expr, $event:expr, $field_name:ident, $expected_val_expr:expr,
         $expected_vec_expr:expr) => {
-        assert_eq!(
-            $driver
-                .event_field_as_string(
-                    c_str_macro::c_str!(concat!("dummy.", stringify!($field_name))),
-                    &$event
-                )
-                .unwrap()
-                .unwrap(),
-            $expected_val_expr,
+        assert_field_variant_eq!(
+            $driver,
+            $event,
+            concat!("dummy.", stringify!($field_name)),
+            $expected_val_expr
         );
-        assert_eq!(
-            $driver
-                .event_field_as_string(
-                    c_str_macro::c_str!(concat!("dummy.", stringify!($field_name), "_opt")),
-                    &$event
-                )
-                .unwrap()
-                .unwrap(),
-            $expected_val_expr,
+        assert_field_variant_eq!(
+            $driver,
+            $event,
+            concat!("dummy.", stringify!($field_name), "_opt"),
+            $expected_val_expr
         );
         assert!($driver.event_field_is_none(
             c_str_macro::c_str!(concat!("dummy.", stringify!($field_name), "_opt_none")),
             &$event
         ));
-        assert_eq!(
-            $driver
-                .event_field_as_string(
-                    c_str_macro::c_str!(concat!("dummy.vec_", stringify!($field_name))),
-                    &$event
-                )
-                .unwrap()
-                .unwrap(),
-            $expected_vec_expr,
+        assert_field_variant_eq!(
+            $driver,
+            $event,
+            concat!("dummy.vec_", stringify!($field_name)),
+            $expected_vec_expr
         );
-        assert_eq!(
-            $driver
-                .event_field_as_string(
-                    c_str_macro::c_str!(concat!("dummy.vec_", stringify!($field_name), "_opt")),
-                    &$event
-                )
-                .unwrap()
-                .unwrap(),
-            $expected_vec_expr,
+        assert_field_variant_eq!(
+            $driver,
+            $event,
+            concat!("dummy.vec_", stringify!($field_name), "_opt"),
+            $expected_vec_expr
         );
         assert!($driver.event_field_is_none(
             c_str_macro::c_str!(concat!("dummy.vec_", stringify!($field_name), "_opt_none")),
