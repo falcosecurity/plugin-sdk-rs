@@ -87,7 +87,9 @@ pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
                     let #name = FromBytes::from_maybe_bytes(maybe_next_field.as_mut())
                         .map_err(|e| PayloadFromBytesError::NamedField(#name_str, e))?;
                     if let Some(buf) = maybe_next_field {
-                        debug_assert!(buf.is_empty());
+                        if !buf.is_empty() {
+                            return Err(PayloadFromBytesError::NamedField(#name_str, FromBytesError::LeftoverData));
+                        }
                     }
                 )
             });
@@ -104,6 +106,7 @@ pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
                 fn read(mut params: impl Iterator<Item=crate::fields::FromBytesResult<&'a [u8]>>) -> Result<Self, crate::events::PayloadFromBytesError> {
                     use crate::events::PayloadFromBytesError;
                     use crate::fields::FromBytes;
+                    use crate::fields::FromBytesError;
                     #(#field_reads)*
 
                     Ok(#name {

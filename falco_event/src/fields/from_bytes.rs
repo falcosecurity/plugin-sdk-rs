@@ -36,9 +36,13 @@ pub enum FromBytesError {
     #[error("invalid PT_DYN discriminant")]
     InvalidDynDiscriminant,
 
-    /// Odd item count in pair array
+    /// Odd item count in a pair array
     #[error("odd item count in pair array")]
     OddPairItemCount,
+
+    /// Unconsumed data remaining in field buffer
+    #[error("trailing field data")]
+    LeftoverData,
 }
 
 /// The result of a deserialization
