@@ -250,7 +250,8 @@ static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 
 macro_rules! assert_field_variant_eq {
     ($driver:expr, $event:expr, $field_name:expr, $expected:expr) => {
-        let expected = $expected.as_slice();
+        let expected = $expected;
+        let expected = expected.as_slice();
         let actual = $driver
             .event_field_as_string(c_str_macro::c_str!($field_name), &$event)
             .unwrap()
@@ -333,55 +334,26 @@ mod tests {
             ["(Hello, World!,Hello, World!,Hello, World!)"]
         );
 
-        let s = driver
-            .event_field_as_string(c"dummy.reltime", &event)
-            .unwrap()
-            .unwrap();
-        assert!(s == "10000000" || s == "10ms");
-        let s = driver
-            .event_field_as_string(c"dummy.reltime_opt", &event)
-            .unwrap()
-            .unwrap();
-        assert!(s == "10000000" || s == "10ms");
-        assert!(driver.event_field_is_none(c"dummy.reltime_opt_none", &event));
-        let s = driver
-            .event_field_as_string(c"dummy.vec_reltime", &event)
-            .unwrap()
-            .unwrap();
-        assert!(s == "(10000000,20000000,30000000)" || s == "(10ms,20ms,30ms)");
-        let s = driver
-            .event_field_as_string(c"dummy.vec_reltime_opt", &event)
-            .unwrap()
-            .unwrap();
-        assert!(s == "(10000000,20000000,30000000)" || s == "(10ms,20ms,30ms)");
-        assert!(driver.event_field_is_none(c"dummy.vec_reltime_opt_none", &event));
+        assert_field_eq!(
+            driver,
+            event,
+            reltime,
+            ["10000000", "10ms"],
+            ["(10000000,20000000,30000000)", "(10ms,20ms,30ms)"]
+        );
 
         let ts_10ms = epoch_offset_to_rfc3389(Duration::from_millis(10));
         let ts_20ms = epoch_offset_to_rfc3389(Duration::from_millis(20));
         let ts_30ms = epoch_offset_to_rfc3389(Duration::from_millis(30));
-        let s = driver
-            .event_field_as_string(c"dummy.abstime", &event)
-            .unwrap()
-            .unwrap();
-        assert!(s == "10000000" || s == ts_10ms);
-        let s = driver
-            .event_field_as_string(c"dummy.abstime_opt", &event)
-            .unwrap()
-            .unwrap();
-        assert!(s == "10000000" || s == ts_10ms);
-        assert!(driver.event_field_is_none(c"dummy.abstime_opt_none", &event));
         let timestamps = format!("({ts_10ms},{ts_20ms},{ts_30ms})");
-        let s = driver
-            .event_field_as_string(c"dummy.vec_abstime", &event)
-            .unwrap()
-            .unwrap();
-        assert!(s == "(10000000,20000000,30000000)" || s == timestamps);
-        let s = driver
-            .event_field_as_string(c"dummy.vec_abstime_opt", &event)
-            .unwrap()
-            .unwrap();
-        assert!(s == "(10000000,20000000,30000000)" || s == timestamps);
-        assert!(driver.event_field_is_none(c"dummy.vec_abstime_opt_none", &event));
+
+        assert_field_eq!(
+            driver,
+            event,
+            abstime,
+            ["10000000", ts_10ms.as_str()],
+            ["(10000000,20000000,30000000)", timestamps.as_str()]
+        );
 
         assert_field_eq!(driver, event, bool, ["true"], ["(true,false,true)"]);
 
