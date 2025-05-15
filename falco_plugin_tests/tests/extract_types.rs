@@ -304,6 +304,32 @@ macro_rules! assert_field_eq {
     };
 }
 
+macro_rules! extract_test_case {
+    ($ident:ident, $expected_val_expr:expr, $expected_vec_expr:expr) => {
+        mod $ident {
+            use super::*;
+
+            fn test_extract<D: TestDriver>() {
+                let (mut driver, plugin) = init_plugin::<D>(&crate::DUMMY_PLUGIN_API, c"").unwrap();
+                driver.add_filterchecks(&plugin, c"dummy").unwrap();
+                let mut driver = driver.start_capture(crate::DummyPlugin::NAME, c"").unwrap();
+
+                let event = driver.next_event().unwrap();
+
+                assert_field_eq!(
+                    driver,
+                    event,
+                    $ident,
+                    $expected_val_expr,
+                    $expected_vec_expr
+                );
+            }
+
+            instantiate_tests!(test_extract);
+        }
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
@@ -317,70 +343,59 @@ mod tests {
         dt.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, false)
     }
 
-    fn test_dummy_next<D: TestDriver>() {
-        let (mut driver, plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
-        driver.add_filterchecks(&plugin, c"dummy").unwrap();
-        let mut driver = driver.start_capture(super::DummyPlugin::NAME, c"").unwrap();
+    extract_test_case!(u64, ["5"], ["(5,6,7)"]);
+    extract_test_case!(
+        string,
+        ["Hello, World!"],
+        ["(Hello, World!,Hello, World!,Hello, World!)"]
+    );
+    extract_test_case!(
+        reltime,
+        ["10000000", "10ms"],
+        ["(10000000,20000000,30000000)", "(10ms,20ms,30ms)"]
+    );
 
-        let event = driver.next_event().unwrap();
+    extract_test_case!(bool, ["true"], ["(true,false,true)"]);
 
-        assert_field_eq!(driver, event, u64, ["5"], ["(5,6,7)"]);
+    extract_test_case!(
+        ipaddr_v4,
+        ["127.0.0.1"],
+        ["(127.0.0.1,255.255.255.255,0.0.0.0)"]
+    );
 
-        assert_field_eq!(
-            driver,
-            event,
-            string,
-            ["Hello, World!"],
-            ["(Hello, World!,Hello, World!,Hello, World!)"]
-        );
+    extract_test_case!(ipaddr_v6, ["::1"], ["(::1,::)"]);
 
-        assert_field_eq!(
-            driver,
-            event,
-            reltime,
-            ["10000000", "10ms"],
-            ["(10000000,20000000,30000000)", "(10ms,20ms,30ms)"]
-        );
+    extract_test_case!(ipaddr, ["127.0.0.1"], ["(127.0.0.1,::)"]);
 
-        let ts_10ms = epoch_offset_to_rfc3389(Duration::from_millis(10));
-        let ts_20ms = epoch_offset_to_rfc3389(Duration::from_millis(20));
-        let ts_30ms = epoch_offset_to_rfc3389(Duration::from_millis(30));
-        let timestamps = format!("({ts_10ms},{ts_20ms},{ts_30ms})");
+    extract_test_case!(ipnet_v4, ["<IPNET>"], ["(<IPNET>,<IPNET>,<IPNET>)"]);
 
-        assert_field_eq!(
-            driver,
-            event,
-            abstime,
-            ["10000000", ts_10ms.as_str()],
-            ["(10000000,20000000,30000000)", timestamps.as_str()]
-        );
+    extract_test_case!(ipnet_v6, ["<IPNET>"], ["(<IPNET>,<IPNET>)"]);
 
-        assert_field_eq!(driver, event, bool, ["true"], ["(true,false,true)"]);
+    extract_test_case!(ipnet, ["<IPNET>"], ["(<IPNET>,<IPNET>)"]);
 
-        assert_field_eq!(
-            driver,
-            event,
-            ipaddr_v4,
-            ["127.0.0.1"],
-            ["(127.0.0.1,255.255.255.255,0.0.0.0)"]
-        );
+    mod abstime {
+        use super::*;
+        fn test_extract<D: TestDriver>() {
+            let (mut driver, plugin) = init_plugin::<D>(&crate::DUMMY_PLUGIN_API, c"").unwrap();
+            driver.add_filterchecks(&plugin, c"dummy").unwrap();
+            let mut driver = driver.start_capture(crate::DummyPlugin::NAME, c"").unwrap();
 
-        assert_field_eq!(driver, event, ipaddr_v6, ["::1"], ["(::1,::)"]);
+            let event = driver.next_event().unwrap();
 
-        assert_field_eq!(driver, event, ipaddr, ["127.0.0.1"], ["(127.0.0.1,::)"]);
+            let ts_10ms = epoch_offset_to_rfc3389(Duration::from_millis(10));
+            let ts_20ms = epoch_offset_to_rfc3389(Duration::from_millis(20));
+            let ts_30ms = epoch_offset_to_rfc3389(Duration::from_millis(30));
+            let timestamps = format!("({ts_10ms},{ts_20ms},{ts_30ms})");
 
-        assert_field_eq!(
-            driver,
-            event,
-            ipnet_v4,
-            ["<IPNET>"],
-            ["(<IPNET>,<IPNET>,<IPNET>)"]
-        );
+            assert_field_eq!(
+                driver,
+                event,
+                abstime,
+                ["10000000", ts_10ms.as_str()],
+                ["(10000000,20000000,30000000)", timestamps.as_str()]
+            );
+        }
 
-        assert_field_eq!(driver, event, ipnet_v6, ["<IPNET>"], ["(<IPNET>,<IPNET>)"]);
-
-        assert_field_eq!(driver, event, ipnet, ["<IPNET>"], ["(<IPNET>,<IPNET>)"]);
+        instantiate_tests!(test_extract);
     }
-
-    instantiate_tests!(test_dummy_next);
 }
