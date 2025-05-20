@@ -35,6 +35,39 @@ impl<'e> RawEvent<'e> {
         })
     }
 
+    /// Trim event payload
+    ///
+    /// This limits the payload to the length actually indicated in the `len` field
+    /// and returns the excess data. Useful when reading a raw event stream without
+    /// any external structure
+    ///
+    /// Example
+    /// ```
+    /// use falco_event::events::{PayloadFromBytesError, RawEvent};
+    /// # fn main() -> anyhow::Result<()> {
+    /// let mut events: &[u8] = &[ /* raw event bytes */ ];
+    ///
+    /// while !events.is_empty() {
+    ///     let mut event = RawEvent::from(events)?;
+    ///     match event.trim() {
+    ///         Some(tail) => events = tail,
+    ///         None => return Err(PayloadFromBytesError::TruncatedEvent {
+    ///             wanted: event.len as usize,
+    ///             got: events.len(),
+    ///         })?
+    ///     }
+    /// }
+    ///
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub fn trim(&mut self) -> Option<&'e [u8]> {
+        let payload_len = self.len as usize - 26;
+        self.payload.split_off(payload_len..)
+    }
+
+    /// Parse a byte buffer (from a raw pointer) into a RawEvent
+    ///
     /// # Safety
     ///
     /// `buf` must point to a complete event, i.e.
