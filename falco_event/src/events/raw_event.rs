@@ -128,17 +128,6 @@ impl<'e> RawEvent<'e> {
         })
     }
 
-    unsafe fn lengths_length<T>(&self) -> usize {
-        let size = std::mem::size_of::<T>();
-        self.nparams as usize * size
-    }
-
-    unsafe fn lengths<T>(mut buf: &[u8]) -> impl Iterator<Item = usize> + '_ + use<'_, T> {
-        let size = std::mem::size_of::<T>();
-
-        std::iter::from_fn(move || buf.read_uint::<NativeEndian>(size).ok().map(|s| s as usize))
-    }
-
     /// # Safety
     ///
     /// `T` must correspond to the type of the length field (u16 or u32, depending on event type)
@@ -148,7 +137,8 @@ impl<'e> RawEvent<'e> {
         impl Iterator<Item = Result<&'e [u8], FromBytesError>> + use<'e, T>,
         PayloadFromBytesError,
     > {
-        let ll = unsafe { self.lengths_length::<T>() };
+        let length_size = size_of::<T>();
+        let ll = self.nparams as usize * length_size;
 
         if self.payload.len() < ll {
             return Err(PayloadFromBytesError::TruncatedEvent {
@@ -157,11 +147,10 @@ impl<'e> RawEvent<'e> {
             });
         }
 
-        let (lengths, mut params) = self.payload.split_at(ll);
-        let mut lengths = unsafe { Self::lengths::<T>(lengths) };
+        let (mut lengths, mut params) = self.payload.split_at(ll);
 
         Ok(std::iter::from_fn(move || {
-            let len = lengths.next()?;
+            let len = lengths.read_uint::<NativeEndian>(length_size).ok()? as usize;
             if len > params.len() {
                 // truncated event, do not return the param fragment, if any
                 return Some(Err(FromBytesError::TruncatedField {
