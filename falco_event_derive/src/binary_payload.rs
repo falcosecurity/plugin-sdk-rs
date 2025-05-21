@@ -13,7 +13,7 @@ pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
         if let Fields::Named(ref fields) = data.fields {
             let field_sizes = fields.named.iter().map(|field| {
                 let name = &field.ident;
-                quote!(self.#name.binary_size())
+                quote!(<Self as EventPayload>::LengthType::try_from(self.#name.binary_size()).unwrap())
             });
 
             let field_writes = fields.named.iter().map(|field| {
@@ -27,33 +27,14 @@ pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
             return TokenStream::from(quote!(
             impl #impl_generics crate::events::PayloadToBytes for #name #ty_generics #where_clause {
                 fn write<W: std::io::Write>(&self, metadata: &crate::events::EventMetadata, mut writer: W) -> std::io::Result<()> {
-                    use byteorder::NativeEndian;
-                    use byteorder::WriteBytesExt;
                     use crate::events::EventPayload;
                     use crate::fields::ToBytes;
 
                     const NUM_FIELDS: usize = #num_fields;
-                    let length_size = if Self::LARGE { 4 } else { 2 };
-                    let lengths: [usize; NUM_FIELDS] =
+                    let lengths: [<Self as EventPayload>::LengthType; NUM_FIELDS] =
                         [#(#field_sizes),*];
-                    let len: usize = 26 + // header
-                        (length_size * NUM_FIELDS) +
-                        lengths.iter().sum::<usize>();
 
-                    writer.write_u64::<NativeEndian>(metadata.ts)?;
-                    writer.write_i64::<NativeEndian>(metadata.tid)?;
-                    writer.write_u32::<NativeEndian>(len as u32)?;
-                    writer.write_u16::<NativeEndian>(Self::ID as u16)?;
-                    writer.write_u32::<NativeEndian>(NUM_FIELDS as u32)?;
-
-                    for param_len in lengths {
-                        if Self::LARGE {
-                            writer.write_u32::<NativeEndian>(param_len as u32)?;
-                        } else {
-                            writer.write_u16::<NativeEndian>(param_len as u16)?;
-                        }
-                    }
-
+                    metadata.write_header_with_lengths(Self::ID as u16, lengths, &mut writer)?;
                     #(#field_writes)*
                     Ok(())
                 }

@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
+use byteorder::{NativeEndian, ReadBytesExt};
 
 use crate::events::payload::PayloadFromBytesError;
 use crate::events::{Event, EventMetadata, EventToBytes};
@@ -153,13 +153,8 @@ impl<'e> RawEvent<'e> {
 
 impl EventToBytes for RawEvent<'_> {
     fn write<W: Write>(&self, mut writer: W) -> std::io::Result<()> {
-        writer.write_u64::<NativeEndian>(self.metadata.ts)?;
-        writer.write_i64::<NativeEndian>(self.metadata.tid)?;
-
-        writer.write_u32::<NativeEndian>(self.len)?;
-        writer.write_u16::<NativeEndian>(self.event_type)?;
-        writer.write_u32::<NativeEndian>(self.nparams)?;
-
+        self.metadata
+            .write_header(self.len, self.event_type, self.nparams, &mut writer)?;
         writer.write_all(self.payload)
     }
 }

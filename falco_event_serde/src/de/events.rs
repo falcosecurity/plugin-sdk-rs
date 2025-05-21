@@ -14,8 +14,10 @@ pub struct RawEvent {
 
 impl RawEvent {
     pub fn append_to_vec(&self, mut buf: &mut Vec<u8>) {
-        buf.extend_from_slice(&self.ts.to_ne_bytes());
-        buf.extend_from_slice(&self.tid.to_ne_bytes());
+        let meta = EventMetadata {
+            ts: self.ts,
+            tid: self.tid,
+        };
 
         let lengths = self
             .params
@@ -29,10 +31,13 @@ impl RawEvent {
         };
 
         let len = 26 + (len_size * lengths.len()) + lengths.iter().sum::<usize>();
-        buf.extend_from_slice(&(len as u32).to_ne_bytes());
-
-        buf.extend_from_slice(&self.event_type_id.to_ne_bytes());
-        buf.extend_from_slice(&(lengths.len() as u32).to_ne_bytes());
+        meta.write_header(
+            len as u32,
+            self.event_type_id,
+            lengths.len() as u32,
+            &mut buf,
+        )
+        .unwrap();
 
         if self.large_payload {
             for len in lengths {
