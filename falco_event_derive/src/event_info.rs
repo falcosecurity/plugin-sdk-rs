@@ -485,10 +485,10 @@ fn raw_event_load_any(events: &Events) -> proc_macro2::TokenStream {
 
     quote!(
         impl crate::event_derive::RawEvent<'_> {
-            pub fn load_any(&self) -> crate::event_derive::PayloadFromBytesResult<crate::event_derive::Event<AnyEvent>> {
+            pub fn load_any(&self) -> Result<crate::events::Event<AnyEvent>, crate::events::PayloadFromBytesError> {
                 let any: AnyEvent = match self.event_type as u32 {
                     #(#matches,)*
-                    other => return Err(crate::event_derive::PayloadFromBytesError::UnsupportedEventType(other)),
+                    other => return Err(crate::events::PayloadFromBytesError::UnsupportedEventType(other)),
                 };
 
                 Ok(crate::event_derive::Event {

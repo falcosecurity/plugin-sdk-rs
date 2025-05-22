@@ -101,8 +101,9 @@ pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
 
             return TokenStream::from(quote!(
             impl<'a> #crate_path::PayloadFromBytes<'a> for #name #ty_generics #where_clause {
-                fn read(mut params: impl Iterator<Item=#crate_path::FromBytesResult<&'a [u8]>>) -> #crate_path::PayloadFromBytesResult<Self> {
+                fn read(mut params: impl Iterator<Item=#crate_path::FromBytesResult<&'a [u8]>>) -> Result<Self, crate::events::PayloadFromBytesError> {
                     use #crate_path::*;
+                    use crate::events::PayloadFromBytesError;
                     #(#field_reads)*
 
                     Ok(#name {
