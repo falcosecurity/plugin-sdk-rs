@@ -1,11 +1,11 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use chrono::Local;
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 impl FromBytes<'_> for SystemTime {
-    fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self>
+    fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError>
     where
         Self: Sized,
     {

@@ -1,10 +1,10 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use byteorder::{NativeEndian, ReadBytesExt};
 use std::io::Write;
 use std::time::Duration;
 
 impl FromBytes<'_> for Duration {
-    fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self>
+    fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError>
     where
         Self: Sized,
     {

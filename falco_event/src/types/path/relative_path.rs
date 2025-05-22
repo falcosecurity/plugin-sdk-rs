@@ -1,4 +1,4 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use typed_path::UnixPath;
@@ -25,7 +25,7 @@ impl<'a> ToBytes for RelativePath<'a> {
 }
 
 impl<'a> FromBytes<'a> for RelativePath<'a> {
-    fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError> {
         Ok(Self(<&'a UnixPath>::from_bytes(buf)?))
     }
 }
@@ -40,7 +40,7 @@ impl Debug for RelativePath<'_> {
 mod tests {
     use std::str::FromStr;
 
-    use crate::event_derive::{FromBytes, ToBytes};
+    use crate::fields::{FromBytes, ToBytes};
     use crate::types::path::relative_path::RelativePath;
 
     use typed_path::UnixPathBuf;

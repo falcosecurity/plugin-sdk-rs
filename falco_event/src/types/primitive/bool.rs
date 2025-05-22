@@ -1,9 +1,9 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use crate::types::primitive::bool;
 use std::io::Write;
 
 impl FromBytes<'_> for bool {
-    fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError> {
         let val = u32::from_bytes(buf)?;
         Ok(val != 0)
     }

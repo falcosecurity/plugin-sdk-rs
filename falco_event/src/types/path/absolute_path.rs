@@ -1,10 +1,10 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use std::ffi::CStr;
 use std::io::Write;
 use typed_path::UnixPath;
 
 impl<'a> FromBytes<'a> for &'a UnixPath {
-    fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError> {
         let buf = <&CStr>::from_bytes(buf)?;
         Ok(UnixPath::new(buf.to_bytes()))
     }
@@ -27,7 +27,7 @@ impl ToBytes for &UnixPath {
 
 #[cfg(test)]
 mod tests {
-    use crate::event_derive::{FromBytes, ToBytes};
+    use crate::fields::{FromBytes, ToBytes};
     use std::str::FromStr;
     use typed_path::{UnixPath, UnixPathBuf};
 

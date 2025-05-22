@@ -1,4 +1,4 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use crate::types::CStrFormatter;
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter, Write as _};
@@ -23,7 +23,7 @@ impl ToBytes for Vec<&CStr> {
 }
 
 impl<'a> FromBytes<'a> for Vec<&'a CStr> {
-    fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError> {
         let mut data = Vec::new();
         while !buf.is_empty() {
             data.push(FromBytes::from_bytes(buf)?);
@@ -52,7 +52,7 @@ impl<T: AsRef<CStr>> Debug for CStrArrayFormatter<'_, T> {
 
 #[cfg(test)]
 mod tests {
-    use crate::event_derive::{FromBytes, ToBytes};
+    use crate::fields::{FromBytes, ToBytes};
     use std::ffi::CStr;
 
     #[test]

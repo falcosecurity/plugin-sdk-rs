@@ -1,12 +1,10 @@
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
+use byteorder::{NetworkEndian, ReadBytesExt};
 use std::io::Write;
 use std::net::Ipv4Addr;
 
-use byteorder::{NetworkEndian, ReadBytesExt};
-
-use crate::fields::{FromBytes, FromBytesResult, ToBytes};
-
 impl FromBytes<'_> for Ipv4Addr {
-    fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError> {
         let bytes = buf.read_u32::<NetworkEndian>()?;
         Ok(bytes.into())
     }

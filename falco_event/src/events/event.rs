@@ -1,5 +1,5 @@
-use crate::event_derive::{EventMetadata, PayloadToBytes};
 use crate::events::to_bytes::EventToBytes;
+use crate::events::{EventMetadata, PayloadToBytes};
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 

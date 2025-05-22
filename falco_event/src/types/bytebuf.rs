@@ -1,9 +1,9 @@
-use crate::fields::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use std::fmt::{Debug, Formatter, Write as _};
 use std::io::Write;
 
 impl<'a> FromBytes<'a> for &'a [u8] {
-    fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError> {
         Ok(std::mem::take(buf))
     }
 }
@@ -55,7 +55,7 @@ impl Debug for ByteBufFormatter<'_> {
 
 #[cfg(test)]
 mod tests {
-    use crate::event_derive::{FromBytes, ToBytes};
+    use crate::fields::{FromBytes, ToBytes};
 
     #[test]
     fn test_bytebuf() {

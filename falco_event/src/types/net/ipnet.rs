@@ -1,4 +1,4 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use std::net::IpAddr;
@@ -11,7 +11,7 @@ use std::net::IpAddr;
 pub struct IpNet(pub IpAddr);
 
 impl FromBytes<'_> for IpNet {
-    fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError> {
         Ok(Self(IpAddr::from_bytes(buf)?))
     }
 }

@@ -1,4 +1,4 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use std::fmt::{Debug, Formatter};
 use std::io::Write;
 use std::net::Ipv4Addr;
@@ -11,7 +11,7 @@ use std::net::Ipv4Addr;
 pub struct Ipv4Net(pub Ipv4Addr);
 
 impl FromBytes<'_> for Ipv4Net {
-    fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError> {
         Ok(Self(Ipv4Addr::from_bytes(buf)?))
     }
 }

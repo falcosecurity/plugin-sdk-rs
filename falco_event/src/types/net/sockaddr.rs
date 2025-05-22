@@ -1,5 +1,5 @@
-use crate::event_derive::{FromBytes, FromBytesResult, ToBytes};
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL, PPM_AF_UNSPEC};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use crate::types::{EndpointV4, EndpointV6};
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use std::fmt::{Debug, Formatter};
@@ -58,7 +58,7 @@ impl ToBytes for SockAddr<'_> {
 }
 
 impl<'a> FromBytes<'a> for SockAddr<'a> {
-    fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError> {
         let variant = buf.read_u8()?;
         match variant as u32 {
             PPM_AF_LOCAL => {

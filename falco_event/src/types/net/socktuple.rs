@@ -2,7 +2,7 @@ use std::fmt::{Debug, Formatter};
 use std::io::Write;
 
 use crate::ffi::{PPM_AF_INET, PPM_AF_INET6, PPM_AF_LOCAL};
-use crate::fields::{FromBytes, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use crate::types::net::endpoint::{EndpointV4, EndpointV6};
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use typed_path::UnixPath;
@@ -116,7 +116,7 @@ impl ToBytes for SockTuple<'_> {
 }
 
 impl<'a> FromBytes<'a> for SockTuple<'a> {
-    fn from_bytes(buf: &mut &'a [u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError> {
         let variant = buf.read_u8()?;
         match variant as u32 {
             PPM_AF_LOCAL => Ok(Self::Unix {

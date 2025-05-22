@@ -1,9 +1,9 @@
-use crate::event_derive::{FromBytes, FromBytesError, FromBytesResult, ToBytes};
+use crate::fields::{FromBytes, FromBytesError, ToBytes};
 use std::io::{Read, Write};
 use std::net::Ipv6Addr;
 
 impl FromBytes<'_> for Ipv6Addr {
-    fn from_bytes(buf: &mut &[u8]) -> FromBytesResult<Self> {
+    fn from_bytes(buf: &mut &[u8]) -> Result<Self, FromBytesError> {
         if buf.len() < 16 {
             return Err(FromBytesError::InvalidLength);
         }
