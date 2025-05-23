@@ -66,6 +66,28 @@ impl<'e> RawEvent<'e> {
         self.payload.split_off(payload_len..)
     }
 
+    /// Iterate over a buffer with multiple raw events
+    ///
+    /// This function takes a byte slice and returns an iterator that yields `RawEvent` instances
+    /// until the whole buffer is consumed.
+    pub fn scan(mut buf: &'e [u8]) -> impl Iterator<Item = Result<RawEvent<'e>, std::io::Error>> {
+        std::iter::from_fn(move || {
+            if buf.is_empty() {
+                return None;
+            }
+            match Self::from(buf) {
+                Ok(mut raw_event) => {
+                    if let Some(tail) = raw_event.trim() {
+                        buf = tail;
+                    }
+                    Some(Ok(raw_event))
+                }
+
+                Err(err) => Some(Err(err)),
+            }
+        })
+    }
+
     /// Parse a byte buffer (from a raw pointer) into a RawEvent
     ///
     /// # Safety
