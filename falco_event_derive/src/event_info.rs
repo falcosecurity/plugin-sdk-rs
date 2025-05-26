@@ -484,8 +484,8 @@ fn raw_event_load_any(events: &Events) -> proc_macro2::TokenStream {
     let matches = events.enum_matches();
 
     quote!(
-        impl crate::events::RawEvent<'_> {
-            pub fn load_any(&self) -> Result<crate::events::Event<AnyEvent>, crate::events::PayloadFromBytesError> {
+        impl<'e> crate::events::RawEvent<'e> {
+            pub fn load_any(&self) -> Result<crate::events::Event<AnyEvent<'e>>, crate::events::PayloadFromBytesError> {
                 let any: AnyEvent = match self.event_type as u32 {
                     #(#matches,)*
                     other => return Err(crate::events::PayloadFromBytesError::UnsupportedEventType(other)),
