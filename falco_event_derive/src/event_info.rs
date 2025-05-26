@@ -491,7 +491,7 @@ fn raw_event_load_any(events: &Events) -> proc_macro2::TokenStream {
                     other => return Err(crate::events::PayloadFromBytesError::UnsupportedEventType(other)),
                 };
 
-                Ok(crate::event_derive::Event {
+                Ok(crate::events::Event {
                     metadata: self.metadata.clone(),
                     params: any,
                 })

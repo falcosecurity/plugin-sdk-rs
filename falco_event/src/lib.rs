@@ -37,7 +37,6 @@ pub mod ffi;
 
 // things for the derive macro to access under a well-known name
 mod event_derive {
-    pub use crate::events::Event;
     pub use crate::events::PayloadFromBytes;
     pub use crate::events::RawEvent;
     pub use crate::types::SystemTimeFormatter;
