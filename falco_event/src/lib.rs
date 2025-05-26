@@ -22,9 +22,8 @@ pub mod format {
     pub use crate::types::CStrArrayFormatter;
     pub use crate::types::CStrFormatter;
     pub use crate::types::CStrPairArrayFormatter;
+    pub use crate::types::SystemTimeFormatter;
 }
-
-pub use crate::types::SystemTimeFormatter;
 
 #[allow(dead_code)]
 #[allow(non_snake_case)]
@@ -37,7 +36,6 @@ pub mod ffi;
 
 // things for the derive macro to access under a well-known name
 mod event_derive {
-    pub use crate::types::SystemTimeFormatter;
     pub use byteorder::NativeEndian;
     pub use byteorder::ReadBytesExt;
     pub use byteorder::WriteBytesExt;

@@ -4,7 +4,7 @@ use crate::plugin::get_last_owner_error;
 use crate::tables::{TABLE_READER, TABLE_READER_EXT};
 use falco_event::fields::types::PT_IPNET;
 use falco_event::fields::FromBytes;
-use falco_event::SystemTimeFormatter;
+use falco_event::format::SystemTimeFormatter;
 use falco_plugin_api::{
     plugin_api__bindgen_ty_2, ss_plugin_extract_field, ss_plugin_extract_field__bindgen_ty_1,
     ss_plugin_extract_value_offsets, ss_plugin_field_extract_input, ss_plugin_owner_t,
