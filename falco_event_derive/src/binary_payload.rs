@@ -74,7 +74,6 @@ pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
     // Parse it as a proc macro
     let input = parse_macro_input!(input as DeriveInput);
 
-    let crate_path: syn::Path = syn::parse(quote!(crate::event_derive).into()).unwrap();
     let (_, ty_generics, where_clause) = input.generics.split_for_impl();
 
     if let syn::Data::Struct(ref data) = input.data {
@@ -101,9 +100,8 @@ pub fn derive_from_bytes(input: TokenStream) -> TokenStream {
             let name = input.ident;
 
             return TokenStream::from(quote!(
-            impl<'a> #crate_path::PayloadFromBytes<'a> for #name #ty_generics #where_clause {
+            impl<'a> crate::events::PayloadFromBytes<'a> for #name #ty_generics #where_clause {
                 fn read(mut params: impl Iterator<Item=crate::fields::FromBytesResult<&'a [u8]>>) -> Result<Self, crate::events::PayloadFromBytesError> {
-                    use #crate_path::*;
                     use crate::events::PayloadFromBytesError;
                     use crate::fields::FromBytes;
                     #(#field_reads)*

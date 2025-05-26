@@ -342,9 +342,9 @@ impl EventInfo {
         quote!(crate::ffi:: #raw_ident => {
             let params = unsafe {
                 if <#event_code as crate::events::EventPayload>::LARGE {
-                    <#event_code as crate::event_derive::PayloadFromBytes>::read(self.params::<u32>()?)?
+                    <#event_code as crate::events::PayloadFromBytes>::read(self.params::<u32>()?)?
                 } else {
-                    <#event_code as crate::event_derive::PayloadFromBytes>::read(self.params::<u16>()?)?
+                    <#event_code as crate::events::PayloadFromBytes>::read(self.params::<u16>()?)?
                 }
             };
             AnyEvent::#event_type(params)
