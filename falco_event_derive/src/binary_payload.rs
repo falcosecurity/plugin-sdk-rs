@@ -7,7 +7,6 @@ pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
     // Parse it as a proc macro
     let input = parse_macro_input!(input as DeriveInput);
 
-    let crate_path: syn::Path = syn::parse(quote!(crate::event_derive).into()).unwrap();
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     if let syn::Data::Struct(ref data) = input.data {
@@ -28,7 +27,8 @@ pub fn derive_to_bytes(input: TokenStream) -> TokenStream {
             return TokenStream::from(quote!(
             impl #impl_generics crate::events::PayloadToBytes for #name #ty_generics #where_clause {
                 fn write<W: std::io::Write>(&self, metadata: &crate::events::EventMetadata, mut writer: W) -> std::io::Result<()> {
-                    use #crate_path::*;
+                    use byteorder::NativeEndian;
+                    use byteorder::WriteBytesExt;
                     use crate::events::EventPayload;
                     use crate::fields::ToBytes;
 
