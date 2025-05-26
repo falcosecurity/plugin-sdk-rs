@@ -36,6 +36,5 @@ pub mod ffi;
 
 // things for the derive macro to access under a well-known name
 mod event_derive {
-    pub use byteorder::ReadBytesExt;
     pub use byteorder::WriteBytesExt;
 }
