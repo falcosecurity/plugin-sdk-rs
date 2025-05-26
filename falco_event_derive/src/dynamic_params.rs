@@ -192,7 +192,7 @@ impl DynamicParam {
                     }
                 }
                 fn write<W: std::io::Write>(&self, mut writer: W) -> std::io::Result<()> {
-                    use crate::event_derive::WriteBytesExt;
+                    use byteorder::WriteBytesExt;
 
                     match self {
                         #(#variant_write)*

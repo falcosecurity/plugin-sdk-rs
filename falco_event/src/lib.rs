@@ -33,8 +33,3 @@ pub mod format {
 #[allow(unsafe_op_in_unsafe_fn)]
 #[doc(hidden)]
 pub mod ffi;
-
-// things for the derive macro to access under a well-known name
-mod event_derive {
-    pub use byteorder::WriteBytesExt;
-}
