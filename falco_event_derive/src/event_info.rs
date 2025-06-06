@@ -92,7 +92,7 @@ impl EventArg {
         let field_type = self.final_field_type_name();
         let (field_ref, field_lifetime) = self.lifetimes();
 
-        quote!(::std::option::Option<#field_ref crate::event_derive::event_field_type::#field_type #field_lifetime>)
+        quote!(::std::option::Option<#field_ref crate::fields::types::#field_type #field_lifetime>)
     }
 
     fn field_definition(&self) -> proc_macro2::TokenStream {
@@ -252,6 +252,8 @@ impl EventInfo {
             #[allow(non_camel_case_types)]
             #[derive(falco_event_derive::FromBytes)]
             #[derive(falco_event_derive::ToBytes)]
+            #[derive(derive_deftly::Deftly)]
+            #[derive_deftly_adhoc(export)]
             pub struct #event_code #lifetime {
                 #(#fields,)*
             }
@@ -278,6 +280,15 @@ impl EventInfo {
                     #(#field_fmts)*
                     Ok(())
                 }
+            }
+        )
+    }
+
+    fn derive_deftly(&self) -> proc_macro2::TokenStream {
+        let event_code = &self.event_code;
+        quote!(
+            $crate::derive_deftly::derive_deftly_adhoc! {
+                $crate::#event_code: $($body)*
             }
         )
     }
@@ -384,6 +395,18 @@ impl Events {
         self.events.iter().map(move |e| e.typedef())
     }
 
+    fn derive_deftly(&self) -> proc_macro2::TokenStream {
+        let derives = self.events.iter().map(|e| e.derive_deftly());
+        quote!(
+            #[macro_export]
+            macro_rules! derive_deftly_for_events {
+                ($($body:tt)*) => {
+                    #(#derives)*
+                }
+            }
+        )
+    }
+
     fn type_variants(&self) -> impl Iterator<Item = proc_macro2::TokenStream> + '_ {
         self.events.iter().map(|e| e.type_variant())
     }
@@ -407,6 +430,7 @@ impl Events {
 
 fn event_info_variant(events: &Events) -> proc_macro2::TokenStream {
     let typedefs = events.typedefs();
+    let derive_deftly = events.derive_deftly();
     let variants = events.enum_variants();
     let variant_fmts = events.variant_fmts();
     let variants_to_bytes = events.variants_to_bytes();
@@ -414,8 +438,11 @@ fn event_info_variant(events: &Events) -> proc_macro2::TokenStream {
 
     quote!(
         #(#typedefs)*
+        #derive_deftly
 
         #[allow(non_camel_case_types)]
+        #[derive(derive_deftly::Deftly)]
+        #[derive_deftly_adhoc(export)]
         pub enum AnyEvent #lifetime {
             #(#variants,)*
         }

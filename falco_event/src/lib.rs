@@ -2,6 +2,7 @@
 #![warn(missing_docs)]
 #![deny(rustdoc::broken_intra_doc_links)]
 
+pub use derive_deftly;
 pub use num_traits;
 
 #[allow(missing_docs)]
@@ -37,7 +38,6 @@ mod event_derive {
     pub use crate::events::PayloadFromBytes;
     pub use crate::events::PayloadToBytes;
     pub use crate::events::RawEvent;
-    pub use crate::fields::types as event_field_type;
     pub use crate::fields::FromBytes;
     pub use crate::fields::FromBytesError;
     pub use crate::fields::FromBytesResult;

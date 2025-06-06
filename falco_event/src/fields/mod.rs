@@ -10,6 +10,7 @@ pub use to_bytes::ToBytes;
 /// All the implementations in this module are generated from the C structs and mapped to a Rust
 /// enum.
 #[allow(missing_docs)]
+#[allow(clippy::crate_in_macro_def)]
 pub mod dynamic_params;
 #[allow(missing_docs)]
 pub mod event_flags;

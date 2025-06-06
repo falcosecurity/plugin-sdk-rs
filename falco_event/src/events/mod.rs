@@ -18,4 +18,5 @@ mod to_bytes;
 /// This module is automatically generated from the Falco event schema. It provides strongly-typed
 /// structs for each event type supported by Falco, as well as a [`types::AnyEvent`] enum that is capable
 /// of containing an arbitrary event matching the schema.
+#[allow(clippy::crate_in_macro_def)]
 pub mod types;

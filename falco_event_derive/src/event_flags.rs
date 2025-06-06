@@ -143,6 +143,8 @@ fn render_enum(
         #[allow(non_camel_case_types)]
         #[non_exhaustive]
         #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+        #[derive(derive_deftly::Deftly)]
+        #[derive_deftly_adhoc(export)]
         pub enum #name {
             #(#tags,)*
             Unknown(usize),
@@ -226,6 +228,8 @@ fn render_bitflags(
         bitflags::bitflags! {
             #[allow(non_camel_case_types)]
             #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+            #[derive(derive_deftly::Deftly)]
+            #[derive_deftly_adhoc(export)]
             pub struct #name: #repr_type {
                 #(#items;)*
                 const _ = !0;
@@ -327,6 +331,74 @@ fn render_flags_type(
     }
 }
 
+fn render_derive_deftly(
+    flag_entries: &Punctuated<FlagsEntry, Token![;]>,
+) -> proc_macro2::TokenStream {
+    let derive_deftly_for_enums = flag_entries.iter().filter_map(|entry| {
+        if let FlagsEntry::TypeDecl {
+            name,
+            underlying_type,
+            ..
+        } = entry
+        {
+            match underlying_type.to_string().as_str() {
+                "PT_ENUMFLAGS32" | "PT_ENUMFLAGS16" | "PT_ENUMFLAGS8" => {
+                    let final_name =
+                        Ident::new(&format!("{}_{}", underlying_type, name), name.span());
+                    Some(quote!(
+                        $crate::derive_deftly::derive_deftly_adhoc! {
+                            $crate::#final_name: $($body)*
+                        }
+                    ))
+                }
+                _ => None,
+            }
+        } else {
+            None
+        }
+    });
+
+    let derive_deftly_for_bitflags = flag_entries.iter().filter_map(|entry| {
+        if let FlagsEntry::TypeDecl {
+            name,
+            underlying_type,
+            ..
+        } = entry
+        {
+            match underlying_type.to_string().as_str() {
+                "PT_FLAGS32" | "PT_FLAGS16" | "PT_FLAGS8" | "PT_MODE" => {
+                    let final_name =
+                        Ident::new(&format!("{}_{}", underlying_type, name), name.span());
+                    Some(quote!(
+                        $crate::derive_deftly::derive_deftly_adhoc! {
+                            $crate::#final_name: $($body)*
+                        }
+                    ))
+                }
+                _ => None,
+            }
+        } else {
+            None
+        }
+    });
+
+    quote!(
+        #[macro_export]
+        macro_rules! derive_deftly_for_enums {
+            ($($body:tt)*) => {
+                #(#derive_deftly_for_enums)*
+            }
+        }
+
+        #[macro_export]
+        macro_rules! derive_deftly_for_bitflags {
+            ($($body:tt)*) => {
+                #(#derive_deftly_for_bitflags)*
+            }
+        }
+    )
+}
+
 pub fn event_flags(input: TokenStream) -> TokenStream {
     let flags = parse_macro_input!(input as Flags);
 
@@ -355,8 +427,11 @@ pub fn event_flags(input: TokenStream) -> TokenStream {
         }
     }
 
+    let derive_deftly = render_derive_deftly(&flags.flags);
+
     quote!(
         #(#tokens)*
+        #derive_deftly
     )
     .into()
 }

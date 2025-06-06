@@ -72,7 +72,7 @@ impl DynamicParamVariant {
     fn variant_type(&self) -> proc_macro2::TokenStream {
         let (_, ty, field_ref, field_lifetime) = self.unpack();
 
-        quote!(#field_ref crate::event_derive::event_field_type::#ty #field_lifetime)
+        quote!(#field_ref crate::fields::types::#ty #field_lifetime)
     }
 
     fn variant_definition(&self) -> proc_macro2::TokenStream {
@@ -178,6 +178,8 @@ impl DynamicParam {
         quote!(
             #[allow(non_camel_case_types)]
             #[derive(Clone)]
+            #[derive(derive_deftly::Deftly)]
+            #[derive_deftly_adhoc(export)]
             pub enum #name #lifetime {
                 #(#variant_definitions,)*
             }
@@ -230,6 +232,26 @@ impl DynamicParam {
     }
 }
 
+fn render_derive_deftly(params: &Punctuated<DynamicParam, Token![;]>) -> proc_macro2::TokenStream {
+    let derives = params.iter().map(|param| {
+        let name = Ident::new(&format!("PT_DYN_{}", param.name), param.name.span());
+        quote!(
+            $crate::derive_deftly::derive_deftly_adhoc! {
+                $crate::#name: $($body)*
+            }
+        )
+    });
+
+    quote!(
+        #[macro_export]
+        macro_rules! derive_deftly_for_dynamic_params {
+            ($($body:tt)*) => {
+                #(#derives)*
+            }
+        }
+    )
+}
+
 struct DynamicParams {
     params: Punctuated<DynamicParam, Token![;]>,
 }
@@ -246,8 +268,11 @@ pub fn dynamic_params(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DynamicParams);
 
     let borrowed = input.params.iter().map(|param| param.render());
+    let derive_deftly = render_derive_deftly(&input.params);
     quote!(
         #(#borrowed)*
+
+        #derive_deftly
     )
     .into()
 }
