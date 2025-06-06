@@ -150,6 +150,16 @@ fn render_enum(
             Unknown(usize),
         }
 
+        impl #name {
+            pub fn new(val: #repr_type) -> Self {
+                Self::from(val)
+            }
+
+            pub fn as_repr(self) -> #repr_type {
+                #repr_type::from(self)
+            }
+        }
+
         impl From<#repr_type> for #name {
             fn from(val: #repr_type) -> Self {
                 match val as u32 {
