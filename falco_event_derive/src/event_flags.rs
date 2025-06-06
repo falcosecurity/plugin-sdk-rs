@@ -133,6 +133,11 @@ fn render_enum(
         .clone()
         .map(|(variant, value)| quote!(#name::#variant => crate::ffi::#value as #repr_type));
 
+    let enum_debug = filtered.clone().map(|(variant, _)| {
+        let variant_str = variant.to_string();
+        quote!(Self::#variant => write!(f, "({})", #variant_str))
+    });
+
     #[cfg(feature = "serde")]
     let serde_derives = quote!(
         #[derive(serde::Deserialize)]
@@ -201,8 +206,8 @@ fn render_enum(
                 let raw: #repr_type = (*self).into();
                 ::std::fmt::Debug::fmt(&raw, f)?;
                 match self {
+                    #(#enum_debug,)*
                     Self::Unknown(_) => Ok(()),
-                    _ => write!(f, "({:?})", self)
                 }
             }
         }
