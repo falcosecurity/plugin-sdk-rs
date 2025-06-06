@@ -69,9 +69,8 @@ impl<'a> FromBytes<'a> for SockAddr<'a> {
         let variant = buf.read_u8()?;
         match variant as u32 {
             PPM_AF_LOCAL => {
-                // TODO embedded NULs
-                let path = std::mem::take(buf);
-                Ok(Self::Unix(UnixPath::new(path)))
+                let path: &UnixPath = FromBytes::from_bytes(buf)?;
+                Ok(Self::Unix(path))
             }
             PPM_AF_INET => {
                 let addr = EndpointV4::from_bytes(buf)?;
@@ -81,7 +80,7 @@ impl<'a> FromBytes<'a> for SockAddr<'a> {
                 let addr = EndpointV6::from_bytes(buf)?;
                 Ok(Self::V6(addr))
             }
-            _ => Ok(Self::Other(variant, buf)),
+            _ => Ok(Self::Other(variant, std::mem::take(buf))),
         }
     }
 }

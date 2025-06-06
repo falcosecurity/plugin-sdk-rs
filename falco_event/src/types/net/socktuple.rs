@@ -139,7 +139,7 @@ impl<'a> FromBytes<'a> for SockTuple<'a> {
                 source: FromBytes::from_bytes(buf)?,
                 dest: FromBytes::from_bytes(buf)?,
             }),
-            _ => Ok(Self::Other(variant, buf)),
+            _ => Ok(Self::Other(variant, std::mem::take(buf))),
         }
     }
 }
