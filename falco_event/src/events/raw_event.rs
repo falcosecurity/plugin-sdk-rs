@@ -108,12 +108,10 @@ impl<'e> RawEvent<'e> {
         if self.event_type != T::ID as u16 {
             return Err(PayloadFromBytesError::TypeMismatch);
         }
-        let params = unsafe {
-            if T::LARGE {
-                T::read(self.params::<u32>()?)
-            } else {
-                T::read(self.params::<u16>()?)
-            }
+        let params = if T::LARGE {
+            T::read(self.params::<u32>()?)
+        } else {
+            T::read(self.params::<u16>()?)
         }?;
         Ok(params)
     }
@@ -128,10 +126,10 @@ impl<'e> RawEvent<'e> {
         })
     }
 
-    /// # Safety
+    /// Get an iterator over the event parameters
     ///
-    /// `T` must correspond to the type of the length field (u16 or u32, depending on event type)
-    pub unsafe fn params<T>(
+    /// `T` must correspond to the type of the length field (u16 or u32, depending on the event type)
+    pub fn params<T>(
         &self,
     ) -> Result<
         impl Iterator<Item = Result<&'e [u8], FromBytesError>> + use<'e, T>,
