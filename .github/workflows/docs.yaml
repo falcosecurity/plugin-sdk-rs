@@ -14,6 +14,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: --cfg docsrs
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

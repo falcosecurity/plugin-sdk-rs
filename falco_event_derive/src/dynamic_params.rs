@@ -178,8 +178,8 @@ impl DynamicParam {
         quote!(
             #[allow(non_camel_case_types)]
             #[derive(Clone, Copy)]
-            #[derive(derive_deftly::Deftly)]
-            #[derive_deftly_adhoc(export)]
+            #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive(derive_deftly::Deftly))]
+            #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive_deftly_adhoc(export))]
             pub enum #name #lifetime {
                 #(#variant_definitions,)*
             }
@@ -246,6 +246,10 @@ fn render_derive_deftly(params: &Punctuated<DynamicParam, Token![;]>) -> proc_ma
 
     quote!(
         #[macro_export]
+        /// Derive new features for dynamic parameters
+        ///
+        /// This is mostly undocumented on purpose (the details can change without notice),
+        /// but feel free to check the `falco_event_serde` crate for example usage.
         macro_rules! derive_deftly_for_dynamic_params {
             ($($body:tt)*) => {
                 #(#derives)*

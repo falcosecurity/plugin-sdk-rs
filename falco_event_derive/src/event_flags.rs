@@ -143,8 +143,8 @@ fn render_enum(
         #[allow(non_camel_case_types)]
         #[non_exhaustive]
         #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-        #[derive(derive_deftly::Deftly)]
-        #[derive_deftly_adhoc(export)]
+        #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive(derive_deftly::Deftly))]
+        #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive_deftly_adhoc(export))]
         pub enum #name {
             #(#tags,)*
             Unknown(usize),
@@ -239,8 +239,8 @@ fn render_bitflags(
         bitflags::bitflags! {
             #[allow(non_camel_case_types)]
             #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
-            #[derive(derive_deftly::Deftly)]
-            #[derive_deftly_adhoc(export)]
+            #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive(derive_deftly::Deftly))]
+            #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive_deftly_adhoc(export))]
             pub struct #name: #repr_type {
                 #(#items;)*
                 const _ = !0;
@@ -396,6 +396,10 @@ fn render_derive_deftly(
 
     quote!(
         #[macro_export]
+        /// Derive new features for enum types (`PT_ENUMFLAGS*`)
+        ///
+        /// This is mostly undocumented on purpose (the details can change without notice),
+        /// but feel free to check the `falco_event_serde` crate for example usage.
         macro_rules! derive_deftly_for_enums {
             ($($body:tt)*) => {
                 #(#derive_deftly_for_enums)*
@@ -403,6 +407,10 @@ fn render_derive_deftly(
         }
 
         #[macro_export]
+        /// Derive new features for bit flag types (`PT_FLAGS*`)
+        ///
+        /// This is mostly undocumented on purpose (the details can change without notice),
+        /// but feel free to check the `falco_event_serde` crate for example usage.
         macro_rules! derive_deftly_for_bitflags {
             ($($body:tt)*) => {
                 #(#derive_deftly_for_bitflags)*

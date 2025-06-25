@@ -258,8 +258,8 @@ impl EventInfo {
             #[derive(Clone, Copy)]
             #[derive(falco_event_derive::FromBytes)]
             #[derive(falco_event_derive::ToBytes)]
-            #[derive(derive_deftly::Deftly)]
-            #[derive_deftly_adhoc(export)]
+            #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive(derive_deftly::Deftly))]
+            #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive_deftly_adhoc(export))]
             pub struct #event_code #lifetime {
                 #(#fields,)*
             }
@@ -412,6 +412,13 @@ impl Events {
         let derives = self.events.iter().map(|e| e.derive_deftly());
         quote!(
             #[macro_export]
+            /// Derive new features for event types
+            ///
+            /// This is mostly undocumented on purpose (the details can change without notice),
+            /// but feel free to check the `falco_event_serde` crate for example usage.
+            ///
+            /// **Note**: using this macro does not affect the `AnyEvent` type, so you will
+            /// possibly need to invoke `derive_deftly_adhoc!` to add new features to `AnyEvent`.
             macro_rules! derive_deftly_for_events {
                 ($($body:tt)*) => {
                     #(#derives)*
@@ -459,8 +466,8 @@ fn event_info_variant(events: &Events) -> proc_macro2::TokenStream {
         #derive_deftly
 
         #[allow(non_camel_case_types)]
-        #[derive(derive_deftly::Deftly)]
-        #[derive_deftly_adhoc(export)]
+        #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive(derive_deftly::Deftly))]
+        #[cfg_attr(all(not(docsrs), feature = "derive_deftly"), derive_deftly_adhoc(export))]
         pub enum AnyEvent #lifetime {
             #(#variants,)*
         }

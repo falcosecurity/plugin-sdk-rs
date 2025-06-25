@@ -7,6 +7,10 @@ publish = false
 [lints]
 workspace = true
 
+[[bin]]
+name = "dump_raw_events"
+doc = false
+
 [[bench]]
 name = "binary_event"
 harness = false
