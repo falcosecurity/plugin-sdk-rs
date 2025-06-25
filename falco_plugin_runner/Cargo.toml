@@ -20,6 +20,3 @@ serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 chrono = "0.4.39"
 bumpalo = { version = "3.18.1", features = ["collections", "std"] }
-
-[dev-dependencies]
-falco_plugin = { path = "../falco_plugin" }

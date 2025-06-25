@@ -127,7 +127,7 @@ fn bench_plugin_threadinfo_tid<D: TestDriver, M: Measurement>(g: &mut BenchmarkG
         |b, _i| {
             b.iter(|| {
                 for _ in 0..NUM_EVENTS {
-                    match criterion::black_box(driver.extract_field(c"thread.pid", &event)) {
+                    match std::hint::black_box(driver.extract_field(c"thread.pid", &event)) {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
                     }
@@ -188,7 +188,7 @@ fn bench_plugin_threadinfo_only_set_custom_field<D: TestDriver, M: Measurement>(
         |b, _i| {
             b.iter(|| {
                 for _ in 0..NUM_EVENTS {
-                    match criterion::black_box(driver.next_event()) {
+                    match std::hint::black_box(driver.next_event()) {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
                     }
@@ -220,7 +220,7 @@ fn bench_plugin_threadinfo_custom_field<D: TestDriver, M: Measurement>(g: &mut B
         |b, _i| {
             b.iter(|| {
                 for _ in 0..NUM_EVENTS {
-                    match criterion::black_box(driver.extract_field(c"thread.val", &event)) {
+                    match std::hint::black_box(driver.extract_field(c"thread.val", &event)) {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
                     }

@@ -43,7 +43,7 @@ mod tests {
         assert_eq!(path.as_path().binary_size(), 5);
 
         path.as_path().write(&mut binary).unwrap();
-        hexdump::hexdump(binary.as_slice());
+        println!("{:02x?}", binary);
 
         assert_eq!(binary.as_slice(), "/foo\0".as_bytes());
 

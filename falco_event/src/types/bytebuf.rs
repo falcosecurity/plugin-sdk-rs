@@ -73,7 +73,7 @@ mod tests {
         let mut binary = Vec::new();
 
         data.write(&mut binary).unwrap();
-        hexdump::hexdump(binary.as_slice());
+        println!("{:02x?}", binary);
 
         assert_eq!(binary.as_slice(), "foo".as_bytes());
 
@@ -88,7 +88,7 @@ mod tests {
         let mut binary = Vec::new();
 
         data.write(&mut binary).unwrap();
-        hexdump::hexdump(binary.as_slice());
+        println!("{:02x?}", binary);
 
         assert_eq!(binary.as_slice(), "f\0oo".as_bytes());
 

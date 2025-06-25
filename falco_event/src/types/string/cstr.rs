@@ -55,7 +55,7 @@ mod tests {
         let mut binary = Vec::new();
         s.write(&mut binary).unwrap();
 
-        hexdump::hexdump(binary.as_slice());
+        println!("{:02x?}", binary);
 
         assert_eq!(binary.as_slice(), b"foo\0".as_slice());
 

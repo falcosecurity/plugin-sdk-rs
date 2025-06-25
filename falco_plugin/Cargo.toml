@@ -41,19 +41,19 @@ crate-type = ["cdylib"]
 thread-safe-tables = ["dep:parking_lot"]
 
 [dependencies]
-thiserror = "1.0.58"
+thiserror = "2.0.12"
 falco_event = { path = "../falco_event", version = "0.4.0" }
 falco_plugin_api = { path = "../falco_plugin_api", version = "0.4.0" }
 falco_plugin_derive = { path = "../falco_plugin_derive", version = "0.4.0" }
 serde = "1.0.197"
 serde_json = "1.0.114"
-schemars = "0.8.16"
+schemars = "1.0.1"
 anyhow = "1.0.81"
 memchr = "2.7.1"
 log = { version = "0.4.21", features = ["std"] }
 num-derive = "0.4.2"
 num-traits = "0.2.18"
-phf = { version = "0.11.2", features = ["macros"] }
+phf = { version = "0.12.1", features = ["macros"] }
 lock_api = { version = "0.4.12", features = ["arc_lock"] }
 refcell-lock-api = "0.1.0"
 parking_lot = { version = "0.12.3", optional = true, features = ["arc_lock"] }
