@@ -232,12 +232,13 @@ where
         Q: Ord + ToOwned<Owned = K> + ?Sized,
     {
         // note: different semantics from data.insert: we return the *new* entry
-        self.data.write().insert(
-            key.to_owned(),
-            std::sync::Arc::clone(RefGuard::rwlock(&entry)),
-        );
+        let new_entry = std::sync::Arc::clone(RefGuard::rwlock(&entry));
+
+        self.data
+            .write()
+            .insert(key.to_owned(), std::sync::Arc::clone(&new_entry));
         drop(entry);
-        self.lookup(key)
+        Some(new_entry.write_arc())
     }
 
     /// Write a value to a field of an entry
