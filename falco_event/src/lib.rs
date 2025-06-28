@@ -2,6 +2,7 @@
 #![warn(missing_docs)]
 #![deny(rustdoc::broken_intra_doc_links)]
 
+#[cfg(feature = "derive_deftly")]
 pub use derive_deftly;
 pub use num_traits;
 
