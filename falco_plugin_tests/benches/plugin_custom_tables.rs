@@ -198,7 +198,7 @@ fn bench_plugin_custom_table_extract_only_impl<D: TestDriver, M: Measurement>(
 
             b.iter(|| {
                 for _ in 0..NUM_EVENTS {
-                    match criterion::black_box(driver.extract_field(c"thread.val_direct", &event)) {
+                    match std::hint::black_box(driver.extract_field(c"thread.val_direct", &event)) {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
                     }
@@ -222,7 +222,7 @@ fn bench_plugin_custom_table_extract_only_impl<D: TestDriver, M: Measurement>(
 
             b.iter(|| {
                 for _ in 0..NUM_EVENTS {
-                    match criterion::black_box(driver.extract_field(c"thread.val_api", &event)) {
+                    match std::hint::black_box(driver.extract_field(c"thread.val_api", &event)) {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
                     }
@@ -248,7 +248,7 @@ fn bench_plugin_custom_table_extract_only_impl<D: TestDriver, M: Measurement>(
 
             b.iter(|| {
                 for _ in 0..NUM_EVENTS {
-                    match criterion::black_box(driver.extract_field(c"thread.val2_api", &event)) {
+                    match std::hint::black_box(driver.extract_field(c"thread.val2_api", &event)) {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
                     }
@@ -289,7 +289,7 @@ fn bench_plugin_custom_table_insert_and_extract_impl<D: TestDriver, M: Measureme
                 for _ in 0..NUM_EVENTS {
                     let event = driver.next_event().unwrap();
                     let as_string =
-                        criterion::black_box(driver.extract_field(c"thread.val_direct", &event));
+                        std::hint::black_box(driver.extract_field(c"thread.val_direct", &event));
                     match as_string {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
@@ -315,7 +315,7 @@ fn bench_plugin_custom_table_insert_and_extract_impl<D: TestDriver, M: Measureme
                 for _ in 0..NUM_EVENTS {
                     let event = driver.next_event().unwrap();
                     let as_string =
-                        criterion::black_box(driver.extract_field(c"thread.val_api", &event));
+                        std::hint::black_box(driver.extract_field(c"thread.val_api", &event));
                     match as_string {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
@@ -343,7 +343,7 @@ fn bench_plugin_custom_table_insert_and_extract_impl<D: TestDriver, M: Measureme
                 for _ in 0..NUM_EVENTS {
                     let event = driver.next_event().unwrap();
                     let as_string =
-                        criterion::black_box(driver.extract_field(c"thread.val2_api", &event));
+                        std::hint::black_box(driver.extract_field(c"thread.val2_api", &event));
                     match as_string {
                         Ok(_) => (),
                         Err(e) => panic!("Unexpected error: {}", e),
