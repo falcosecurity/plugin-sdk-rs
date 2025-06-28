@@ -211,7 +211,7 @@ mod tests {
             path,
         } = socktuple
         else {
-            panic!("not a unix sock tuple: {:?}", socktuple)
+            panic!("not a unix sock tuple: {socktuple:?}")
         };
 
         assert_eq!(source_addr, 0);

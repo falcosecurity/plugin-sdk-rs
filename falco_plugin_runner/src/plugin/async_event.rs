@@ -111,7 +111,7 @@ unsafe extern "C-unwind" fn async_handler(
     let raw_event = match RawEvent::from(event) {
         Ok(event) => event,
         Err(e) => {
-            write_err_msg(err, &format!("Failed to parse event: {}", e));
+            write_err_msg(err, &format!("Failed to parse event: {e}"));
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         }
     };
@@ -119,7 +119,7 @@ unsafe extern "C-unwind" fn async_handler(
     let async_event = match raw_event.load::<PPME_ASYNCEVENT_E>() {
         Ok(event) => event,
         Err(e) => {
-            write_err_msg(err, &format!("Failed to parse async event: {}", e));
+            write_err_msg(err, &format!("Failed to parse async event: {e}"));
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         }
     };
@@ -137,7 +137,7 @@ unsafe extern "C-unwind" fn async_handler(
         Err(e) => {
             write_err_msg(
                 err,
-                &format!("Failed to decode async event name as UTF-8: {}", e),
+                &format!("Failed to decode async event name as UTF-8: {e}"),
             );
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         }

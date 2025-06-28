@@ -155,7 +155,7 @@ impl ParsePlugin for DummyPlugin {
         self.imported_table
             .iter_entries_mut(&parse_input.reader, |e| {
                 let num = e.get_num(&parse_input.reader).unwrap();
-                log::info!("num = {}", num);
+                log::info!("num = {num}");
                 assert_eq!(num, counter);
                 counter += 1;
                 Continue(())

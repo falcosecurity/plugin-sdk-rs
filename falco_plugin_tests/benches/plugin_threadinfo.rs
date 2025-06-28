@@ -129,7 +129,7 @@ fn bench_plugin_threadinfo_tid<D: TestDriver, M: Measurement>(g: &mut BenchmarkG
                 for _ in 0..NUM_EVENTS {
                     match criterion::black_box(driver.extract_field(c"thread.pid", &event)) {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
@@ -161,7 +161,7 @@ fn bench_plugin_threadinfo_missing_custom_field<D: TestDriver, M: Measurement>(
                     let as_string = driver.extract_field(c"thread.val", &event);
                     match as_string {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
@@ -190,7 +190,7 @@ fn bench_plugin_threadinfo_only_set_custom_field<D: TestDriver, M: Measurement>(
                 for _ in 0..NUM_EVENTS {
                     match criterion::black_box(driver.next_event()) {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
@@ -222,7 +222,7 @@ fn bench_plugin_threadinfo_custom_field<D: TestDriver, M: Measurement>(g: &mut B
                 for _ in 0..NUM_EVENTS {
                     match criterion::black_box(driver.extract_field(c"thread.val", &event)) {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });

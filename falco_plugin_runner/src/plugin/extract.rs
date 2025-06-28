@@ -77,7 +77,7 @@ impl Display for ExtractedField {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             ExtractedField::None => write!(f, "<NA>"),
-            ExtractedField::U64(value) => write!(f, "{}", value),
+            ExtractedField::U64(value) => write!(f, "{value}"),
             ExtractedField::String(cstr) => write!(f, "{}", cstr.to_string_lossy()),
             ExtractedField::Vec(vector) => {
                 let mut first = true;
@@ -88,7 +88,7 @@ impl Display for ExtractedField {
                     } else {
                         write!(f, ",")?;
                     }
-                    write!(f, "{}", val)?;
+                    write!(f, "{val}")?;
                 }
                 write!(f, ")")?;
                 Ok(())
@@ -101,14 +101,14 @@ impl Display for ExtractedField {
                 }
             }
             ExtractedField::RelTime(t) => {
-                write!(f, "{:?}", t)
+                write!(f, "{t:?}")
             }
             ExtractedField::AbsTime(t) => {
                 let dt = chrono::DateTime::<Local>::from(*t);
                 f.write_str(&dt.to_rfc3339_opts(chrono::SecondsFormat::AutoSi, false))
             }
             ExtractedField::IpAddr(addr) => {
-                write!(f, "{:?}", addr)
+                write!(f, "{addr:?}")
             }
             ExtractedField::IpNet(_) => {
                 write!(f, "<IPNET>")

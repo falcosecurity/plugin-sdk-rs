@@ -85,7 +85,7 @@ impl Debug for SockAddr<'_> {
             SockAddr::Unix(u) => write!(f, "unix://{}", u.display()),
             SockAddr::V4(v4) => write!(f, "{}:{}", v4.0, v4.1 .0),
             SockAddr::V6(v6) => write!(f, "[{}]:{}", v6.0, v6.1 .0),
-            SockAddr::Other(af, raw) => write!(f, "<af={}>{:02x?}", af, raw),
+            SockAddr::Other(af, raw) => write!(f, "<af={af}>{raw:02x?}"),
         }
     }
 }

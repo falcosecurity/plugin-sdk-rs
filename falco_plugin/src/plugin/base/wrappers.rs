@@ -41,7 +41,7 @@ pub extern "C-unwind" fn plugin_get_required_api_version<
     version
         .entry((MAJOR, MINOR, PATCH))
         .or_insert_with(|| {
-            let version = format!("{}.{}.{}", MAJOR, MINOR, PATCH);
+            let version = format!("{MAJOR}.{MINOR}.{PATCH}");
             CString::new(version).unwrap()
         })
         .as_ptr()
@@ -112,7 +112,7 @@ pub unsafe extern "C-unwind" fn plugin_init<P: Plugin>(
         }
         Err(e) => {
             let error_str = format!("{:#}", &e);
-            log::error!("Failed to initialize plugin: {}", error_str);
+            log::error!("Failed to initialize plugin: {error_str}");
             let plugin = Box::new(PluginWrapper::<P>::new_error(error_str));
             unsafe {
                 *rc = e.status_code();

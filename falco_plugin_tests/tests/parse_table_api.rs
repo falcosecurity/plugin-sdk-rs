@@ -88,7 +88,7 @@ impl SourcePluginInstance for DummyPluginInstance {
         if let Some(mut num_events) = self.0.take() {
             while num_events > 0 {
                 num_events -= 1;
-                let event = format!("{} events remaining", num_events);
+                let event = format!("{num_events} events remaining");
                 let event = Self::plugin_event(event.as_bytes());
                 batch.add(event)?;
             }
@@ -209,7 +209,7 @@ impl ParsePlugin for DummyParsePlugin {
 
         let is_even = (remaining % 2 == 0).into();
         let mut string_rep = CString::default();
-        string_rep.write_into(|w| write!(w, "{} events remaining", remaining))?;
+        string_rep.write_into(|w| write!(w, "{remaining} events remaining"))?;
 
         entry.set_is_even(&parse_input.writer, &is_even)?;
         entry.set_as_string(&parse_input.writer, string_rep.as_c_str())?;

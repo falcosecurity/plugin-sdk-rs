@@ -261,7 +261,7 @@ impl Debug for SigSet {
                 } else {
                     write!(fmt, ",")?;
                 }
-                write!(fmt, "{:?}", sig)?;
+                write!(fmt, "{sig:?}")?;
             }
             write!(fmt, ")")?;
         }

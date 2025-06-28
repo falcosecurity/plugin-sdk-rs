@@ -46,7 +46,7 @@ impl Display for ScapStatus {
             ScapStatus::Timeout => f.write_str("Timeout"),
             ScapStatus::Eof => f.write_str("Eof"),
             ScapStatus::NotSupported => f.write_str("NotSupported"),
-            ScapStatus::Other(rc) => write!(f, "Other({})", rc),
+            ScapStatus::Other(rc) => write!(f, "Other({rc})"),
         }
     }
 }

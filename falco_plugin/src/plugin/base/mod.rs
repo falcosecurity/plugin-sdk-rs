@@ -53,8 +53,8 @@ impl<P: Plugin> PluginWrapper<P> {
 
         plugin
             .error_buf
-            .write_into(|buf| write!(buf, "{}", err))
-            .unwrap_or_else(|err| panic!("Failed to write error message (was: {})", err));
+            .write_into(|buf| write!(buf, "{err}"))
+            .unwrap_or_else(|err| panic!("Failed to write error message (was: {err})"));
 
         plugin
     }

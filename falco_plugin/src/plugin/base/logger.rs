@@ -49,7 +49,7 @@ impl Log for FalcoPluginLogger {
             let loc = record
                 .file()
                 .zip(record.line())
-                .map(|(f, l)| Cow::Owned(format!("{}:{}", f, l)))
+                .map(|(f, l)| Cow::Owned(format!("{f}:{l}")))
                 .unwrap_or_else(|| Cow::Borrowed(record.target()));
             format!("{}[{}] {}", loc, record.level(), record.args())
         };

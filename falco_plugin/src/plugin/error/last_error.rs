@@ -38,7 +38,7 @@ impl LastError {
                 Err(e) => e.to_string(),
             };
 
-            log::warn!("Got error from API: {}", msg);
+            log::warn!("Got error from API: {msg}");
             Some(msg)
         }
     }

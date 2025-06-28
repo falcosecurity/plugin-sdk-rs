@@ -62,7 +62,7 @@ fn plugin_extract_static_impl<D: TestDriver, M: Measurement>(g: &mut BenchmarkGr
             for _ in 0..NUM_EVENTS {
                 match black_box(driver.extract_field(c"static.field", &event)) {
                     Ok(_) => (),
-                    Err(e) => panic!("Unexpected error: {}", e),
+                    Err(e) => panic!("Unexpected error: {e}"),
                 }
             }
         });

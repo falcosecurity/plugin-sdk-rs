@@ -54,7 +54,7 @@ impl SourcePluginInstance for DummyPluginInstance {
         if let Some(mut num_events) = self.0.take() {
             while num_events > 0 {
                 num_events -= 1;
-                let event = format!("{} events remaining", num_events);
+                let event = format!("{num_events} events remaining");
                 let event = Self::plugin_event(event.as_bytes());
                 batch.add(event)?;
             }

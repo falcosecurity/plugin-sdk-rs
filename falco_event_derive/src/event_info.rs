@@ -68,7 +68,7 @@ impl EventArg {
         let mut name = Ident::new(&self.name.value(), self.name.span());
         if syn::parse::<Ident>(quote!(#name).into()).is_err() {
             // #name is a keyword
-            name = Ident::new(&format!("{}_", name), name.span());
+            name = Ident::new(&format!("{name}_"), name.span());
         }
 
         name

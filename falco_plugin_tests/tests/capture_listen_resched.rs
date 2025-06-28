@@ -112,7 +112,7 @@ mod tests {
                 Ok(_) => continue,
                 Err(ScapStatus::Timeout) => continue,
                 Err(ScapStatus::Eof) => break,
-                Err(e) => panic!("Got {:?}", e),
+                Err(e) => panic!("Got {e:?}"),
             }
         }
     }

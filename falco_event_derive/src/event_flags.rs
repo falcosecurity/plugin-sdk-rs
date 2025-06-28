@@ -317,7 +317,7 @@ fn render_flags_type(
     items: &Punctuated<FlagItem, Token![,]>,
     skips: &Skips,
 ) -> proc_macro2::TokenStream {
-    let final_name = Ident::new(&format!("{}_{}", underlying_type, name), name.span());
+    let final_name = Ident::new(&format!("{underlying_type}_{name}"), name.span());
 
     let items = items.iter().filter_map(|it| {
         let NumberOr::Token(ref name) = it.name else {
@@ -339,7 +339,7 @@ fn render_flags_type(
         "PT_ENUMFLAGS32" => render_enum(&final_name, quote!(u32), items, skips),
         "PT_ENUMFLAGS16" => render_enum(&final_name, quote!(u16), items, skips),
         "PT_ENUMFLAGS8" => render_enum(&final_name, quote!(u8), items, skips),
-        _ => panic!("unsupported type {}", underlying_type),
+        _ => panic!("unsupported type {underlying_type}"),
     }
 }
 
@@ -355,8 +355,7 @@ fn render_derive_deftly(
         {
             match underlying_type.to_string().as_str() {
                 "PT_ENUMFLAGS32" | "PT_ENUMFLAGS16" | "PT_ENUMFLAGS8" => {
-                    let final_name =
-                        Ident::new(&format!("{}_{}", underlying_type, name), name.span());
+                    let final_name = Ident::new(&format!("{underlying_type}_{name}"), name.span());
                     Some(quote!(
                         $crate::derive_deftly::derive_deftly_adhoc! {
                             $crate::#final_name: $($body)*
@@ -379,8 +378,7 @@ fn render_derive_deftly(
         {
             match underlying_type.to_string().as_str() {
                 "PT_FLAGS32" | "PT_FLAGS16" | "PT_FLAGS8" | "PT_MODE" => {
-                    let final_name =
-                        Ident::new(&format!("{}_{}", underlying_type, name), name.span());
+                    let final_name = Ident::new(&format!("{underlying_type}_{name}"), name.span());
                     Some(quote!(
                         $crate::derive_deftly::derive_deftly_adhoc! {
                             $crate::#final_name: $($body)*

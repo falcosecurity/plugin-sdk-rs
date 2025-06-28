@@ -132,7 +132,7 @@ pub fn derive_table_metadata(input: TokenStream) -> TokenStream {
         .filter(|a| a.path().is_ident("accessors_mod"))
         .filter_map(|a| a.parse_args::<Ident>().ok())
         .next()
-        .unwrap_or_else(|| Ident::new(&format!("__falco_plugin_private_{}", name), name.span()));
+        .unwrap_or_else(|| Ident::new(&format!("__falco_plugin_private_{name}"), name.span()));
 
     let mut field_traits = Vec::new();
     let mut field_trait_impls = vec![impl_table_metadata];
@@ -144,10 +144,10 @@ pub fn derive_table_metadata(input: TokenStream) -> TokenStream {
             };
             let ty = &f.ty;
 
-            let getter_name = Ident::new(&format!("get_{}", field_name), field_name.span());
+            let getter_name = Ident::new(&format!("get_{field_name}"), field_name.span());
             let table_getter_name =
-                Ident::new(&format!("get_{}_by_key", field_name), field_name.span());
-            let setter_name = Ident::new(&format!("set_{}", field_name), field_name.span());
+                Ident::new(&format!("get_{field_name}_by_key"), field_name.span());
+            let setter_name = Ident::new(&format!("set_{field_name}"), field_name.span());
 
             field_traits.push(quote!(
                 ::falco_plugin::impl_import_table_accessor_traits!(

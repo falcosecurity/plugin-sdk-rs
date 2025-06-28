@@ -63,7 +63,7 @@ fn main() {
         match driver.next_event() {
             Ok(_) => continue,
             Err(ScapStatus::Eof) => break,
-            Err(e) => panic!("{:?}", e),
+            Err(e) => panic!("{e:?}"),
         }
     }
 }

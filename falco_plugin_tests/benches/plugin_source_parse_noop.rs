@@ -56,7 +56,7 @@ fn bench_plugin_source_parse_noop_impl<D: TestDriver, M: Measurement>(g: &mut Be
             for _ in 0..NUM_EVENTS {
                 match black_box(driver.next_event()) {
                     Ok(_) => (),
-                    Err(e) => panic!("Unexpected error: {}", e),
+                    Err(e) => panic!("Unexpected error: {e}"),
                 }
             }
         });

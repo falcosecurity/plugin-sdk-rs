@@ -91,7 +91,7 @@ mod tests {
                     counter += 1;
                 }
                 Err(ScapStatus::Eof) => break,
-                Err(e) => panic!("{:?}", e),
+                Err(e) => panic!("{e:?}"),
             }
         }
 
@@ -109,7 +109,7 @@ mod tests {
                     counter += 1;
                 }
                 Err(ScapStatus::Eof) => break,
-                Err(e) => panic!("{:?}", e),
+                Err(e) => panic!("{e:?}"),
             }
         }
 

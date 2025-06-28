@@ -200,7 +200,7 @@ fn bench_plugin_custom_table_extract_only_impl<D: TestDriver, M: Measurement>(
                 for _ in 0..NUM_EVENTS {
                     match criterion::black_box(driver.extract_field(c"thread.val_direct", &event)) {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
@@ -224,7 +224,7 @@ fn bench_plugin_custom_table_extract_only_impl<D: TestDriver, M: Measurement>(
                 for _ in 0..NUM_EVENTS {
                     match criterion::black_box(driver.extract_field(c"thread.val_api", &event)) {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
@@ -250,7 +250,7 @@ fn bench_plugin_custom_table_extract_only_impl<D: TestDriver, M: Measurement>(
                 for _ in 0..NUM_EVENTS {
                     match criterion::black_box(driver.extract_field(c"thread.val2_api", &event)) {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
@@ -292,7 +292,7 @@ fn bench_plugin_custom_table_insert_and_extract_impl<D: TestDriver, M: Measureme
                         criterion::black_box(driver.extract_field(c"thread.val_direct", &event));
                     match as_string {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
@@ -318,7 +318,7 @@ fn bench_plugin_custom_table_insert_and_extract_impl<D: TestDriver, M: Measureme
                         criterion::black_box(driver.extract_field(c"thread.val_api", &event));
                     match as_string {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
@@ -346,7 +346,7 @@ fn bench_plugin_custom_table_insert_and_extract_impl<D: TestDriver, M: Measureme
                         criterion::black_box(driver.extract_field(c"thread.val2_api", &event));
                     match as_string {
                         Ok(_) => (),
-                        Err(e) => panic!("Unexpected error: {}", e),
+                        Err(e) => panic!("Unexpected error: {e}"),
                     }
                 }
             });
