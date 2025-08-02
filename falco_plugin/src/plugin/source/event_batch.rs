@@ -12,7 +12,7 @@ pub struct EventBatch<'a> {
 }
 
 impl EventBatch<'_> {
-    pub(in crate::plugin::source) fn new(alloc: &bumpalo::Bump) -> EventBatch {
+    pub(in crate::plugin::source) fn new(alloc: &bumpalo::Bump) -> EventBatch<'_> {
         let pointers = bumpalo::collections::Vec::new_in(alloc);
         EventBatch { alloc, pointers }
     }

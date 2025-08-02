@@ -68,7 +68,7 @@ pub struct RawEvent<'a> {
 }
 
 impl<'e> RawEvent<'e> {
-    fn from_impl(mut buf: &[u8]) -> Option<RawEvent> {
+    fn from_impl(mut buf: &[u8]) -> Option<RawEvent<'_>> {
         let ts_buf = buf.split_off(..8)?;
         let ts = u64::from_ne_bytes(ts_buf.try_into().unwrap());
 
@@ -96,7 +96,7 @@ impl<'e> RawEvent<'e> {
     /// Parse a byte slice into a RawEvent
     ///
     /// This decodes the header while leaving the payload as a raw byte buffer.
-    pub fn from(buf: &[u8]) -> std::io::Result<RawEvent> {
+    pub fn from(buf: &[u8]) -> std::io::Result<RawEvent<'_>> {
         Self::from_impl(buf).ok_or(std::io::ErrorKind::InvalidData.into())
     }
 

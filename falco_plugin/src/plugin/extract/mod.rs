@@ -35,11 +35,11 @@ pub enum ExtractFieldRequestArg<'a> {
 }
 
 pub trait ExtractField {
-    unsafe fn key_unchecked(&self) -> ExtractFieldRequestArg;
+    unsafe fn key_unchecked(&self) -> ExtractFieldRequestArg<'_>;
 }
 
 impl ExtractField for ss_plugin_extract_field {
-    unsafe fn key_unchecked(&self) -> ExtractFieldRequestArg {
+    unsafe fn key_unchecked(&self) -> ExtractFieldRequestArg<'_> {
         if self.arg_present == 0 {
             return ExtractFieldRequestArg::None;
         }

@@ -90,7 +90,7 @@ impl<'t> LazyTableReader<'t> {
     /// table accesses faster. If your plugin method does more than a few
     /// (say, 10) calls to methods that take a `TableReader`, it might be
     /// faster to get a `ValidatedTableReader`
-    pub fn validate(&self) -> Result<ValidatedTableReader, TableError> {
+    pub fn validate(&self) -> Result<ValidatedTableReader<'_>, TableError> {
         Ok(ValidatedTableReader {
             get_table_name: self
                 .reader_ext

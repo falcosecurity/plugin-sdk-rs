@@ -104,7 +104,7 @@ mod ffi {
             self: Pin<&mut SinspTestDriver>,
             field_name: *const c_char,
             event: &SinspEvent,
-        ) -> Result<SinspExtractedField>;
+        ) -> Result<SinspExtractedField<'_>>;
 
         fn get_metrics(
             self: Pin<&mut SinspTestDriver>,

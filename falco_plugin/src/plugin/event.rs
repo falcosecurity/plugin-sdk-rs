@@ -12,7 +12,7 @@ impl EventInput {
     ///
     /// This method parses the raw event data into a [`RawEvent`] instance,
     /// which can be later converted into a specific event type.
-    pub fn event(&self) -> std::io::Result<RawEvent> {
+    pub fn event(&self) -> std::io::Result<RawEvent<'_>> {
         unsafe { RawEvent::from_ptr(self.0.evt as *const _) }
     }
 

@@ -95,7 +95,7 @@ impl<'t> LazyTableWriter<'t> {
     /// table accesses faster. If your plugin method does more than a few
     /// (say, 10) calls to methods that take a `TableWriter`, it might be
     /// faster to get a `ValidatedTableWriter`
-    pub fn validate(&self) -> Result<ValidatedTableWriter, TableError> {
+    pub fn validate(&self) -> Result<ValidatedTableWriter<'_>, TableError> {
         Ok(ValidatedTableWriter {
             clear_table: self
                 .writer_ext

@@ -4,7 +4,7 @@ use falco_plugin::event::events::{Event, EventToBytes, RawEvent};
 use std::hint::black_box;
 use std::path::PathBuf;
 
-fn load(events: &[u8]) -> Vec<Event<AnyEvent>> {
+fn load(events: &[u8]) -> Vec<Event<AnyEvent<'_>>> {
     RawEvent::scan(events)
         .map(|event| event.unwrap().load_any().unwrap())
         .collect()

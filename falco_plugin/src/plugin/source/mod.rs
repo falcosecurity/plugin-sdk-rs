@@ -183,7 +183,7 @@ pub trait SourcePluginInstance {
     ///
     /// It consists of a percentage (0.0-100.0) and an optional description containing more
     /// details about the progress (e.g. bytes read/bytes total).
-    fn get_progress(&mut self) -> ProgressInfo {
+    fn get_progress(&mut self) -> ProgressInfo<'_> {
         ProgressInfo {
             value: 0.0,
             detail: None,
@@ -198,7 +198,7 @@ pub trait SourcePluginInstance {
     ///
     /// This method makes it easy to generate such events: just pass it the event data and get
     /// the complete event, with all the metadata set to reasonable defaults.
-    fn plugin_event(data: &[u8]) -> Event<PluginEvent> {
+    fn plugin_event(data: &[u8]) -> Event<PluginEvent<'_>> {
         let event = PluginEvent {
             plugin_id: Some(Self::Plugin::PLUGIN_ID),
             event_data: Some(data),
