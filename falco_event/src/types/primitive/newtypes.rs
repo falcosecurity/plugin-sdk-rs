@@ -307,6 +307,7 @@ newtype!(
     /// Layer 4 protocol (tcp/udp)
     ///
     /// This looks unused
+    #[allow(unused)]
     L4Proto(u8)
 );
 default_debug!(L4Proto);
