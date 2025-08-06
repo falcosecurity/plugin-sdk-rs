@@ -49,3 +49,12 @@ pull version: (pull_api version) (pull_events version)
 regen: regen_api regen_events
 
 update version: (pull version) regen
+
+presubmit:
+    cargo clippy --all-targets --all-features -- -D warnings
+    cargo test --all-features
+    RUSTDOCFLAGS="--cfg docsrs" cargo doc --all-features --no-deps
+    cargo fmt --check || cargo fmt
+
+presubmit-pr base:
+    git rebase --exec "just presubmit" {{ base }}
