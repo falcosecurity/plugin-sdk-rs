@@ -220,7 +220,7 @@ impl ParsePlugin for DummyParsePlugin {
         let entry = self.remaining_table.get_entry(reader, &event_num)?;
         let remaining = entry.get_remaining(reader)?;
 
-        let is_even = (remaining % 2 == 0).into();
+        let is_even = remaining.is_multiple_of(2).into();
         let mut string_rep = CString::default();
         string_rep.write_into(|w| write!(w, "{remaining} events remaining"))?;
 

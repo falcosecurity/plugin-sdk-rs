@@ -31,7 +31,7 @@ impl<'a> FromBytes<'a> for CStrPairArray<'a> {
     #[inline]
     fn from_bytes(buf: &mut &'a [u8]) -> Result<Self, FromBytesError> {
         let nuls = buf.iter().filter(|b| **b == 0).count();
-        if nuls % 2 != 0 {
+        if !nuls.is_multiple_of(2) {
             return Err(FromBytesError::OddPairItemCount);
         }
         let array = CStrArray::from_bytes(buf)?;
