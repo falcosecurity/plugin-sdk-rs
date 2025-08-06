@@ -8,9 +8,8 @@ use crate::plugin::tables::vtable::reader::private::TableReaderImpl;
 use crate::plugin::tables::vtable::reader::TableReader;
 use crate::plugin::tables::vtable::writer::private::TableWriterImpl;
 use crate::plugin::tables::vtable::writer::TableWriter;
-use crate::plugin::tables::vtable::TableError;
 use crate::plugin::tables::vtable::TablesInput;
-use crate::strings::from_ptr::{try_str_from_ptr_with_lifetime, FromPtrError};
+use crate::strings::from_ptr::try_str_from_ptr_with_lifetime;
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_state_data, ss_plugin_state_type,
     ss_plugin_table_entry_t, ss_plugin_table_field_t, ss_plugin_table_fieldinfo,
@@ -19,15 +18,6 @@ use falco_plugin_api::{
 use num_traits::FromPrimitive;
 use std::ffi::CStr;
 use std::ops::ControlFlow;
-use thiserror::Error;
-
-#[derive(Debug, Error)]
-pub enum TableNameError {
-    #[error(transparent)]
-    TableError(#[from] TableError),
-    #[error(transparent)]
-    PtrError(#[from] FromPtrError),
-}
 
 struct TemporaryTableEntry<'a> {
     tables_input: &'a TablesInput<'a>,
