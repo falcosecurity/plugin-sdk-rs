@@ -9,10 +9,10 @@ use falco_plugin::{anyhow, static_plugin, FailureReason};
 use std::ffi::{CStr, CString};
 use std::io::Write;
 
-struct DummyPlugin(usize);
+struct CountdownPlugin(usize);
 
-impl Plugin for DummyPlugin {
-    const NAME: &'static CStr = c"dummy";
+impl Plugin for CountdownPlugin {
+    const NAME: &'static CStr = c"countdown";
     const PLUGIN_VERSION: &'static CStr = c"0.0.0";
     const DESCRIPTION: &'static CStr = c"test plugin";
     const CONTACT: &'static CStr = c"rust@localdomain.pl";
@@ -30,10 +30,10 @@ impl Plugin for DummyPlugin {
     }
 }
 
-struct DummyPluginInstance(usize);
+struct CountdownPluginInstance(usize);
 
-impl SourcePluginInstance for DummyPluginInstance {
-    type Plugin = DummyPlugin;
+impl SourcePluginInstance for CountdownPluginInstance {
+    type Plugin = CountdownPlugin;
 
     fn next_batch(
         &mut self,
@@ -53,13 +53,13 @@ impl SourcePluginInstance for DummyPluginInstance {
     }
 }
 
-impl SourcePlugin for DummyPlugin {
-    type Instance = DummyPluginInstance;
-    const EVENT_SOURCE: &'static CStr = c"dummy";
+impl SourcePlugin for CountdownPlugin {
+    type Instance = CountdownPluginInstance;
+    const EVENT_SOURCE: &'static CStr = c"countdown";
     const PLUGIN_ID: u32 = 1111;
 
     fn open(&mut self, _params: Option<&str>) -> Result<Self::Instance, Error> {
-        Ok(DummyPluginInstance(3))
+        Ok(CountdownPluginInstance(3))
     }
 
     fn event_to_string(&mut self, event: &EventInput) -> Result<CString, Error> {
@@ -79,7 +79,7 @@ impl SourcePlugin for DummyPlugin {
     }
 }
 
-static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
+static_plugin!(COUNTDOWN_PLUGIN_API = CountdownPlugin);
 
 #[cfg(test)]
 mod tests {
@@ -94,16 +94,16 @@ mod tests {
 
         let m = metrics.next().unwrap();
 
-        assert_eq!(m.name, "dummy.next_batch_call_count");
+        assert_eq!(m.name, "countdown.next_batch_call_count");
         assert_eq!(m.value, n as u64);
 
         assert!(metrics.next().is_none());
     }
 
     fn test_dummy_next<D: TestDriver>() {
-        let (driver, _plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
+        let (driver, _plugin) = init_plugin::<D>(&super::COUNTDOWN_PLUGIN_API, c"").unwrap();
         let mut driver = driver
-            .start_capture(super::DummyPlugin::NAME, c"", PlatformData::Disabled)
+            .start_capture(super::CountdownPlugin::NAME, c"", PlatformData::Disabled)
             .unwrap();
 
         assert_eq!(
