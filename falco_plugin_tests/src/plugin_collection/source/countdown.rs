@@ -1,3 +1,4 @@
+use crate::CapturingTestDriver;
 use anyhow::Error;
 use falco_plugin::base::{Json, Metric, MetricLabel, MetricType, MetricValue, Plugin};
 use falco_plugin::event::events::types::PPME_PLUGINEVENT_E as PluginEvent;
@@ -115,3 +116,19 @@ impl SourcePlugin for CountdownPlugin {
 }
 
 static_plugin!(pub COUNTDOWN_PLUGIN_API = CountdownPlugin);
+
+#[track_caller]
+pub fn check_metrics<C: CapturingTestDriver>(driver: &mut C, batches: usize, events: usize) {
+    let metrics = driver.get_metrics().unwrap();
+    let mut metrics = metrics.iter();
+
+    let m = metrics.next().unwrap();
+    assert_eq!(m.name, "countdown.next_batch_call_count");
+    assert_eq!(m.value, batches as u64);
+
+    let m = metrics.next().unwrap();
+    assert_eq!(m.name, "countdown.events_produced");
+    assert_eq!(m.value, events as u64);
+
+    assert!(metrics.next().is_none());
+}
