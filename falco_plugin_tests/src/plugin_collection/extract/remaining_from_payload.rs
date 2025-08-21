@@ -2,7 +2,9 @@ use anyhow::{Context, Error};
 use falco_plugin::base::Plugin;
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E};
-use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
+use falco_plugin::extract::{
+    field, ExtractByteRange, ExtractFieldInfo, ExtractPlugin, ExtractRequest,
+};
 use falco_plugin::static_plugin;
 use falco_plugin::strings::WriteIntoCString;
 use falco_plugin::tables::TablesInput;
@@ -34,6 +36,24 @@ impl ExtractRemainingFromPayload {
 
         let mut out = CString::default();
         out.write_into(|w| w.write_all(payload))?;
+        Ok(out)
+    }
+
+    fn extract_payload_with_range(&mut self, req: ExtractRequest<Self>) -> Result<CString, Error> {
+        let event = req.event.event()?;
+        let event = event.load::<PPME_PLUGINEVENT_E>()?;
+        let payload = event
+            .params
+            .event_data
+            .ok_or_else(|| anyhow::anyhow!("no payload in event"))?;
+
+        let mut out = CString::default();
+        out.write_into(|w| w.write_all(payload))?;
+
+        if *req.offset == ExtractByteRange::Requested {
+            *req.offset = ExtractByteRange::in_plugin_data(0..payload.len());
+        }
+
         Ok(out)
     }
 
@@ -115,6 +135,10 @@ impl ExtractPlugin for ExtractRemainingFromPayload {
     type ExtractContext = ();
     const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] = &[
         field("dummy.payload", &Self::extract_payload),
+        field(
+            "dummy.payload_with_range",
+            &Self::extract_payload_with_range,
+        ),
         field("dummy.payload_repeated", &Self::extract_payload_repeated),
         field("dummy.remaining", &Self::extract_events_remaining),
         field("dummy.remaining_repeated", &Self::events_remaining_repeated),
