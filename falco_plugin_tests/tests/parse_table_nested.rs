@@ -5,45 +5,14 @@ use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
 use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
 use falco_plugin::strings::WriteIntoCString;
-use falco_plugin::tables::import;
 use falco_plugin::tables::TablesInput;
 use falco_plugin::{anyhow, static_plugin};
+use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::accessors::*;
+use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::nested_accessors::*;
+use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::RemainingCounterImportTableWithExtraFields;
 use std::ffi::{CStr, CString};
 use std::io::Write;
 use std::ops::ControlFlow;
-use std::sync::Arc;
-
-// now, redefine the tables but add some extra fields
-type RemainingCounterImportTableWithExtraFields =
-    import::Table<u64, RemainingCounterImportWithExtraFields>;
-type RemainingCounterImportWithExtraFields =
-    import::Entry<Arc<RemainingCounterImportMetadataWithExtraFields>>;
-
-#[derive(import::TableMetadata)]
-#[entry_type(RemainingCounterImportWithExtraFields)]
-struct RemainingCounterImportMetadataWithExtraFields {
-    remaining: import::Field<u64, RemainingCounterImportWithExtraFields>,
-    countdown:
-        import::Field<CountdownImportTableWithExtraFields, RemainingCounterImportWithExtraFields>,
-
-    #[custom]
-    is_even: import::Field<import::Bool, RemainingCounterImportWithExtraFields>,
-    #[custom]
-    as_string: import::Field<CStr, RemainingCounterImportWithExtraFields>,
-}
-
-type CountdownImportTableWithExtraFields = import::Table<u64, CountdownImportWithExtraFields>;
-type CountdownImportWithExtraFields = import::Entry<Arc<CountdownImportMetadataWithExtraFields>>;
-
-#[derive(import::TableMetadata)]
-#[entry_type(CountdownImportWithExtraFields)]
-struct CountdownImportMetadataWithExtraFields {
-    count: import::Field<u64, CountdownImportWithExtraFields>,
-
-    #[custom]
-    // Europe intensifies
-    is_final: import::Field<import::Bool, CountdownImportWithExtraFields>,
-}
 
 struct DummyParsePlugin {
     remaining_table: RemainingCounterImportTableWithExtraFields,
