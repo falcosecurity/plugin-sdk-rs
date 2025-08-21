@@ -8,7 +8,7 @@ use falco_plugin::{anyhow, static_plugin};
 use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::accessors::*;
 use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::nested_accessors::*;
 use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::RemainingCounterImportTableWithExtraFields;
-use std::ffi::{CStr, CString};
+use std::ffi::CStr;
 
 struct DummyExtractPlugin {
     // reusing the table definition with the #[custom] annotations
@@ -33,17 +33,6 @@ impl Plugin for DummyExtractPlugin {
 }
 
 impl DummyExtractPlugin {
-    fn extract_is_even(&mut self, req: ExtractRequest<Self>) -> Result<u64, Error> {
-        let event_num = req.event.event_number() as u64;
-
-        let entry = self
-            .remaining_table
-            .get_entry(req.table_reader, &event_num)?;
-        let is_even = entry.get_is_even(req.table_reader)?;
-
-        Ok(is_even.into())
-    }
-
     fn extract_is_final(&mut self, req: ExtractRequest<Self>, arg: u64) -> Result<u64, Error> {
         let event_num = req.event.event_number() as u64;
 
@@ -57,28 +46,14 @@ impl DummyExtractPlugin {
 
         Ok(is_final.into())
     }
-
-    fn extract_string_rep(&mut self, req: ExtractRequest<Self>) -> Result<CString, Error> {
-        let event_num = req.event.event_number() as u64;
-
-        let entry = self
-            .remaining_table
-            .get_entry(req.table_reader, &event_num)?;
-        let string_rep = entry.get_as_string(req.table_reader)?;
-
-        Ok(CString::from(string_rep))
-    }
 }
 
 impl ExtractPlugin for DummyExtractPlugin {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
     const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
     type ExtractContext = ();
-    const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] = &[
-        field("dummy_extract.is_even", &Self::extract_is_even),
-        field("dummy_extract.is_final", &Self::extract_is_final),
-        field("dummy_extract.as_string", &Self::extract_string_rep),
-    ];
+    const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] =
+        &[field("dummy_extract.is_final", &Self::extract_is_final)];
 }
 
 static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
@@ -86,6 +61,7 @@ static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
+    use falco_plugin_tests::plugin_collection::extract::extra_fields::EXTRACT_EXTRA_FIELDS_API;
     use falco_plugin_tests::plugin_collection::extract::remaining_from_table::EXTRACT_REMAINING_FROM_TABLE_API;
     use falco_plugin_tests::plugin_collection::parse::nested_table_extra_fields::PARSE_NESTED_TABLE_EXTRA_FIELDS_API;
     use falco_plugin_tests::plugin_collection::parse::remaining_into_nested_table::PARSE_INTO_NESTED_TABLE_API;
@@ -108,6 +84,9 @@ mod tests {
         let extract_remaining_plugin = driver
             .register_plugin(&EXTRACT_REMAINING_FROM_TABLE_API, c"")
             .unwrap();
+        let extract_extra_fields_plugin = driver
+            .register_plugin(&EXTRACT_EXTRA_FIELDS_API, c"")
+            .unwrap();
         let extract_plugin = driver
             .register_plugin(&super::DUMMY_EXTRACT_API, c"")
             .unwrap();
@@ -116,6 +95,9 @@ mod tests {
             .unwrap();
         driver
             .add_filterchecks(&extract_remaining_plugin, c"countdown")
+            .unwrap();
+        driver
+            .add_filterchecks(&extract_extra_fields_plugin, c"countdown")
             .unwrap();
         driver
             .add_filterchecks(&extract_plugin, c"countdown")
@@ -134,7 +116,7 @@ mod tests {
         );
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.is_even", &event)
+                .event_field_as_string(c"countdown.is_even", &event)
                 .unwrap()
                 .unwrap(),
             "0"
@@ -158,7 +140,7 @@ mod tests {
             .is_err());
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.as_string", &event)
+                .event_field_as_string(c"countdown.as_string", &event)
                 .unwrap()
                 .unwrap(),
             "3 events remaining"
@@ -174,7 +156,7 @@ mod tests {
         );
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.is_even", &event)
+                .event_field_as_string(c"countdown.is_even", &event)
                 .unwrap()
                 .unwrap(),
             "1"
@@ -198,7 +180,7 @@ mod tests {
             .is_err());
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.as_string", &event)
+                .event_field_as_string(c"countdown.as_string", &event)
                 .unwrap()
                 .unwrap(),
             "2 events remaining"
