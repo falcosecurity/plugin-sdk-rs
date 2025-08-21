@@ -8,30 +8,14 @@ use falco_plugin::source::{
     EventBatch, EventInput, PluginEvent, SourcePlugin, SourcePluginInstance,
 };
 use falco_plugin::strings::{CStringWriter, WriteIntoCString};
-use falco_plugin::tables::export;
 use falco_plugin::tables::import;
 use falco_plugin::tables::TablesInput;
 use falco_plugin::{anyhow, static_plugin, FailureReason};
+use falco_plugin_tests::plugin_collection::tables::remaining_export::RemainingEntryTable;
 use std::ffi::{CStr, CString};
 use std::io::Write;
 use std::ops::ControlFlow;
 use std::sync::Arc;
-
-// exporting a table with a nested table inside
-type RemainingEntryTable = export::Table<u64, RemainingCounter>;
-
-#[derive(export::Entry)]
-struct RemainingCounter {
-    remaining: export::Public<u64>,
-    countdown: Box<CountdownTable>,
-}
-
-type CountdownTable = export::Table<u64, Countdown>;
-
-#[derive(export::Entry)]
-struct Countdown {
-    count: export::Public<u64>,
-}
 
 struct DummyPlugin {
     num_batches: usize,
