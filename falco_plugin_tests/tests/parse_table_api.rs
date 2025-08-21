@@ -1,80 +1,16 @@
 use falco_plugin::anyhow::Error;
 use falco_plugin::base::Plugin;
+use falco_plugin::event::events::types::EventType;
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
-use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E};
 use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
 use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
 use falco_plugin::strings::WriteIntoCString;
 use falco_plugin::tables::import;
 use falco_plugin::tables::TablesInput;
 use falco_plugin::{anyhow, static_plugin};
-use falco_plugin_tests::plugin_collection::tables::remaining_export::RemainingEntryTable;
-use falco_plugin_tests::plugin_collection::tables::remaining_import::accessors::*;
-use falco_plugin_tests::plugin_collection::tables::remaining_import::RemainingCounterImportTable;
 use std::ffi::{CStr, CString};
 use std::io::Write;
 use std::sync::Arc;
-
-struct DummyPlugin {
-    #[allow(unused)]
-    remaining_table: Box<RemainingEntryTable>,
-    remaining_table_import: RemainingCounterImportTable,
-}
-
-impl Plugin for DummyPlugin {
-    const NAME: &'static CStr = c"dummy";
-    const PLUGIN_VERSION: &'static CStr = c"0.0.0";
-    const DESCRIPTION: &'static CStr = c"test plugin";
-    const CONTACT: &'static CStr = c"rust@localdomain.pl";
-    type ConfigType = ();
-
-    fn new(input: Option<&TablesInput>, _config: Self::ConfigType) -> Result<Self, Error> {
-        let input = input.ok_or_else(|| anyhow::anyhow!("did not get table input"))?;
-
-        // add the table (must hold the resulting Box to keep the table alive)
-        let remaining_table = input.add_table(RemainingEntryTable::new(c"remaining")?)?;
-        let remaining_table_import = input.get_table(c"remaining")?;
-
-        Ok(Self {
-            remaining_table,
-            remaining_table_import,
-        })
-    }
-}
-
-impl ParsePlugin for DummyPlugin {
-    const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
-    const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
-
-    fn parse_event(&mut self, event: &EventInput, parse_input: &ParseInput) -> anyhow::Result<()> {
-        let event_num = event.event_number() as u64;
-        let event = event.event()?;
-        let event = event.load::<PPME_PLUGINEVENT_E>()?;
-        let payload = event
-            .params
-            .event_data
-            .ok_or_else(|| anyhow::anyhow!("no payload in event"))?;
-
-        let first_char = &payload[0..1];
-        let first_char = std::str::from_utf8(first_char)?;
-        let remaining: u64 = first_char.parse()?;
-
-        // use table API
-        let r = &parse_input.reader;
-        let w = &parse_input.writer;
-        let entry = self.remaining_table_import.create_entry(w)?;
-        entry.set_remaining(w, &remaining)?;
-        anyhow::ensure!(
-            entry.set_readonly(w, &1).is_err(),
-            "setting a read-only field succeeded"
-        );
-        let _ = self
-            .remaining_table_import
-            .insert(r, w, &event_num, entry)?;
-
-        Ok(())
-    }
-}
 
 // now, redefine the table but add some extra fields
 type RemainingCounterImportTableWithExtraFields =
@@ -191,7 +127,6 @@ impl ExtractPlugin for DummyExtractPlugin {
     ];
 }
 
-static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 static_plugin!(DUMMY_PARSE_API = DummyParsePlugin);
 static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
 
@@ -199,6 +134,7 @@ static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
 mod tests {
     use falco_plugin::base::Plugin;
     use falco_plugin_tests::plugin_collection::extract::remaining_from_table::EXTRACT_REMAINING_FROM_TABLE_API;
+    use falco_plugin_tests::plugin_collection::parse::remaining_into_table_api::PARSE_INTO_TABLE_API_API;
     use falco_plugin_tests::plugin_collection::source::countdown::{
         CountdownPlugin, COUNTDOWN_PLUGIN_API,
     };
@@ -213,7 +149,7 @@ mod tests {
         )
         .unwrap();
         driver
-            .register_plugin(&super::DUMMY_PLUGIN_API, c"")
+            .register_plugin(&PARSE_INTO_TABLE_API_API, c"")
             .unwrap();
         let extract_remaining_plugin = driver
             .register_plugin(&EXTRACT_REMAINING_FROM_TABLE_API, c"")
