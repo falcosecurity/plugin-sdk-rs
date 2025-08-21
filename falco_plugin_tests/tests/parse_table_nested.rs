@@ -33,17 +33,6 @@ impl Plugin for DummyExtractPlugin {
 }
 
 impl DummyExtractPlugin {
-    fn extract_remaining(&mut self, req: ExtractRequest<Self>) -> Result<u64, Error> {
-        let event_num = req.event.event_number() as u64;
-
-        let entry = self
-            .remaining_table
-            .get_entry(req.table_reader, &event_num)?;
-        let remaining = entry.get_remaining(req.table_reader)?;
-
-        Ok(remaining)
-    }
-
     fn extract_is_even(&mut self, req: ExtractRequest<Self>) -> Result<u64, Error> {
         let event_num = req.event.event_number() as u64;
 
@@ -86,7 +75,6 @@ impl ExtractPlugin for DummyExtractPlugin {
     const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
     type ExtractContext = ();
     const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] = &[
-        field("dummy_extract.remaining", &Self::extract_remaining),
         field("dummy_extract.is_even", &Self::extract_is_even),
         field("dummy_extract.is_final", &Self::extract_is_final),
         field("dummy_extract.as_string", &Self::extract_string_rep),
@@ -98,6 +86,7 @@ static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
+    use falco_plugin_tests::plugin_collection::extract::remaining_from_table::EXTRACT_REMAINING_FROM_TABLE_API;
     use falco_plugin_tests::plugin_collection::parse::nested_table_extra_fields::PARSE_NESTED_TABLE_EXTRA_FIELDS_API;
     use falco_plugin_tests::plugin_collection::parse::remaining_into_nested_table::PARSE_INTO_NESTED_TABLE_API;
     use falco_plugin_tests::plugin_collection::source::countdown::{
@@ -116,11 +105,17 @@ mod tests {
         driver
             .register_plugin(&PARSE_INTO_NESTED_TABLE_API, c"")
             .unwrap();
+        let extract_remaining_plugin = driver
+            .register_plugin(&EXTRACT_REMAINING_FROM_TABLE_API, c"")
+            .unwrap();
         let extract_plugin = driver
             .register_plugin(&super::DUMMY_EXTRACT_API, c"")
             .unwrap();
         driver
             .register_plugin(&PARSE_NESTED_TABLE_EXTRA_FIELDS_API, c"")
+            .unwrap();
+        driver
+            .add_filterchecks(&extract_remaining_plugin, c"countdown")
             .unwrap();
         driver
             .add_filterchecks(&extract_plugin, c"countdown")
@@ -132,7 +127,7 @@ mod tests {
         let event = driver.next_event().unwrap();
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.remaining", &event)
+                .event_field_as_string(c"countdown.remaining", &event)
                 .unwrap()
                 .unwrap(),
             "3"
@@ -172,7 +167,7 @@ mod tests {
         let event = driver.next_event().unwrap();
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.remaining", &event)
+                .event_field_as_string(c"countdown.remaining", &event)
                 .unwrap()
                 .unwrap(),
             "2"
@@ -212,7 +207,7 @@ mod tests {
         let event = driver.next_event().unwrap();
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.remaining", &event)
+                .event_field_as_string(c"countdown.remaining", &event)
                 .unwrap()
                 .unwrap(),
             "1"
@@ -221,7 +216,7 @@ mod tests {
         let event = driver.next_event().unwrap();
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.remaining", &event)
+                .event_field_as_string(c"countdown.remaining", &event)
                 .unwrap()
                 .unwrap(),
             "0"
