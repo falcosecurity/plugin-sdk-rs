@@ -29,11 +29,11 @@ struct RemainingCounterImportMetadataWithExtraFields {
     as_string: import::Field<CStr, RemainingCounterImportWithExtraFields>,
 }
 
-struct DummyParsePlugin {
+struct ParseExtraFields {
     remaining_table: RemainingCounterImportTableWithExtraFields,
 }
 
-impl Plugin for DummyParsePlugin {
+impl Plugin for ParseExtraFields {
     const NAME: &'static CStr = c"dummy_parse";
     const PLUGIN_VERSION: &'static CStr = c"0.0.0";
     const DESCRIPTION: &'static CStr = c"test plugin";
@@ -48,7 +48,7 @@ impl Plugin for DummyParsePlugin {
     }
 }
 
-impl ParsePlugin for DummyParsePlugin {
+impl ParsePlugin for ParseExtraFields {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
     const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
 
@@ -71,14 +71,14 @@ impl ParsePlugin for DummyParsePlugin {
     }
 }
 
-struct DummyExtractPlugin {
+struct ExtractExtraFields {
     // reusing the table definition with the #[custom] annotations
     // technically causes the fields to be added again, but we get
     // the existing instances in that case
     remaining_table: RemainingCounterImportTableWithExtraFields,
 }
 
-impl Plugin for DummyExtractPlugin {
+impl Plugin for ExtractExtraFields {
     const NAME: &'static CStr = c"dummy_extract";
     const PLUGIN_VERSION: &'static CStr = c"0.0.0";
     const DESCRIPTION: &'static CStr = c"test plugin";
@@ -93,7 +93,7 @@ impl Plugin for DummyExtractPlugin {
     }
 }
 
-impl DummyExtractPlugin {
+impl ExtractExtraFields {
     fn extract_is_even(&mut self, req: ExtractRequest<Self>) -> Result<u64, Error> {
         let event_num = req.event.event_number() as u64;
 
@@ -117,7 +117,7 @@ impl DummyExtractPlugin {
     }
 }
 
-impl ExtractPlugin for DummyExtractPlugin {
+impl ExtractPlugin for ExtractExtraFields {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
     const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
     type ExtractContext = ();
@@ -127,8 +127,8 @@ impl ExtractPlugin for DummyExtractPlugin {
     ];
 }
 
-static_plugin!(DUMMY_PARSE_API = DummyParsePlugin);
-static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
+static_plugin!(PARSE_EXTRA_FIELDS_API = ParseExtraFields);
+static_plugin!(EXTRACT_EXTRA_FIELDS_API = ExtractExtraFields);
 
 #[cfg(test)]
 mod tests {
@@ -155,10 +155,10 @@ mod tests {
             .register_plugin(&EXTRACT_REMAINING_FROM_TABLE_API, c"")
             .unwrap();
         let extract_plugin = driver
-            .register_plugin(&super::DUMMY_EXTRACT_API, c"")
+            .register_plugin(&super::EXTRACT_EXTRA_FIELDS_API, c"")
             .unwrap();
         driver
-            .register_plugin(&super::DUMMY_PARSE_API, c"")
+            .register_plugin(&super::PARSE_EXTRA_FIELDS_API, c"")
             .unwrap();
         driver
             .add_filterchecks(&extract_remaining_plugin, c"countdown")
