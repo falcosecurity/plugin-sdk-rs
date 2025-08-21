@@ -3,71 +3,12 @@ use falco_plugin::base::Plugin;
 use falco_plugin::event::events::types::EventType;
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
-use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
-use falco_plugin::strings::WriteIntoCString;
 use falco_plugin::tables::TablesInput;
 use falco_plugin::{anyhow, static_plugin};
 use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::accessors::*;
 use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::nested_accessors::*;
 use falco_plugin_tests::plugin_collection::tables::remaining_import_extra_fields::RemainingCounterImportTableWithExtraFields;
 use std::ffi::{CStr, CString};
-use std::io::Write;
-use std::ops::ControlFlow;
-
-struct DummyParsePlugin {
-    remaining_table: RemainingCounterImportTableWithExtraFields,
-}
-
-impl Plugin for DummyParsePlugin {
-    const NAME: &'static CStr = c"dummy_parse";
-    const PLUGIN_VERSION: &'static CStr = c"0.0.0";
-    const DESCRIPTION: &'static CStr = c"test plugin";
-    const CONTACT: &'static CStr = c"rust@localdomain.pl";
-    type ConfigType = ();
-
-    fn new(input: Option<&TablesInput>, _config: Self::ConfigType) -> Result<Self, Error> {
-        let input = input.ok_or_else(|| anyhow::anyhow!("did not get table input"))?;
-        let remaining_table = input.get_table(c"remaining")?;
-
-        Ok(Self { remaining_table })
-    }
-}
-
-impl ParsePlugin for DummyParsePlugin {
-    const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
-    const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
-
-    fn parse_event(&mut self, event: &EventInput, parse_input: &ParseInput) -> anyhow::Result<()> {
-        let reader = &parse_input.reader;
-        let writer = &parse_input.writer;
-        let event_num = event.event_number() as u64;
-
-        let entry = self.remaining_table.get_entry(reader, &event_num)?;
-        let remaining = entry.get_remaining(reader)?;
-
-        let is_even = remaining.is_multiple_of(2).into();
-        let mut string_rep = CString::default();
-        string_rep.write_into(|w| write!(w, "{remaining} events remaining"))?;
-
-        entry.set_is_even(writer, &is_even)?;
-        entry.set_as_string(writer, string_rep.as_c_str())?;
-
-        entry.get_countdown(reader)?.iter_entries_mut(reader, |c| {
-            // TODO: some error handling support would be nice
-            let Ok(count) = c.get_count(reader) else {
-                return ControlFlow::Continue(());
-            };
-
-            let is_final = (count == 0).into();
-            // TODO again, error handling
-            c.set_is_final(writer, &is_final).ok();
-
-            ControlFlow::Continue(())
-        })?;
-
-        Ok(())
-    }
-}
 
 struct DummyExtractPlugin {
     // reusing the table definition with the #[custom] annotations
@@ -152,12 +93,12 @@ impl ExtractPlugin for DummyExtractPlugin {
     ];
 }
 
-static_plugin!(DUMMY_PARSE_API = DummyParsePlugin);
 static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
 
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
+    use falco_plugin_tests::plugin_collection::parse::nested_table_extra_fields::PARSE_NESTED_TABLE_EXTRA_FIELDS_API;
     use falco_plugin_tests::plugin_collection::parse::remaining_into_nested_table::PARSE_INTO_NESTED_TABLE_API;
     use falco_plugin_tests::plugin_collection::source::countdown::{
         CountdownPlugin, COUNTDOWN_PLUGIN_API,
@@ -179,7 +120,7 @@ mod tests {
             .register_plugin(&super::DUMMY_EXTRACT_API, c"")
             .unwrap();
         driver
-            .register_plugin(&super::DUMMY_PARSE_API, c"")
+            .register_plugin(&PARSE_NESTED_TABLE_EXTRA_FIELDS_API, c"")
             .unwrap();
         driver
             .add_filterchecks(&extract_plugin, c"countdown")
