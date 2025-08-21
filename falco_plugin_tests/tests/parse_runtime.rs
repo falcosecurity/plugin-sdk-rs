@@ -8,13 +8,13 @@ use falco_plugin::tables::TablesInput;
 use falco_plugin::{anyhow, static_plugin};
 use std::ffi::CStr;
 
-struct DummyExtractPlugin {
+struct ExtractRemainingFromTableRuntime {
     remaining_table: import::Table<u64>,
     remaining_field: import::Field<u64>,
 }
 
-impl Plugin for DummyExtractPlugin {
-    const NAME: &'static CStr = c"dummy_extract";
+impl Plugin for ExtractRemainingFromTableRuntime {
+    const NAME: &'static CStr = c"extract_remaining_from_table_runtime";
     const PLUGIN_VERSION: &'static CStr = c"0.0.0";
     const DESCRIPTION: &'static CStr = c"test plugin";
     const CONTACT: &'static CStr = c"rust@localdomain.pl";
@@ -32,7 +32,7 @@ impl Plugin for DummyExtractPlugin {
     }
 }
 
-impl DummyExtractPlugin {
+impl ExtractRemainingFromTableRuntime {
     fn extract_remaining(&mut self, req: ExtractRequest<Self>) -> Result<u64, Error> {
         let event_num = req.event.event_number() as u64;
 
@@ -45,15 +45,15 @@ impl DummyExtractPlugin {
     }
 }
 
-impl ExtractPlugin for DummyExtractPlugin {
+impl ExtractPlugin for ExtractRemainingFromTableRuntime {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
     const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
     type ExtractContext = ();
     const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] =
-        &[field("dummy_extract.remaining", &Self::extract_remaining)];
+        &[field("countdown.remaining", &Self::extract_remaining)];
 }
 
-static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
+static_plugin!(EXTRACT_REMAINING_FROM_TABLE_RUNTIME_API = ExtractRemainingFromTableRuntime);
 
 #[cfg(test)]
 mod tests {
@@ -76,7 +76,7 @@ mod tests {
             .register_plugin(&PARSE_REMAINING_INTO_TABLE_DIRECT_PLUGIN_API, c"")
             .unwrap();
         let extract_plugin = driver
-            .register_plugin(&super::DUMMY_EXTRACT_API, c"")
+            .register_plugin(&super::EXTRACT_REMAINING_FROM_TABLE_RUNTIME_API, c"")
             .unwrap();
         driver
             .add_filterchecks(&extract_plugin, c"countdown")
@@ -89,7 +89,7 @@ mod tests {
         let event = driver.next_event().unwrap();
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.remaining", &event)
+                .event_field_as_string(c"countdown.remaining", &event)
                 .unwrap()
                 .unwrap(),
             "3"
@@ -97,7 +97,7 @@ mod tests {
         let event = driver.next_event().unwrap();
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.remaining", &event)
+                .event_field_as_string(c"countdown.remaining", &event)
                 .unwrap()
                 .unwrap(),
             "2"
@@ -105,7 +105,7 @@ mod tests {
         let event = driver.next_event().unwrap();
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.remaining", &event)
+                .event_field_as_string(c"countdown.remaining", &event)
                 .unwrap()
                 .unwrap(),
             "1"
@@ -113,7 +113,7 @@ mod tests {
         let event = driver.next_event().unwrap();
         assert_eq!(
             driver
-                .event_field_as_string(c"dummy_extract.remaining", &event)
+                .event_field_as_string(c"countdown.remaining", &event)
                 .unwrap()
                 .unwrap(),
             "0"
