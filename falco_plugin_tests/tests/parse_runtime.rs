@@ -8,7 +8,7 @@ use falco_plugin_tests::{
     init_plugin, instantiate_tests, CapturingTestDriver, PlatformData, ScapStatus, TestDriver,
 };
 
-fn test_dummy_next<D: TestDriver>() {
+fn test_parse_runtime<D: TestDriver>() {
     let (mut driver, _plugin) = init_plugin::<D>(
         &COUNTDOWN_PLUGIN_API,
         cr#"{"remaining": 4, "batch_size": 4}"#,
@@ -65,4 +65,4 @@ fn test_dummy_next<D: TestDriver>() {
     assert!(matches!(event, Err(ScapStatus::Eof)))
 }
 
-instantiate_tests!(test_dummy_next);
+instantiate_tests!(test_parse_runtime);
