@@ -5,34 +5,15 @@ use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E};
 use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
 use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
 use falco_plugin::strings::WriteIntoCString;
-use falco_plugin::tables::export;
 use falco_plugin::tables::import;
 use falco_plugin::tables::TablesInput;
 use falco_plugin::{anyhow, static_plugin};
+use falco_plugin_tests::plugin_collection::tables::remaining_export::RemainingEntryTable;
+use falco_plugin_tests::plugin_collection::tables::remaining_import::accessors::*;
+use falco_plugin_tests::plugin_collection::tables::remaining_import::RemainingCounterImportTable;
 use std::ffi::{CStr, CString};
 use std::io::Write;
 use std::sync::Arc;
-
-// exporting a table
-type RemainingEntryTable = export::Table<u64, RemainingCounter>;
-
-// TODO Entry vs TableMetadata is an ugly asymmetry
-#[derive(export::Entry)]
-struct RemainingCounter {
-    remaining: export::Public<u64>,
-    readonly: export::Readonly<u64>,
-}
-
-// same table, but imported
-type RemainingCounterImportTable = import::Table<u64, RemainingCounterImport>;
-type RemainingCounterImport = import::Entry<Arc<RemainingCounterImportMetadata>>;
-
-#[derive(import::TableMetadata)]
-#[entry_type(RemainingCounterImport)]
-struct RemainingCounterImportMetadata {
-    remaining: import::Field<u64, RemainingCounterImport>,
-    readonly: import::Field<u64, RemainingCounterImport>,
-}
 
 struct DummyPlugin {
     #[allow(unused)]

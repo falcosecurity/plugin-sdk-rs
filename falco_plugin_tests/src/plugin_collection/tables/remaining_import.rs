@@ -9,4 +9,5 @@ pub type RemainingCounterImport = import::Entry<Arc<RemainingCounterImportMetada
 #[accessors_mod(accessors)]
 pub struct RemainingCounterImportMetadata {
     remaining: import::Field<u64, RemainingCounterImport>,
+    readonly: import::Field<u64, RemainingCounterImport>,
 }
