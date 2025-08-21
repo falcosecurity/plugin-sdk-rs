@@ -1,79 +1,17 @@
 use falco_plugin::anyhow::Error;
 use falco_plugin::base::Plugin;
+use falco_plugin::event::events::types::EventType;
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
-use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E};
 use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
 use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
 use falco_plugin::strings::WriteIntoCString;
 use falco_plugin::tables::import;
 use falco_plugin::tables::TablesInput;
 use falco_plugin::{anyhow, static_plugin};
-use falco_plugin_tests::plugin_collection::tables::remaining_export::RemainingEntryTable;
 use std::ffi::{CStr, CString};
 use std::io::Write;
 use std::ops::ControlFlow;
 use std::sync::Arc;
-
-struct DummyPlugin {
-    remaining_table: Box<RemainingEntryTable>,
-}
-
-impl Plugin for DummyPlugin {
-    const NAME: &'static CStr = c"dummy";
-    const PLUGIN_VERSION: &'static CStr = c"0.0.0";
-    const DESCRIPTION: &'static CStr = c"test plugin";
-    const CONTACT: &'static CStr = c"rust@localdomain.pl";
-    type ConfigType = ();
-
-    fn new(input: Option<&TablesInput>, _config: Self::ConfigType) -> Result<Self, Error> {
-        let input = input.ok_or_else(|| anyhow::anyhow!("did not get table input"))?;
-
-        // add the table
-        let remaining_table = input.add_table(RemainingEntryTable::new(c"remaining")?)?;
-
-        Ok(Self { remaining_table })
-    }
-}
-
-impl ParsePlugin for DummyPlugin {
-    const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
-    const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
-
-    fn parse_event(&mut self, event: &EventInput, _parse_input: &ParseInput) -> anyhow::Result<()> {
-        let event_num = event.event_number() as u64;
-        let event = event.event()?;
-        let event = event.load::<PPME_PLUGINEVENT_E>()?;
-        let payload = event
-            .params
-            .event_data
-            .ok_or_else(|| anyhow::anyhow!("no payload in event"))?;
-
-        let first_char = &payload[0..1];
-        let first_char = std::str::from_utf8(first_char)?;
-        let remaining: u64 = first_char.parse()?;
-
-        let mut entry = self.remaining_table.create_entry()?;
-        *entry.remaining = remaining;
-
-        {
-            let countdown_table = &mut entry.countdown;
-            for i in 0..=remaining {
-                let mut countdown_entry = countdown_table.create_entry()?;
-                *countdown_entry.count = remaining - i;
-
-                let _ = countdown_table
-                    .insert(&i, countdown_entry)
-                    .ok_or_else(|| anyhow::anyhow!("boo"))?;
-            }
-        }
-
-        let _ = self
-            .remaining_table
-            .insert(&event_num, entry)
-            .ok_or_else(|| anyhow::anyhow!("boo"))?;
-        Ok(())
-    }
-}
 
 // now, redefine the tables but add some extra fields
 type RemainingCounterImportTableWithExtraFields =
@@ -245,13 +183,13 @@ impl ExtractPlugin for DummyExtractPlugin {
     ];
 }
 
-static_plugin!(DUMMY_PLUGIN_API = DummyPlugin);
 static_plugin!(DUMMY_PARSE_API = DummyParsePlugin);
 static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
 
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
+    use falco_plugin_tests::plugin_collection::parse::remaining_into_nested_table::PARSE_INTO_NESTED_TABLE_API;
     use falco_plugin_tests::plugin_collection::source::countdown::{
         CountdownPlugin, COUNTDOWN_PLUGIN_API,
     };
@@ -266,7 +204,7 @@ mod tests {
         )
         .unwrap();
         driver
-            .register_plugin(&super::DUMMY_PLUGIN_API, c"")
+            .register_plugin(&PARSE_INTO_NESTED_TABLE_API, c"")
             .unwrap();
         let extract_plugin = driver
             .register_plugin(&super::DUMMY_EXTRACT_API, c"")
