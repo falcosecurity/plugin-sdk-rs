@@ -27,7 +27,7 @@ pub fn init_plugin<D: TestDriver>(
 #[macro_export]
 macro_rules! instantiate_tests {
     ($($func:ident);*) => {
-        mod fallback {
+        mod native {
             $(
             #[test]
             fn $func() {
