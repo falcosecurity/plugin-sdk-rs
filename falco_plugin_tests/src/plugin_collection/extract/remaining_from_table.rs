@@ -1,28 +1,13 @@
+use crate::plugin_collection::tables::remaining_import::accessors::*;
+use crate::plugin_collection::tables::remaining_import::RemainingCounterImportTable;
 use anyhow::Error;
 use falco_plugin::base::Plugin;
 use falco_plugin::event::events::types::EventType;
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
 use falco_plugin::static_plugin;
-use falco_plugin::tables::{export, import, TablesInput};
+use falco_plugin::tables::TablesInput;
 use std::ffi::CStr;
-use std::sync::Arc;
-
-pub type RemainingEntryTable = export::Table<u64, RemainingCounter>;
-
-#[derive(export::Entry)]
-pub struct RemainingCounter {
-    pub remaining: export::Public<u64>,
-}
-
-type RemainingCounterImportTable = import::Table<u64, RemainingCounterImport>;
-type RemainingCounterImport = import::Entry<Arc<RemainingCounterImportMetadata>>;
-
-#[derive(import::TableMetadata)]
-#[entry_type(RemainingCounterImport)]
-struct RemainingCounterImportMetadata {
-    remaining: import::Field<u64, RemainingCounterImport>,
-}
 
 pub struct ExtractRemainingFromTable {
     remaining_table: RemainingCounterImportTable,

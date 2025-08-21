@@ -1,4 +1,4 @@
-use crate::plugin_collection::extract::remaining_from_table::RemainingEntryTable;
+use crate::plugin_collection::tables::remaining_export::RemainingEntryTable;
 use anyhow::Error;
 use falco_plugin::base::Plugin;
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
