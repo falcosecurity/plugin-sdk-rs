@@ -11,7 +11,7 @@ use std::ffi::CStr;
 use std::sync::Arc;
 
 type Fd = Entry<Arc<FdMetadata>>;
-type FdTable = Table<i32, Fd>;
+type FdTable = Table<i32, Fd>; // the actual key type is i32, so we expect an error
 
 #[derive(TableMetadata)]
 #[entry_type(Fd)]

@@ -9,7 +9,7 @@ use falco_plugin::tables::TablesInput;
 use std::ffi::CStr;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-// we cant really get at the plugin state once we hand it off
+// we can't really get at the plugin state once we hand it off
 // to the framework, so add some global state so we see
 // what it's doing
 thread_local! {
