@@ -1,17 +1,14 @@
 use falco_plugin::anyhow::Error;
-use falco_plugin::base::{Metric, MetricLabel, MetricType, MetricValue, Plugin};
+use falco_plugin::base::Plugin;
 use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::event::events::types::{EventType, PPME_PLUGINEVENT_E};
 use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
-use falco_plugin::parse::{ParseInput, ParsePlugin};
-use falco_plugin::source::{
-    EventBatch, EventInput, PluginEvent, SourcePlugin, SourcePluginInstance,
-};
-use falco_plugin::strings::{CStringWriter, WriteIntoCString};
+use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
+use falco_plugin::strings::WriteIntoCString;
 use falco_plugin::tables::export;
 use falco_plugin::tables::import;
 use falco_plugin::tables::TablesInput;
-use falco_plugin::{anyhow, static_plugin, FailureReason};
+use falco_plugin::{anyhow, static_plugin};
 use std::ffi::{CStr, CString};
 use std::io::Write;
 use std::sync::Arc;
@@ -38,8 +35,6 @@ struct RemainingCounterImportMetadata {
 }
 
 struct DummyPlugin {
-    num_batches: usize,
-    batch_count: MetricLabel,
     #[allow(unused)]
     remaining_table: Box<RemainingEntryTable>,
     remaining_table_import: RemainingCounterImportTable,
@@ -60,74 +55,15 @@ impl Plugin for DummyPlugin {
         let remaining_table_import = input.get_table(c"remaining")?;
 
         Ok(Self {
-            num_batches: 0,
-            batch_count: MetricLabel::new(c"next_batch_call_count", MetricType::Monotonic),
             remaining_table,
             remaining_table_import,
         })
-    }
-
-    fn get_metrics(&mut self) -> impl IntoIterator<Item = Metric> {
-        [self
-            .batch_count
-            .with_value(MetricValue::U64(self.num_batches as u64))]
-    }
-}
-
-struct DummyPluginInstance(Option<usize>);
-
-impl SourcePluginInstance for DummyPluginInstance {
-    type Plugin = DummyPlugin;
-
-    fn next_batch(
-        &mut self,
-        plugin: &mut Self::Plugin,
-        batch: &mut EventBatch,
-    ) -> Result<(), Error> {
-        plugin.num_batches += 1;
-        if let Some(mut num_events) = self.0.take() {
-            while num_events > 0 {
-                num_events -= 1;
-                let event = format!("{num_events} events remaining");
-                let event = Self::plugin_event(event.as_bytes());
-                batch.add(event)?;
-            }
-            Ok(())
-        } else {
-            Err(anyhow::anyhow!("all events produced").context(FailureReason::Eof))
-        }
-    }
-}
-
-impl SourcePlugin for DummyPlugin {
-    type Instance = DummyPluginInstance;
-    const EVENT_SOURCE: &'static CStr = c"dummy";
-    const PLUGIN_ID: u32 = 1111;
-
-    fn open(&mut self, _params: Option<&str>) -> Result<Self::Instance, Error> {
-        Ok(DummyPluginInstance(Some(4)))
-    }
-
-    fn event_to_string(&mut self, event: &EventInput) -> Result<CString, Error> {
-        let event = event.event()?;
-        let plugin_event = event.load::<PluginEvent>()?;
-        let mut writer = CStringWriter::default();
-        write!(
-            writer,
-            "{}",
-            plugin_event
-                .params
-                .event_data
-                .map(|e| String::from_utf8_lossy(e))
-                .unwrap_or_default()
-        )?;
-        Ok(writer.into_cstring())
     }
 }
 
 impl ParsePlugin for DummyPlugin {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
-    const EVENT_SOURCES: &'static [&'static str] = &["dummy"];
+    const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
 
     fn parse_event(&mut self, event: &EventInput, parse_input: &ParseInput) -> anyhow::Result<()> {
         let event_num = event.event_number() as u64;
@@ -197,7 +133,7 @@ impl Plugin for DummyParsePlugin {
 
 impl ParsePlugin for DummyParsePlugin {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
-    const EVENT_SOURCES: &'static [&'static str] = &["dummy"];
+    const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
 
     fn parse_event(&mut self, event: &EventInput, parse_input: &ParseInput) -> anyhow::Result<()> {
         let event_num = event.event_number() as u64;
@@ -277,7 +213,7 @@ impl DummyExtractPlugin {
 
 impl ExtractPlugin for DummyExtractPlugin {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
-    const EVENT_SOURCES: &'static [&'static str] = &["dummy"];
+    const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
     type ExtractContext = ();
     const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] = &[
         field("dummy_extract.remaining", &Self::extract_remaining),
@@ -293,22 +229,34 @@ static_plugin!(DUMMY_EXTRACT_API = DummyExtractPlugin);
 #[cfg(test)]
 mod tests {
     use falco_plugin::base::Plugin;
+    use falco_plugin_tests::plugin_collection::source::countdown::{
+        CountdownPlugin, COUNTDOWN_PLUGIN_API,
+    };
     use falco_plugin_tests::{
         init_plugin, instantiate_tests, CapturingTestDriver, PlatformData, ScapStatus, TestDriver,
     };
 
     fn test_dummy_next<D: TestDriver>() {
-        let (mut driver, _plugin) = init_plugin::<D>(&super::DUMMY_PLUGIN_API, c"").unwrap();
+        let (mut driver, _plugin) = init_plugin::<D>(
+            &COUNTDOWN_PLUGIN_API,
+            cr#"{"remaining": 4, "batch_size": 4}"#,
+        )
+        .unwrap();
+        driver
+            .register_plugin(&super::DUMMY_PLUGIN_API, c"")
+            .unwrap();
         let extract_plugin = driver
             .register_plugin(&super::DUMMY_EXTRACT_API, c"")
             .unwrap();
         driver
             .register_plugin(&super::DUMMY_PARSE_API, c"")
             .unwrap();
-        driver.add_filterchecks(&extract_plugin, c"dummy").unwrap();
+        driver
+            .add_filterchecks(&extract_plugin, c"countdown")
+            .unwrap();
 
         let mut driver = driver
-            .start_capture(super::DummyPlugin::NAME, c"", PlatformData::Disabled)
+            .start_capture(CountdownPlugin::NAME, c"", PlatformData::Disabled)
             .unwrap();
 
         let event = driver.next_event().unwrap();
