@@ -5,20 +5,13 @@ use falco_plugin::event::events::types::EventType::PLUGINEVENT_E;
 use falco_plugin::event::fields::types::PT_ABSTIME;
 use falco_plugin::event::fields::types::PT_IPNET;
 use falco_plugin::extract::{field, ExtractFieldInfo, ExtractPlugin, ExtractRequest};
-use falco_plugin::source::{
-    EventBatch, EventInput, PluginEvent, SourcePlugin, SourcePluginInstance,
-};
-use falco_plugin::strings::CStringWriter;
+use falco_plugin::static_plugin;
 use falco_plugin::tables::TablesInput;
-use falco_plugin::{anyhow, static_plugin, FailureReason};
 use std::ffi::{CStr, CString};
-use std::io::Write;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::time::{Duration, UNIX_EPOCH};
 
-struct DummyPlugin {
-    num_batches: usize,
-}
+struct DummyPlugin;
 
 impl Plugin for DummyPlugin {
     const NAME: &'static CStr = c"dummy";
@@ -28,58 +21,7 @@ impl Plugin for DummyPlugin {
     type ConfigType = ();
 
     fn new(_input: Option<&TablesInput>, _config: Self::ConfigType) -> Result<Self, Error> {
-        Ok(Self { num_batches: 0 })
-    }
-}
-
-struct DummyPluginInstance(Option<usize>);
-
-impl SourcePluginInstance for DummyPluginInstance {
-    type Plugin = DummyPlugin;
-
-    fn next_batch(
-        &mut self,
-        plugin: &mut Self::Plugin,
-        batch: &mut EventBatch,
-    ) -> Result<(), Error> {
-        plugin.num_batches += 1;
-        if let Some(mut num_events) = self.0.take() {
-            while num_events > 0 {
-                num_events -= 1;
-                let event = format!("{num_events} events remaining");
-                let event = Self::plugin_event(event.as_bytes());
-                batch.add(event)?;
-            }
-            Ok(())
-        } else {
-            Err(anyhow::anyhow!("all events produced").context(FailureReason::Eof))
-        }
-    }
-}
-
-impl SourcePlugin for DummyPlugin {
-    type Instance = DummyPluginInstance;
-    const EVENT_SOURCE: &'static CStr = c"dummy";
-    const PLUGIN_ID: u32 = 1111;
-
-    fn open(&mut self, _params: Option<&str>) -> Result<Self::Instance, Error> {
-        Ok(DummyPluginInstance(Some(4)))
-    }
-
-    fn event_to_string(&mut self, event: &EventInput) -> Result<CString, Error> {
-        let event = event.event()?;
-        let plugin_event = event.load::<PluginEvent>()?;
-        let mut writer = CStringWriter::default();
-        write!(
-            writer,
-            "{}",
-            plugin_event
-                .params
-                .event_data
-                .map(|e| String::from_utf8_lossy(e))
-                .unwrap_or_default()
-        )?;
-        Ok(writer.into_cstring())
+        Ok(Self)
     }
 }
 
@@ -239,7 +181,7 @@ macro_rules! gen_fields_variants {
 
 impl ExtractPlugin for DummyPlugin {
     const EVENT_TYPES: &'static [EventType] = &[PLUGINEVENT_E];
-    const EVENT_SOURCES: &'static [&'static str] = &["dummy"];
+    const EVENT_SOURCES: &'static [&'static str] = &["countdown"];
     type ExtractContext = ();
     const EXTRACT_FIELDS: &'static [ExtractFieldInfo<Self>] = gen_fields_variants!(
         u64, string, reltime, abstime, bool, ipaddr_v4, ipaddr_v6, ipaddr, ipnet_v4, ipnet_v6,
@@ -309,13 +251,23 @@ macro_rules! extract_test_case {
     ($ident:ident, $expected_val_expr:expr, $expected_vec_expr:expr) => {
         mod $ident {
             use super::*;
+            use falco_plugin_tests::plugin_collection::source::countdown::{
+                CountdownPlugin, COUNTDOWN_PLUGIN_API,
+            };
             use falco_plugin_tests::PlatformData;
 
             fn test_extract<D: TestDriver>() {
-                let (mut driver, plugin) = init_plugin::<D>(&crate::DUMMY_PLUGIN_API, c"").unwrap();
-                driver.add_filterchecks(&plugin, c"dummy").unwrap();
+                let (mut driver, _) = init_plugin::<D>(
+                    &COUNTDOWN_PLUGIN_API,
+                    cr#"{"remaining": 4, "batch_size": 4}"#,
+                )
+                .unwrap();
+                let plugin = driver
+                    .register_plugin(&crate::DUMMY_PLUGIN_API, c"")
+                    .unwrap();
+                driver.add_filterchecks(&plugin, c"countdown").unwrap();
                 let mut driver = driver
-                    .start_capture(crate::DummyPlugin::NAME, c"", PlatformData::Disabled)
+                    .start_capture(CountdownPlugin::NAME, c"", PlatformData::Disabled)
                     .unwrap();
 
                 let event = driver.next_event().unwrap();
