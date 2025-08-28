@@ -29,7 +29,7 @@ jobs:
       - name: Clean docs folder
         run: cargo clean --doc
       - name: Build docs
-        run: cargo doc --all-features --no-deps
+        run: cargo doc --all-features --no-deps --workspace --exclude falco_plugin_tests
       - name: Add redirect
         run: echo '<meta http-equiv="refresh" content="0;url=falco_plugin/index.html">' > target/doc/index.html
       - name: Remove lock file
