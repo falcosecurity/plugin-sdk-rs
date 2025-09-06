@@ -1,11 +1,12 @@
 use crate::plugin::base::metrics::Metric;
 use crate::plugin::base::wrappers::BasePluginExported;
-use crate::plugin::schema::ConfigSchema;
 use crate::plugin::tables::vtable::TablesInput;
+use schema::ConfigSchema;
 use std::ffi::CStr;
 
 mod logger;
 pub mod metrics;
+pub mod schema;
 #[doc(hidden)]
 pub mod wrappers;
 

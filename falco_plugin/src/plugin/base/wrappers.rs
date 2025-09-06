@@ -1,8 +1,8 @@
 use crate::base::Plugin;
 use crate::plugin::base::logger::{FalcoPluginLoggerImpl, FALCO_LOGGER};
+use crate::plugin::base::schema::{ConfigSchema, ConfigSchemaType};
 use crate::plugin::error::ffi_result::FfiResult;
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::schema::{ConfigSchema, ConfigSchemaType};
 use crate::plugin::tables::vtable::TablesInput;
 use crate::strings::from_ptr::try_str_from_ptr;
 use crate::strings::WriteIntoCString;
