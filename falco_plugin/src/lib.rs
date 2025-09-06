@@ -20,9 +20,9 @@ pub use crate::plugin::error::FailureReason;
 /// See the [`base::Plugin`] trait documentation for details.
 pub mod base {
     pub use crate::plugin::base::metrics::{Metric, MetricLabel, MetricType, MetricValue};
+    pub use crate::plugin::base::schema::Json;
     pub use crate::plugin::base::Plugin;
     pub use crate::plugin::base::CURRENT_SCHEMA_VERSION;
-    pub use crate::plugin::schema::Json;
 }
 
 /// # Event-related types
