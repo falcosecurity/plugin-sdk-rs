@@ -1,5 +1,5 @@
 use crate::listen::CaptureListenPlugin;
-use crate::plugin::base::PluginWrapper;
+use crate::plugin::base::wrappers::PluginWrapper;
 use crate::plugin::error::ffi_result::FfiResult;
 use crate::plugin::listen::CaptureListenInput;
 use falco_plugin_api::{

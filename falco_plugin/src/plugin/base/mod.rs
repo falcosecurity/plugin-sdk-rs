@@ -1,64 +1,13 @@
 use crate::plugin::base::metrics::Metric;
 use crate::plugin::base::wrappers::BasePluginExported;
-use crate::plugin::error::last_error::LastError;
 use crate::plugin::schema::ConfigSchema;
 use crate::plugin::tables::vtable::TablesInput;
-use crate::strings::cstring_writer::WriteIntoCString;
-use falco_plugin_api::ss_plugin_metric;
-use std::ffi::{CStr, CString};
-use std::fmt::Display;
-use std::io::Write;
+use std::ffi::CStr;
 
 mod logger;
 pub mod metrics;
 #[doc(hidden)]
 pub mod wrappers;
-
-pub(crate) struct ActualPlugin<P: Plugin> {
-    pub(crate) plugin: P,
-    pub(crate) last_error: LastError,
-}
-
-// TODO(sdk): convert this into traits?
-//       this may make it hard to make the lifetimes line up
-//       (will end up with multiple mutable references)
-#[doc(hidden)]
-pub struct PluginWrapper<P: Plugin> {
-    pub(crate) plugin: Option<ActualPlugin<P>>,
-    pub(crate) error_buf: CString,
-    pub(crate) field_storage: bumpalo::Bump,
-    pub(crate) string_storage: CString,
-    pub(crate) metric_storage: Vec<ss_plugin_metric>,
-}
-
-impl<P: Plugin> PluginWrapper<P> {
-    pub fn new(plugin: P, last_error: LastError) -> Self {
-        Self {
-            plugin: Some(ActualPlugin { plugin, last_error }),
-            error_buf: Default::default(),
-            field_storage: bumpalo::Bump::new(),
-            string_storage: Default::default(),
-            metric_storage: Default::default(),
-        }
-    }
-
-    pub fn new_error(err: impl Display) -> Self {
-        let mut plugin = Self {
-            plugin: None,
-            error_buf: Default::default(),
-            field_storage: bumpalo::Bump::new(),
-            string_storage: Default::default(),
-            metric_storage: vec![],
-        };
-
-        plugin
-            .error_buf
-            .write_into(|buf| write!(buf, "{err}"))
-            .unwrap_or_else(|err| panic!("Failed to write error message (was: {err})"));
-
-        plugin
-    }
-}
 
 /// The latest schema supported by the current SDK version
 pub use falco_plugin_api::SCHEMA_VERSION as CURRENT_SCHEMA_VERSION;
