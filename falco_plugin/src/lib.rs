@@ -12,15 +12,6 @@ pub use serde;
 
 pub use crate::plugin::error::FailureReason;
 
-/// # Event-related types
-///
-/// This module reexports the whole of [`falco_event`] (except the macros), as well as exports
-/// the event types defined by this crate (the minimal subset of the full Falco schema)
-pub mod event {
-    pub use crate::plugin::event::*;
-    pub use falco_event::{events, fields};
-}
-
 /// # Field extraction plugin support
 ///
 /// Plugins with field extraction capability can extract information from events
@@ -108,7 +99,7 @@ pub mod event {
 ///
 /// See the [`extract::ExtractPlugin`] trait documentation for details.
 pub mod extract {
-    pub use crate::plugin::event::EventInput;
+    pub use crate::event::EventInput;
     pub use crate::plugin::extract::schema::field;
     pub use crate::plugin::extract::schema::ExtractFieldInfo;
     pub use crate::plugin::extract::ExtractByteRange;
@@ -171,7 +162,7 @@ pub mod extract {
 /// parse_plugin!(MyParsePlugin);
 /// ```
 pub mod parse {
-    pub use crate::plugin::event::EventInput;
+    pub use crate::event::EventInput;
     pub use crate::plugin::parse::ParseInput;
     pub use crate::plugin::parse::ParsePlugin;
 }
@@ -269,7 +260,7 @@ pub mod parse {
 /// ```
 pub mod async_event {
     /// The event type that can be emitted from async event plugins
-    pub use crate::plugin::event::AsyncEvent;
+    pub use crate::event::AsyncEvent;
 
     pub use crate::plugin::async_event::async_handler::AsyncHandler;
     pub use crate::plugin::async_event::AsyncEventPlugin;
@@ -364,8 +355,8 @@ pub mod async_event {
 /// source_plugin!(MySourcePlugin);
 /// ```
 pub mod source {
-    pub use crate::plugin::event::EventInput;
-    pub use crate::plugin::event::PluginEvent;
+    pub use crate::event::EventInput;
+    pub use crate::event::PluginEvent;
     pub use crate::plugin::source::event_batch::EventBatch;
     pub use crate::plugin::source::open_params::{serialize_open_params, OpenParam};
     pub use crate::plugin::source::{ProgressInfo, SourcePlugin, SourcePluginInstance};
@@ -1028,6 +1019,7 @@ pub mod tables {
 }
 
 pub mod base;
+pub mod event;
 mod plugin;
 pub mod strings;
 

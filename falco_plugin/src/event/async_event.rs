@@ -1,4 +1,4 @@
-use crate::plugin::event::EventSource;
+use crate::event::EventSource;
 use falco_event::fields::{FromBytes, ToBytes};
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
