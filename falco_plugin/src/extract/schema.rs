@@ -1,6 +1,6 @@
-use crate::plugin::extract::extractor_fn::{ExtractLambda, ExtractorFn};
-use crate::plugin::extract::fields::{Extract, ExtractFieldTypeId};
-use crate::plugin::extract::ExtractPlugin;
+use crate::extract::extractor_fn::{ExtractLambda, ExtractorFn};
+use crate::extract::fields::{Extract, ExtractFieldTypeId};
+use crate::extract::ExtractPlugin;
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
 use std::fmt::{Debug, Formatter};

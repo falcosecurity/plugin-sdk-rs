@@ -1,6 +1,6 @@
+use crate::extract::fields::Extract;
+use crate::extract::schema::ExtractArgType;
 use crate::extract::{ExtractPlugin, ExtractRequest};
-use crate::plugin::extract::fields::Extract;
-use crate::plugin::extract::schema::ExtractArgType;
 use anyhow::Error;
 use falco_plugin_api::ss_plugin_extract_field;
 use std::ffi::CStr;
@@ -42,10 +42,10 @@ impl ExtractField for ss_plugin_extract_field {
 
 #[derive(Debug)]
 pub struct ExtractLambda<P: ExtractPlugin> {
-    pub(in crate::plugin::extract) obj: *const (),
+    pub(super) obj: *const (),
 
     #[allow(clippy::type_complexity)]
-    pub(in crate::plugin::extract) func: fn(
+    pub(super) func: fn(
         obj: *const (),
         plugin: &mut P,
         field: &mut ss_plugin_extract_field,
@@ -55,7 +55,7 @@ pub struct ExtractLambda<P: ExtractPlugin> {
 }
 
 impl<P: ExtractPlugin> ExtractLambda<P> {
-    pub(in crate::plugin::extract) fn call(
+    pub(super) fn call(
         &self,
         plugin: &mut P,
         field: &mut ss_plugin_extract_field,
