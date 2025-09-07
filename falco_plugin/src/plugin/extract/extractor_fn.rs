@@ -7,8 +7,8 @@ use std::ffi::CStr;
 
 /// The actual argument passed to the extractor function
 ///
-/// It is validated based on the [`ExtractFieldInfo`] definition (use [`ExtractFieldInfo::with_arg`]
-/// to specify the expected argument type).
+/// It is validated based on the [`ExtractFieldInfo`] definition which is derived from
+/// the extractor function signature.
 ///
 /// **Note**: this type describes the actual argument in a particular invocation.
 /// For describing the type of arguments the extractor accepts, please see [`ExtractArgType`]`
