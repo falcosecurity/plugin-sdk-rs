@@ -1,9 +1,10 @@
-use crate::plugin::tables::data::{seal, FieldTypeId, Key, TableData, Value};
-use crate::plugin::tables::field::Field;
-use crate::plugin::tables::runtime::NoMetadata;
-use crate::plugin::tables::runtime_table_validator::RuntimeTableValidator;
-use crate::plugin::tables::table::raw::{IterationResult, RawTable};
-use crate::plugin::tables::traits::{Entry, TableAccess, TableMetadata};
+use crate::tables::import::data::{seal, FieldTypeId, Key, TableData, Value};
+use crate::tables::import::entry;
+use crate::tables::import::field::Field;
+use crate::tables::import::runtime::NoMetadata;
+use crate::tables::import::runtime_table_validator::RuntimeTableValidator;
+use crate::tables::import::table::raw::{IterationResult, RawTable};
+use crate::tables::import::traits::{Entry, TableAccess, TableMetadata};
 use crate::tables::TableFields;
 use crate::tables::TableReader;
 use crate::tables::TableWriter;
@@ -14,16 +15,16 @@ use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ops::ControlFlow;
 
-pub(in crate::plugin::tables) mod raw;
+pub(crate) mod raw;
 
 /// # A table imported via the Falco plugin API
 #[derive(Debug)]
-pub struct Table<K, E = super::entry::Entry<NoMetadata<()>>, M = <E as Entry>::Metadata> {
-    pub(in crate::plugin::tables) raw_table: RawTable,
-    pub(in crate::plugin::tables) metadata: M,
-    pub(in crate::plugin::tables) is_nested: bool,
-    pub(in crate::plugin::tables) key_type: PhantomData<K>,
-    pub(in crate::plugin::tables) entry_type: PhantomData<E>,
+pub struct Table<K, E = entry::Entry<NoMetadata<()>>, M = <E as Entry>::Metadata> {
+    pub(crate) raw_table: RawTable,
+    pub(crate) metadata: M,
+    pub(crate) is_nested: bool,
+    pub(crate) key_type: PhantomData<K>,
+    pub(crate) entry_type: PhantomData<E>,
 }
 
 impl<K, E, M> TableAccess for Table<K, E, M>
@@ -105,7 +106,7 @@ where
     E: Entry<Metadata = M>,
     M: TableMetadata + Clone,
 {
-    pub(in crate::plugin::tables) fn new_without_key(
+    pub(crate) fn new_without_key(
         raw_table: RawTable,
         metadata: E::Metadata,
         is_nested: bool,
@@ -119,7 +120,7 @@ where
         }
     }
 
-    pub(in crate::plugin::tables) fn table_validator(&self) -> RuntimeTableValidator {
+    pub(crate) fn table_validator(&self) -> RuntimeTableValidator {
         let ptr = if self.is_nested {
             std::ptr::null_mut()
         } else {

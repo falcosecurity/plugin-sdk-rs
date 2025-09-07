@@ -10,7 +10,7 @@ use crate::plugin::exported_tables::ref_shared::{
     new_counted_ref, new_shared_ref, RefCounted, RefGuard, RefShared,
 };
 use crate::plugin::exported_tables::vtable::Vtable;
-use crate::plugin::tables::data::{FieldTypeId, Key};
+use crate::tables::import::data::{FieldTypeId, Key};
 use crate::FailureReason;
 use falco_plugin_api::{ss_plugin_state_data, ss_plugin_table_fieldinfo};
 use std::borrow::Borrow;

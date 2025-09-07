@@ -1,9 +1,9 @@
 use crate::plugin::error::as_result::{AsResult, WithLastError};
-use crate::plugin::tables::data::{FieldTypeId, Key, Value};
-use crate::plugin::tables::entry::raw::RawEntry;
-use crate::plugin::tables::field::raw::RawField;
-use crate::plugin::tables::traits::TableMetadata;
 use crate::strings::from_ptr::try_str_from_ptr_with_lifetime;
+use crate::tables::import::data::{FieldTypeId, Key, Value};
+use crate::tables::import::entry::raw::RawEntry;
+use crate::tables::import::field::raw::RawField;
+use crate::tables::import::traits::TableMetadata;
 use crate::tables::TableFields;
 use crate::tables::TableReader;
 use crate::tables::TableReaderImpl;
@@ -299,7 +299,7 @@ impl RawTable {
         Ok(unsafe { writer_vtable.clear_table(self.table) }?.as_result()?)
     }
 
-    pub(in crate::plugin::tables) unsafe fn with_subtable<K, F, R>(
+    pub(crate) unsafe fn with_subtable<K, F, R>(
         &self,
         field: *mut ss_plugin_table_field_t,
         tables_input: &TablesInput,

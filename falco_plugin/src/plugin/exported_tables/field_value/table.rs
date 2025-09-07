@@ -4,7 +4,7 @@ use crate::plugin::exported_tables::field_value::dynamic::DynamicFieldValue;
 use crate::plugin::exported_tables::field_value::traits::FieldValue;
 use crate::plugin::exported_tables::field_value::traits::{seal, StaticField};
 use crate::plugin::exported_tables::table::Table;
-use crate::plugin::tables::data::{FieldTypeId, Key};
+use crate::tables::import::data::{FieldTypeId, Key};
 use falco_plugin_api::ss_plugin_state_data;
 use std::borrow::Borrow;
 

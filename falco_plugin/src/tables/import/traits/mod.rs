@@ -1,6 +1,6 @@
-use crate::plugin::tables::data::{Key, Value};
-use crate::plugin::tables::entry::raw::RawEntry;
-use crate::plugin::tables::table::raw::RawTable;
+use crate::tables::import::data::{Key, Value};
+use crate::tables::import::entry::raw::RawEntry;
+use crate::tables::import::table::raw::RawTable;
 use crate::tables::TableReader;
 use crate::tables::TableWriter;
 use crate::tables::TablesInput;

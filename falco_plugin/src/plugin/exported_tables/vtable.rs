@@ -1,8 +1,8 @@
 use crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
 use crate::plugin::exported_tables::entry::traits::Entry;
 use crate::plugin::exported_tables::wrappers::{fields_vtable, reader_vtable, writer_vtable};
-use crate::plugin::tables::data::Key;
 use crate::tables::export::Table;
+use crate::tables::import::data::Key;
 use falco_plugin_api::{
     ss_plugin_state_type, ss_plugin_table_fields_vtable, ss_plugin_table_fields_vtable_ext,
     ss_plugin_table_input, ss_plugin_table_reader_vtable, ss_plugin_table_reader_vtable_ext,
