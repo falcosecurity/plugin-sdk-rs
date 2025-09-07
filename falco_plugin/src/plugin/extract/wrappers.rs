@@ -1,4 +1,4 @@
-use crate::plugin::base::wrappers::PluginWrapper;
+use crate::base::wrappers::PluginWrapper;
 use crate::plugin::error::ffi_result::FfiResult;
 use crate::plugin::event::EventInput;
 use crate::plugin::extract::ExtractPlugin;

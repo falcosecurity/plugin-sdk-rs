@@ -1,6 +1,6 @@
+use crate::base::logger::{FalcoPluginLoggerImpl, FALCO_LOGGER};
+use crate::base::schema::{ConfigSchema, ConfigSchemaType};
 use crate::base::Plugin;
-use crate::plugin::base::logger::{FalcoPluginLoggerImpl, FALCO_LOGGER};
-use crate::plugin::base::schema::{ConfigSchema, ConfigSchemaType};
 use crate::plugin::error::ffi_result::FfiResult;
 use crate::plugin::error::last_error::LastError;
 use crate::plugin::tables::vtable::TablesInput;
@@ -343,7 +343,7 @@ macro_rules! wrap_ffi {
 #[macro_export]
 macro_rules! plugin {
     (unsafe { $maj:expr; $min:expr; $patch:expr } => #[no_capabilities] $ty:ty) => {
-        unsafe impl $crate::internals::base::wrappers::BasePluginExported for $ty {}
+        unsafe impl $crate::base::wrappers::BasePluginExported for $ty {}
 
         $crate::base_plugin_ffi_wrappers!($maj; $min; $patch => #[unsafe(no_mangle)] $ty);
     };
@@ -476,7 +476,7 @@ macro_rules! static_plugin {
         };
 
         // a static plugin automatically exports all capabilities
-        unsafe impl $crate::internals::base::wrappers::BasePluginExported for $ty {}
+        unsafe impl $crate::base::wrappers::BasePluginExported for $ty {}
         unsafe impl $crate::internals::async_event::wrappers::AsyncPluginExported for $ty {}
         unsafe impl $crate::internals::extract::wrappers::ExtractPluginExported for $ty {}
         unsafe impl $crate::internals::listen::wrappers::CaptureListenPluginExported for $ty {}
@@ -526,7 +526,7 @@ macro_rules! base_plugin_ffi_wrappers {
     ($maj:expr; $min:expr; $patch:expr => #[$attr:meta] $ty:ty) => {
         #[$attr]
         pub extern "C-unwind" fn plugin_get_required_api_version() -> *const std::ffi::c_char {
-            $crate::internals::base::wrappers::plugin_get_required_api_version::<
+            $crate::base::wrappers::plugin_get_required_api_version::<
                 { $maj },
                 { $min },
                 { $patch },
@@ -535,7 +535,7 @@ macro_rules! base_plugin_ffi_wrappers {
 
         $crate::wrap_ffi! {
             #[$attr]
-            use $crate::internals::base::wrappers: <$ty>;
+            use $crate::base::wrappers: <$ty>;
 
             unsafe fn plugin_get_version() -> *const std::ffi::c_char;
             unsafe fn plugin_get_name() -> *const std::ffi::c_char;
