@@ -1,7 +1,7 @@
 use crate::tables::import::data::FieldTypeId;
 use falco_plugin_api::ss_plugin_state_data;
 
-pub(in crate::plugin::exported_tables) mod seal {
+pub(crate) mod seal {
     pub trait Sealed {}
 }
 

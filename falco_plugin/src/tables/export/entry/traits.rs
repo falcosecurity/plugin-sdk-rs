@@ -1,6 +1,6 @@
-use crate::plugin::exported_tables::field_descriptor::FieldId;
-use crate::plugin::exported_tables::field_value::dynamic::DynamicFieldValue;
-use crate::plugin::exported_tables::metadata::HasMetadata;
+use crate::tables::export::field_descriptor::FieldId;
+use crate::tables::export::field_value::dynamic::DynamicFieldValue;
+use crate::tables::export::metadata::HasMetadata;
 use crate::tables::import::data::FieldTypeId;
 use falco_plugin_api::ss_plugin_state_data;
 

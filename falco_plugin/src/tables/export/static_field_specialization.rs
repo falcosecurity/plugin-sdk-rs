@@ -1,5 +1,5 @@
-use crate::plugin::exported_tables::field_value::dynamic::DynamicFieldValue;
-use crate::plugin::exported_tables::field_value::traits::StaticField;
+use crate::tables::export::field_value::dynamic::DynamicFieldValue;
+use crate::tables::export::field_value::traits::StaticField;
 use crate::tables::import::data::FieldTypeId;
 use falco_plugin_api::ss_plugin_state_data;
 use std::marker::PhantomData;

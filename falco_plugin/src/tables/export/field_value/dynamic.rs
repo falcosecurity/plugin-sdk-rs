@@ -1,5 +1,5 @@
-use crate::plugin::exported_tables::field_value::traits::seal;
-use crate::plugin::exported_tables::field_value::traits::FieldValue;
+use crate::tables::export::field_value::traits::seal;
+use crate::tables::export::field_value::traits::FieldValue;
 use crate::tables::import::data::FieldTypeId;
 use falco_plugin_api::ss_plugin_state_data;
 use std::ffi::{CStr, CString};
@@ -25,7 +25,7 @@ pub enum DynamicFieldValue {
 }
 
 impl DynamicFieldValue {
-    pub(in crate::plugin::exported_tables) unsafe fn from_data(
+    pub(crate) unsafe fn from_data(
         value: &ss_plugin_state_data,
         type_id: FieldTypeId,
     ) -> Option<Self> {

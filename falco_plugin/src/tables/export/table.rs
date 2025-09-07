@@ -1,15 +1,15 @@
-use crate::plugin::exported_tables::entry::extensible::ExtensibleEntry;
-use crate::plugin::exported_tables::entry::table_metadata::extensible::ExtensibleEntryMetadata;
-use crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
-use crate::plugin::exported_tables::entry::traits::Entry;
-use crate::plugin::exported_tables::field_descriptor::{FieldDescriptor, FieldRef};
-use crate::plugin::exported_tables::field_value::dynamic::DynamicFieldValue;
-use crate::plugin::exported_tables::metadata::HasMetadata;
-use crate::plugin::exported_tables::metadata::Metadata;
-use crate::plugin::exported_tables::ref_shared::{
+use crate::tables::export::entry::extensible::ExtensibleEntry;
+use crate::tables::export::entry::table_metadata::extensible::ExtensibleEntryMetadata;
+use crate::tables::export::entry::table_metadata::traits::TableMetadata;
+use crate::tables::export::entry::traits::Entry;
+use crate::tables::export::field_descriptor::{FieldDescriptor, FieldRef};
+use crate::tables::export::field_value::dynamic::DynamicFieldValue;
+use crate::tables::export::metadata::HasMetadata;
+use crate::tables::export::metadata::Metadata;
+use crate::tables::export::ref_shared::{
     new_counted_ref, new_shared_ref, RefCounted, RefGuard, RefShared,
 };
-use crate::plugin::exported_tables::vtable::Vtable;
+use crate::tables::export::vtable::Vtable;
 use crate::tables::import::data::{FieldTypeId, Key};
 use crate::FailureReason;
 use falco_plugin_api::{ss_plugin_state_data, ss_plugin_table_fieldinfo};
@@ -49,7 +49,7 @@ where
     metadata: RefShared<ExtensibleEntryMetadata<E::Metadata>>,
     data: RefShared<BTreeMap<K, RefShared<ExtensibleEntry<E>>>>,
 
-    pub(in crate::plugin::exported_tables) vtable: RefCounted<Option<Box<Vtable>>>,
+    pub(crate) vtable: RefCounted<Option<Box<Vtable>>>,
 }
 
 impl<K, E> Debug for Table<K, E>
@@ -70,7 +70,7 @@ where
 }
 
 type TableMetadataType<E> = RefShared<ExtensibleEntryMetadata<<E as HasMetadata>::Metadata>>;
-pub(in crate::plugin::exported_tables) type TableEntryType<E> = RefGuard<ExtensibleEntry<E>>;
+pub(crate) type TableEntryType<E> = RefGuard<ExtensibleEntry<E>>;
 
 impl<K, E> Table<K, E>
 where
@@ -292,7 +292,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::plugin::exported_tables::entry::dynamic::DynamicEntry;
+    use crate::tables::export::entry::dynamic::DynamicEntry;
     use crate::tables::export::Table;
     use crate::tables::import::Bool;
     use crate::tables::TablesInput;

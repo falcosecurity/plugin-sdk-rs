@@ -1,6 +1,6 @@
-use crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
-use crate::plugin::exported_tables::entry::traits::Entry;
-use crate::plugin::exported_tables::wrappers::{fields_vtable, reader_vtable, writer_vtable};
+use crate::tables::export::entry::table_metadata::traits::TableMetadata;
+use crate::tables::export::entry::traits::Entry;
+use crate::tables::export::wrappers::{fields_vtable, reader_vtable, writer_vtable};
 use crate::tables::export::Table;
 use crate::tables::import::data::Key;
 use falco_plugin_api::{

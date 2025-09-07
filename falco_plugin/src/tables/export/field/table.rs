@@ -1,9 +1,9 @@
-use crate::plugin::exported_tables::entry::table_metadata::extensible::ExtensibleEntryMetadata;
-use crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
-use crate::plugin::exported_tables::entry::traits::Entry;
-use crate::plugin::exported_tables::metadata::HasMetadata;
-use crate::plugin::exported_tables::ref_shared::RefShared;
-use crate::plugin::exported_tables::table::Table;
+use crate::tables::export::entry::table_metadata::extensible::ExtensibleEntryMetadata;
+use crate::tables::export::entry::table_metadata::traits::TableMetadata;
+use crate::tables::export::entry::traits::Entry;
+use crate::tables::export::metadata::HasMetadata;
+use crate::tables::export::ref_shared::RefShared;
+use crate::tables::export::table::Table;
 use crate::tables::import::data::Key;
 use anyhow::Error;
 use std::borrow::Borrow;
