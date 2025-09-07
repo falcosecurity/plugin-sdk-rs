@@ -54,8 +54,8 @@
 use crate::base::Plugin;
 use crate::parse::wrappers::ParsePluginExported;
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::tables::vtable::writer::LazyTableWriter;
 use crate::tables::LazyTableReader;
+use crate::tables::LazyTableWriter;
 use falco_event::events::{AnyEventPayload, RawEvent};
 use falco_plugin_api::ss_plugin_event_parse_input;
 

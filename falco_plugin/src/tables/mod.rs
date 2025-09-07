@@ -138,13 +138,17 @@
 //! can use them from your plugin (e.g. in a separate thread) concurrently to other plugins
 //! (in the main thread).
 
-pub use crate::plugin::tables::vtable::reader::LazyTableReader;
-pub use crate::plugin::tables::vtable::reader::TableReader;
-pub use crate::plugin::tables::vtable::reader::ValidatedTableReader;
-pub use crate::plugin::tables::vtable::writer::LazyTableWriter;
-pub use crate::plugin::tables::vtable::writer::TableWriter;
-pub use crate::plugin::tables::vtable::writer::ValidatedTableWriter;
-pub use crate::plugin::tables::vtable::TablesInput;
+pub(crate) use vtable::fields::TableFields;
+pub(crate) use vtable::reader::private::TableReaderImpl;
+pub use vtable::reader::LazyTableReader;
+pub use vtable::reader::TableReader;
+pub use vtable::reader::ValidatedTableReader;
+pub(crate) use vtable::writer::private::TableWriterImpl;
+pub use vtable::writer::LazyTableWriter;
+pub use vtable::writer::TableWriter;
+pub use vtable::writer::ValidatedTableWriter;
+pub use vtable::TablesInput;
 
 pub mod export;
 pub mod import;
+mod vtable;

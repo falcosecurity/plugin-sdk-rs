@@ -1,3 +1,4 @@
+use crate::internals::tables::RawTable;
 use crate::plugin::error::as_result::{AsResult, WithLastError};
 use crate::plugin::error::last_error::LastError;
 use crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
@@ -5,7 +6,6 @@ use crate::plugin::exported_tables::entry::traits::Entry;
 use crate::plugin::exported_tables::table::Table;
 use crate::plugin::exported_tables::wrappers::{fields_vtable, reader_vtable, writer_vtable};
 use crate::plugin::tables::data::Key;
-use crate::plugin::tables::table::raw::RawTable;
 use crate::plugin::tables::traits::{TableAccess, TableMetadata as ImportedTableMetadata};
 use falco_plugin_api::{
     ss_plugin_init_input, ss_plugin_owner_t, ss_plugin_rc, ss_plugin_state_type,
@@ -37,31 +37,29 @@ pub enum TableError {
 /// or manage their fields
 pub struct TablesInput<'t> {
     owner: *mut ss_plugin_owner_t,
-    pub(in crate::plugin::tables) last_error: LastError,
-    pub(in crate::plugin::tables) list_tables:
-        unsafe extern "C-unwind" fn(
-            o: *mut ss_plugin_owner_t,
-            ntables: *mut u32,
-        ) -> *mut ss_plugin_table_info,
-    pub(in crate::plugin::tables) get_table: unsafe extern "C-unwind" fn(
+    pub(crate) last_error: LastError,
+    pub(crate) list_tables: unsafe extern "C-unwind" fn(
+        o: *mut ss_plugin_owner_t,
+        ntables: *mut u32,
+    ) -> *mut ss_plugin_table_info,
+    pub(crate) get_table: unsafe extern "C-unwind" fn(
         o: *mut ss_plugin_owner_t,
         name: *const ::std::os::raw::c_char,
         key_type: ss_plugin_state_type,
-    )
-        -> *mut ss_plugin_table_t,
-    pub(in crate::plugin::tables) add_table: unsafe extern "C-unwind" fn(
+    ) -> *mut ss_plugin_table_t,
+    pub(crate) add_table: unsafe extern "C-unwind" fn(
         o: *mut ss_plugin_owner_t,
         in_: *const ss_plugin_table_input,
     ) -> ss_plugin_rc,
 
     /// accessor object for reading tables
-    pub(in crate::plugin::tables) reader_ext: LazyTableReader<'t>,
+    pub(crate) reader_ext: LazyTableReader<'t>,
 
     /// accessor object for writing tables
-    pub(in crate::plugin::tables) writer_ext: LazyTableWriter<'t>,
+    pub(crate) writer_ext: LazyTableWriter<'t>,
 
     /// accessor object for manipulating fields
-    pub(in crate::plugin::tables) fields_ext: TableFields<'t>,
+    pub(crate) fields_ext: TableFields<'t>,
 }
 
 impl TablesInput<'_> {

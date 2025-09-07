@@ -1,5 +1,5 @@
-use crate::plugin::tables::vtable::TableError;
-use crate::plugin::tables::vtable::TableError::BadVtable;
+use crate::tables::vtable::TableError;
+use crate::tables::vtable::TableError::BadVtable;
 use falco_plugin_api::{
     ss_plugin_state_type, ss_plugin_table_field_t, ss_plugin_table_fieldinfo,
     ss_plugin_table_fields_vtable_ext, ss_plugin_table_t,
@@ -11,13 +11,13 @@ pub struct TableFields<'t> {
 }
 
 impl<'t> TableFields<'t> {
-    pub(super) fn try_from(
+    pub(crate) fn try_from(
         fields_ext: &'t ss_plugin_table_fields_vtable_ext,
     ) -> Result<Self, TableError> {
         Ok(TableFields { fields_ext })
     }
 
-    pub(in crate::plugin::tables) fn list_table_fields(
+    pub(crate) fn list_table_fields(
         &self,
         t: *mut ss_plugin_table_t,
         nfields: *mut u32,
@@ -32,7 +32,7 @@ impl<'t> TableFields<'t> {
         }
     }
 
-    pub(in crate::plugin::tables) fn get_table_field(
+    pub(crate) fn get_table_field(
         &self,
         t: *mut ss_plugin_table_t,
         name: *const ::std::os::raw::c_char,
@@ -48,7 +48,7 @@ impl<'t> TableFields<'t> {
         }
     }
 
-    pub(in crate::plugin::tables) fn add_table_field(
+    pub(crate) fn add_table_field(
         &self,
         t: *mut ss_plugin_table_t,
         name: *const ::std::os::raw::c_char,

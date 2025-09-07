@@ -3,9 +3,9 @@ use crate::base::schema::{ConfigSchema, ConfigSchemaType};
 use crate::base::Plugin;
 use crate::plugin::error::ffi_result::FfiResult;
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::tables::vtable::TablesInput;
 use crate::strings::from_ptr::try_str_from_ptr;
 use crate::strings::WriteIntoCString;
+use crate::tables::TablesInput;
 use anyhow::Context;
 use falco_plugin_api::{
     ss_plugin_init_input, ss_plugin_metric, ss_plugin_rc, ss_plugin_rc_SS_PLUGIN_FAILURE,

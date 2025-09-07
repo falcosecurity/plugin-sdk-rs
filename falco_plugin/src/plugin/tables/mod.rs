@@ -6,7 +6,6 @@ pub mod runtime;
 pub(in crate::plugin::tables) mod runtime_table_validator;
 pub mod table;
 pub mod traits;
-pub mod vtable;
 
 pub use entry::Entry;
 pub use table::raw::RawTable;
