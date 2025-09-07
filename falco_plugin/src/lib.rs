@@ -12,64 +12,6 @@ pub use serde;
 
 pub use crate::plugin::error::FailureReason;
 
-/// # Event parsing support
-///
-/// Plugins with event parsing capability can hook into an event stream and receive all of its events
-/// sequentially. The parsing phase is the stage in the event processing loop in which
-/// the Falcosecurity libraries inspect the content of the events' payload and use it to apply
-/// internal state updates or implement additional logic. This phase happens before any field
-/// extraction for a given event. Each event in a given stream is guaranteed to be received at most once.
-///
-/// For your plugin to support event parsing, you will need to implement the [`parse::ParsePlugin`]
-/// trait and invoke the [`parse_plugin`] macro, for example:
-///
-/// ```
-///# use std::ffi::CStr;
-/// use falco_event::events::RawEvent;
-/// use falco_plugin::anyhow::Error;
-/// use falco_plugin::base::Plugin;
-/// use falco_plugin::{parse_plugin, plugin};
-/// use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
-///# use falco_plugin::tables::TablesInput;
-///
-/// struct MyParsePlugin;
-///
-/// impl Plugin for MyParsePlugin {
-///     // ...
-/// #    const NAME: &'static CStr = c"sample-plugin-rs";
-/// #    const PLUGIN_VERSION: &'static CStr = c"0.0.1";
-/// #    const DESCRIPTION: &'static CStr = c"A sample Falco plugin that does nothing";
-/// #    const CONTACT: &'static CStr = c"you@example.com";
-/// #    type ConfigType = ();
-/// #
-/// #    fn new(input: Option<&TablesInput>, config: Self::ConfigType)
-/// #        -> Result<Self, Error> {
-/// #        Ok(MyParsePlugin)
-/// #    }
-/// }
-///
-/// impl ParsePlugin for MyParsePlugin {
-///     type Event<'a> = RawEvent<'a>;
-///
-///     fn parse_event(&mut self, event: &EventInput<RawEvent>, parse_input: &ParseInput)
-///         -> Result<(), Error> {
-///         let event = event.event()?;
-///
-///         // any processing you want here, e.g. involving tables
-///
-///         Ok(())
-///     }
-/// }
-///
-/// plugin!(MyParsePlugin);
-/// parse_plugin!(MyParsePlugin);
-/// ```
-pub mod parse {
-    pub use crate::event::EventInput;
-    pub use crate::plugin::parse::ParseInput;
-    pub use crate::plugin::parse::ParsePlugin;
-}
-
 /// # Asynchronous event support
 ///
 /// Plugins with async events capability can enrich an event stream from a given source (not
@@ -924,6 +866,7 @@ pub mod tables {
 pub mod base;
 pub mod event;
 pub mod extract;
+pub mod parse;
 mod plugin;
 pub mod strings;
 
@@ -935,10 +878,6 @@ pub mod internals {
 
     pub mod listen {
         pub use crate::plugin::listen::wrappers;
-    }
-
-    pub mod parse {
-        pub use crate::plugin::parse::wrappers;
     }
 
     pub mod async_event {

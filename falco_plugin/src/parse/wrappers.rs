@@ -1,7 +1,7 @@
 use crate::base::wrappers::PluginWrapper;
 use crate::parse::EventInput;
+use crate::parse::{ParseInput, ParsePlugin};
 use crate::plugin::error::ffi_result::FfiResult;
-use crate::plugin::parse::{ParseInput, ParsePlugin};
 use falco_event::events::AnyEventPayload;
 use falco_plugin_api::plugin_api__bindgen_ty_3 as parse_plugin_api;
 use falco_plugin_api::{
@@ -127,11 +127,11 @@ pub unsafe extern "C-unwind" fn plugin_parse_event<T: ParsePlugin>(
 #[macro_export]
 macro_rules! parse_plugin {
     ($ty:ty) => {
-        unsafe impl $crate::internals::parse::wrappers::ParsePluginExported for $ty {}
+        unsafe impl $crate::parse::wrappers::ParsePluginExported for $ty {}
 
         $crate::wrap_ffi! {
             #[unsafe(no_mangle)]
-            use $crate::internals::parse::wrappers: <$ty>;
+            use $crate::parse::wrappers: <$ty>;
 
             unsafe fn plugin_get_parse_event_types(
                 numtypes: *mut u32,
