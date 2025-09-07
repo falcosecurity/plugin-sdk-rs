@@ -1,7 +1,7 @@
 use crate::base::wrappers::PluginWrapper;
+use crate::error::ffi_result::FfiResult;
 use crate::parse::EventInput;
 use crate::parse::{ParseInput, ParsePlugin};
-use crate::plugin::error::ffi_result::FfiResult;
 use falco_event::events::AnyEventPayload;
 use falco_plugin_api::plugin_api__bindgen_ty_3 as parse_plugin_api;
 use falco_plugin_api::{

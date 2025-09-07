@@ -88,8 +88,8 @@
 //! ```
 
 use crate::base::Plugin;
+use crate::error::last_error::LastError;
 use crate::listen::wrappers::CaptureListenPluginExported;
-use crate::plugin::error::last_error::LastError;
 use crate::tables::LazyTableReader;
 use crate::tables::LazyTableWriter;
 use falco_plugin_api::ss_plugin_capture_listen_input;

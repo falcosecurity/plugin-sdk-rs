@@ -1,4 +1,4 @@
-use crate::plugin::error::as_result::{AsResult, WithLastError};
+use crate::error::as_result::{AsResult, WithLastError};
 use crate::strings::from_ptr::try_str_from_ptr_with_lifetime;
 use crate::tables::import::data::{FieldTypeId, Key, Value};
 use crate::tables::import::entry::raw::RawEntry;

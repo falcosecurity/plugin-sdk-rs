@@ -1,4 +1,4 @@
-use crate::plugin::error::as_result::{AsResult, WithLastError};
+use crate::error::as_result::{AsResult, WithLastError};
 use crate::tables::import::data::Value;
 use crate::tables::import::field::Field;
 use crate::tables::import::traits::{EntryWrite, TableMetadata};

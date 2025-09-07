@@ -1,7 +1,7 @@
 use crate::base::wrappers::PluginWrapper;
+use crate::error::ffi_result::FfiResult;
 use crate::listen::CaptureListenInput;
 use crate::listen::CaptureListenPlugin;
-use crate::plugin::error::ffi_result::FfiResult;
 use falco_plugin_api::{
     plugin_api__bindgen_ty_5 as listen_plugin_api, ss_plugin_capture_listen_input, ss_plugin_rc,
     ss_plugin_rc_SS_PLUGIN_FAILURE, ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_t,

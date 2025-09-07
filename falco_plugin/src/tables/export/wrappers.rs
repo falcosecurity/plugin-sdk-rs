@@ -1,4 +1,4 @@
-use crate::plugin::error::ffi_result::FfiResult;
+use crate::error::ffi_result::FfiResult;
 use crate::tables::export::entry::table_metadata::traits::TableMetadata;
 use crate::tables::export::entry::traits::Entry;
 use crate::tables::export::field_descriptor::FieldDescriptor;

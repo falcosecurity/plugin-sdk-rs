@@ -1,4 +1,4 @@
-use crate::plugin::error::last_error::LastError;
+use crate::error::last_error::LastError;
 use crate::tables::vtable::TableError;
 use crate::tables::vtable::TableError::BadVtable;
 use falco_plugin_api::{

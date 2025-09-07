@@ -10,15 +10,15 @@ pub use phf;
 pub use schemars;
 pub use serde;
 
-pub use crate::plugin::error::FailureReason;
+pub use error::FailureReason;
 
 pub mod async_event;
 pub mod base;
+mod error;
 pub mod event;
 pub mod extract;
 pub mod listen;
 pub mod parse;
-mod plugin;
 pub mod source;
 pub mod strings;
 pub mod tables;

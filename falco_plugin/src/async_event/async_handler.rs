@@ -1,4 +1,4 @@
-use crate::plugin::error::as_result::AsResult;
+use crate::error::as_result::AsResult;
 use crate::strings::from_ptr::try_str_from_ptr;
 use anyhow::Context;
 use falco_event::events::EventToBytes;
