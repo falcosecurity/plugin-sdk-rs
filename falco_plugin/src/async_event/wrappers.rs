@@ -1,6 +1,6 @@
+use crate::async_event::async_handler::AsyncHandler;
+use crate::async_event::AsyncEventPlugin;
 use crate::base::wrappers::PluginWrapper;
-use crate::plugin::async_event::async_handler::AsyncHandler;
-use crate::plugin::async_event::AsyncEventPlugin;
 use crate::plugin::error::ffi_result::FfiResult;
 use falco_plugin_api::plugin_api__bindgen_ty_4 as async_plugin_api;
 use falco_plugin_api::{
@@ -166,11 +166,11 @@ pub unsafe extern "C-unwind" fn plugin_dump_state<T: AsyncEventPlugin>(
 #[macro_export]
 macro_rules! async_event_plugin {
     ($ty:ty) => {
-        unsafe impl $crate::internals::async_event::wrappers::AsyncPluginExported for $ty {}
+        unsafe impl $crate::async_event::wrappers::AsyncPluginExported for $ty {}
 
         $crate::wrap_ffi! {
             #[unsafe(no_mangle)]
-            use $crate::internals::async_event::wrappers: <$ty>;
+            use $crate::async_event::wrappers: <$ty>;
 
             unsafe fn plugin_get_async_events() -> *const ::std::ffi::c_char;
             unsafe fn plugin_get_async_event_sources() -> *const ::std::ffi::c_char;

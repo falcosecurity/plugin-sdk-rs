@@ -1,4 +1,3 @@
-pub mod async_event;
 pub mod error;
 pub mod exported_tables;
 pub mod listen;
