@@ -1,5 +1,5 @@
+use crate::base::Plugin;
 use crate::parse::EventInput;
-use crate::plugin::base::Plugin;
 use crate::plugin::error::last_error::LastError;
 use crate::plugin::parse::wrappers::ParsePluginExported;
 use crate::plugin::tables::vtable::writer::LazyTableWriter;

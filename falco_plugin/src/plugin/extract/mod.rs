@@ -1,5 +1,5 @@
+use crate::base::Plugin;
 use crate::extract::EventInput;
-use crate::plugin::base::Plugin;
 use crate::plugin::extract::schema::ExtractFieldInfo;
 use crate::plugin::extract::wrappers::ExtractPluginExported;
 use crate::tables::LazyTableReader;

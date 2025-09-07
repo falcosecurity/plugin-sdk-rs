@@ -1,6 +1,6 @@
+use crate::base::wrappers::PluginWrapper;
 use crate::plugin::async_event::async_handler::AsyncHandler;
 use crate::plugin::async_event::AsyncEventPlugin;
-use crate::plugin::base::wrappers::PluginWrapper;
 use crate::plugin::error::ffi_result::FfiResult;
 use falco_plugin_api::plugin_api__bindgen_ty_4 as async_plugin_api;
 use falco_plugin_api::{

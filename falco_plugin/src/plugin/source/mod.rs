@@ -1,5 +1,5 @@
+use crate::base::Plugin;
 use crate::event::PluginEvent;
-use crate::plugin::base::Plugin;
 use crate::plugin::source::wrappers::SourcePluginExported;
 use crate::source::{EventBatch, EventInput};
 use falco_event::events::{AnyEventPayload, EventMetadata};

@@ -12,19 +12,6 @@ pub use serde;
 
 pub use crate::plugin::error::FailureReason;
 
-/// # The common foundation for all Falco plugins
-///
-/// All plugins must implement the [`base::Plugin`] trait which specifies some basic metadata
-/// about the plugin.
-///
-/// See the [`base::Plugin`] trait documentation for details.
-pub mod base {
-    pub use crate::plugin::base::metrics::{Metric, MetricLabel, MetricType, MetricValue};
-    pub use crate::plugin::base::schema::Json;
-    pub use crate::plugin::base::Plugin;
-    pub use crate::plugin::base::CURRENT_SCHEMA_VERSION;
-}
-
 /// # Event-related types
 ///
 /// This module reexports the whole of [`falco_event`] (except the macros), as well as exports
@@ -1040,15 +1027,12 @@ pub mod tables {
     }
 }
 
+pub mod base;
 mod plugin;
 pub mod strings;
 
 #[doc(hidden)]
 pub mod internals {
-    pub mod base {
-        pub use crate::plugin::base::wrappers;
-    }
-
     pub mod source {
         pub use crate::plugin::source::wrappers;
     }

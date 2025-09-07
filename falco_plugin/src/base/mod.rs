@@ -1,14 +1,23 @@
-use crate::plugin::base::metrics::Metric;
-use crate::plugin::base::wrappers::BasePluginExported;
+//! # The common foundation for all Falco plugins
+//!
+//! All plugins must implement the [`Plugin`] trait which specifies some basic metadata
+//! about the plugin.
+//!
+//! See the [`Plugin`] trait documentation for details.
+
+use crate::base::wrappers::BasePluginExported;
 use crate::plugin::tables::vtable::TablesInput;
 use schema::ConfigSchema;
 use std::ffi::CStr;
 
 mod logger;
-pub mod metrics;
-pub mod schema;
+mod metrics;
+mod schema;
 #[doc(hidden)]
 pub mod wrappers;
+
+pub use metrics::{Metric, MetricLabel, MetricType, MetricValue};
+pub use schema::Json;
 
 /// The latest schema supported by the current SDK version
 pub use falco_plugin_api::SCHEMA_VERSION as CURRENT_SCHEMA_VERSION;
