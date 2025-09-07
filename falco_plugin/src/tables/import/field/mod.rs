@@ -1,12 +1,12 @@
-use crate::plugin::tables::data::Value;
-use crate::plugin::tables::field::raw::RawField;
-use crate::plugin::tables::runtime::RuntimeEntry;
-use crate::plugin::tables::runtime_table_validator::RuntimeTableValidator;
-use crate::plugin::tables::traits::RawFieldValueType;
+use crate::tables::import::data::Value;
+use crate::tables::import::field::raw::RawField;
+use crate::tables::import::runtime::RuntimeEntry;
+use crate::tables::import::runtime_table_validator::RuntimeTableValidator;
+use crate::tables::import::traits::RawFieldValueType;
 use std::fmt::{Debug, Formatter};
 use std::marker::PhantomData;
 
-pub(in crate::plugin::tables) mod raw;
+pub(crate) mod raw;
 
 /// # Table field descriptor
 ///
@@ -17,9 +17,9 @@ pub(in crate::plugin::tables) mod raw;
 /// them from [`crate::tables::import::Table::get_field`]
 /// and use the type to define fields in the metadata struct (see [module docs](`crate::tables::import`)).
 pub struct Field<V: Value + ?Sized, T = RuntimeEntry<()>> {
-    pub(in crate::plugin::tables) field: RawField<V>,
-    pub(in crate::plugin::tables) validator: RuntimeTableValidator,
-    pub(in crate::plugin::tables) tag: PhantomData<T>,
+    pub(crate) field: RawField<V>,
+    pub(crate) validator: RuntimeTableValidator,
+    pub(crate) tag: PhantomData<T>,
 }
 
 impl<V, T> Debug for Field<V, T>

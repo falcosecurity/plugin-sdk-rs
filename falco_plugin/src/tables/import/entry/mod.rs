@@ -1,12 +1,12 @@
 use crate::plugin::error::as_result::{AsResult, WithLastError};
-use crate::plugin::tables::data::Value;
-use crate::plugin::tables::field::Field;
-use crate::plugin::tables::traits::{EntryWrite, TableMetadata};
+use crate::tables::import::data::Value;
+use crate::tables::import::field::Field;
+use crate::tables::import::traits::{EntryWrite, TableMetadata};
 use crate::tables::TableReader;
 use crate::tables::TableWriter;
 use falco_plugin_api::ss_plugin_table_t;
 
-pub(in crate::plugin::tables) mod raw;
+pub(crate) mod raw;
 use raw::RawEntry;
 
 /// # An entry in a Falco plugin table
@@ -18,12 +18,12 @@ use raw::RawEntry;
 /// See the [module documentation](`crate::tables::import`) for details.
 #[derive(Debug)]
 pub struct Entry<M> {
-    pub(in crate::plugin::tables) raw_entry: RawEntry,
-    pub(in crate::plugin::tables) table: *mut ss_plugin_table_t,
-    pub(in crate::plugin::tables) metadata: M,
+    pub(crate) raw_entry: RawEntry,
+    pub(crate) table: *mut ss_plugin_table_t,
+    pub(crate) metadata: M,
 }
 
-impl<M: TableMetadata + Clone> crate::plugin::tables::traits::Entry for Entry<M> {
+impl<M: TableMetadata + Clone> crate::tables::import::traits::Entry for Entry<M> {
     type Metadata = M;
 
     fn new(raw_entry: RawEntry, table: *mut ss_plugin_table_t, metadata: Self::Metadata) -> Self {

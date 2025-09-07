@@ -321,13 +321,21 @@
 //! See the [`Table`] type for additional methods on tables, to e.g. iterate
 //! over entries or clear the whole table.
 
-pub use crate::plugin::tables::data::Bool;
-pub use crate::plugin::tables::data::FieldTypeId;
-pub use crate::plugin::tables::data::TableData;
-pub use crate::plugin::tables::field::Field;
-pub use crate::plugin::tables::runtime::RuntimeEntry;
-pub use crate::plugin::tables::table::Table;
-pub use crate::plugin::tables::Entry;
+pub(crate) mod data;
+pub(crate) mod entry;
+pub(crate) mod field;
+pub(crate) mod macros;
+pub(crate) mod runtime;
+pub(crate) mod runtime_table_validator;
+pub(crate) mod table;
+pub(crate) mod traits;
+
+pub use data::Bool;
+pub use data::TableData;
+pub use entry::Entry;
+pub use field::Field;
+pub use runtime::RuntimeEntry;
+pub use table::Table;
 
 /// Mark a struct type as an imported table entry metadata
 ///

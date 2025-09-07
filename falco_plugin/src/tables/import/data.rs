@@ -1,4 +1,4 @@
-use crate::plugin::tables::table::raw::RawTable;
+use crate::tables::import::table::raw::RawTable;
 use crate::tables::TablesInput;
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_field_type_FTYPE_UINT64, ss_plugin_state_data,
@@ -14,7 +14,7 @@ use std::borrow::Borrow;
 use std::ffi::{CStr, CString};
 use std::fmt::{Debug, Formatter};
 
-pub(in crate::plugin::tables) mod seal {
+pub(crate) mod seal {
     pub trait Sealed {}
 }
 

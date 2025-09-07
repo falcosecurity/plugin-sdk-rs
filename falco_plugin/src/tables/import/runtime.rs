@@ -1,5 +1,6 @@
-use crate::plugin::tables::table::raw::RawTable;
-use crate::plugin::tables::traits::TableMetadata;
+use crate::tables::import::entry::Entry;
+use crate::tables::import::table::raw::RawTable;
+use crate::tables::import::traits::TableMetadata;
 use crate::tables::TablesInput;
 use std::marker::PhantomData;
 
@@ -7,7 +8,7 @@ use std::marker::PhantomData;
 ///
 /// It takes a tag struct as a type to distinguish between entries from different
 /// tables at compile time (runtime checks are also done on a best-effort basis)
-pub type RuntimeEntry<T> = super::entry::Entry<NoMetadata<T>>;
+pub type RuntimeEntry<T> = Entry<NoMetadata<T>>;
 
 #[derive(Debug)]
 pub struct NoMetadata<T> {

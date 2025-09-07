@@ -2,15 +2,15 @@
 #[macro_export]
 macro_rules! table_import_expose_internals {
     () => {
-        pub use $crate::plugin::tables::data::Key;
-        pub use $crate::plugin::tables::data::Value;
-        pub use $crate::plugin::tables::traits::Entry;
-        pub use $crate::plugin::tables::traits::EntryWrite;
-        pub use $crate::plugin::tables::traits::RawFieldValueType;
-        pub use $crate::plugin::tables::traits::TableAccess;
+        pub use $crate::tables::import::data::Key;
+        pub use $crate::tables::import::data::Value;
+        pub use $crate::tables::import::traits::Entry;
+        pub use $crate::tables::import::traits::EntryWrite;
+        pub use $crate::tables::import::traits::RawFieldValueType;
+        pub use $crate::tables::import::traits::TableAccess;
 
-        pub use $crate::plugin::tables::traits::TableMetadata;
-        pub use $crate::plugin::tables::RawTable;
+        pub use $crate::tables::import::table::raw::RawTable;
+        pub use $crate::tables::import::traits::TableMetadata;
     };
 }
 
@@ -163,8 +163,8 @@ macro_rules! impl_import_table_accessor_impls {
 #[cfg(test)]
 #[allow(unused)]
 mod tests {
-    use crate::plugin::tables::field::Field;
-    use crate::plugin::tables::Entry;
+    use crate::tables::import::entry::Entry;
+    use crate::tables::import::field::Field;
     use std::ffi::CStr;
     use std::sync::Arc;
 
