@@ -8,4 +8,4 @@ pub(crate) mod ref_shared;
 pub mod static_field_specialization;
 pub mod table;
 pub(crate) mod vtable;
-pub(super) mod wrappers;
+pub(crate) mod wrappers;

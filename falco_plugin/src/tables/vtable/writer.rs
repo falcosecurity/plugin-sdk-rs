@@ -1,6 +1,6 @@
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::tables::vtable::TableError;
-use crate::plugin::tables::vtable::TableError::BadVtable;
+use crate::tables::vtable::TableError;
+use crate::tables::vtable::TableError::BadVtable;
 use falco_plugin_api::{
     ss_plugin_rc, ss_plugin_state_data, ss_plugin_table_entry_t, ss_plugin_table_field_t,
     ss_plugin_table_t, ss_plugin_table_writer_vtable_ext,
@@ -75,7 +75,7 @@ pub(crate) mod private {
 #[derive(Debug)]
 pub struct LazyTableWriter<'t> {
     writer_ext: &'t ss_plugin_table_writer_vtable_ext,
-    pub(in crate::plugin::tables) last_error: LastError,
+    pub(crate) last_error: LastError,
 }
 
 impl<'t> LazyTableWriter<'t> {
@@ -250,7 +250,7 @@ pub struct ValidatedTableWriter<'t> {
         in_: *const ss_plugin_state_data,
     ) -> ss_plugin_rc,
 
-    pub(in crate::plugin::tables) last_error: LastError,
+    pub(crate) last_error: LastError,
     lifetime: PhantomData<&'t ()>,
 }
 

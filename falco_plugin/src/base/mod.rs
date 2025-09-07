@@ -6,7 +6,7 @@
 //! See the [`Plugin`] trait documentation for details.
 
 use crate::base::wrappers::BasePluginExported;
-use crate::plugin::tables::vtable::TablesInput;
+use crate::tables::TablesInput;
 use schema::ConfigSchema;
 use std::ffi::CStr;
 

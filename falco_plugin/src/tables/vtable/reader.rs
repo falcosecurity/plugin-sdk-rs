@@ -1,6 +1,6 @@
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::tables::vtable::TableError;
-use crate::plugin::tables::vtable::TableError::BadVtable;
+use crate::tables::vtable::TableError;
+use crate::tables::vtable::TableError::BadVtable;
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_rc, ss_plugin_state_data, ss_plugin_table_entry_t,
     ss_plugin_table_field_t, ss_plugin_table_iterator_func_t, ss_plugin_table_iterator_state_t,
@@ -70,7 +70,7 @@ pub(crate) mod private {
 #[derive(Debug)]
 pub struct LazyTableReader<'t> {
     reader_ext: &'t ss_plugin_table_reader_vtable_ext,
-    pub(in crate::plugin::tables) last_error: LastError,
+    pub(crate) last_error: LastError,
 }
 
 impl<'t> LazyTableReader<'t> {
@@ -204,32 +204,28 @@ impl private::TableReaderImpl for LazyTableReader<'_> {
 /// should be ever so slightly faster due to skipped NULL checks.
 #[derive(Debug)]
 pub struct ValidatedTableReader<'t> {
-    pub(in crate::plugin::tables) get_table_name:
+    pub(crate) get_table_name:
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
-    pub(in crate::plugin::tables) get_table_size:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64,
-    pub(in crate::plugin::tables) get_table_entry:
-        unsafe extern "C-unwind" fn(
-            t: *mut ss_plugin_table_t,
-            key: *const ss_plugin_state_data,
-        ) -> *mut ss_plugin_table_entry_t,
-    pub(in crate::plugin::tables) read_entry_field: unsafe extern "C-unwind" fn(
+    pub(crate) get_table_size: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64,
+    pub(crate) get_table_entry: unsafe extern "C-unwind" fn(
+        t: *mut ss_plugin_table_t,
+        key: *const ss_plugin_state_data,
+    ) -> *mut ss_plugin_table_entry_t,
+    pub(crate) read_entry_field: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         e: *mut ss_plugin_table_entry_t,
         f: *const ss_plugin_table_field_t,
         out: *mut ss_plugin_state_data,
-    )
-        -> ss_plugin_rc,
-    pub(in crate::plugin::tables) release_table_entry:
+    ) -> ss_plugin_rc,
+    pub(crate) release_table_entry:
         unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    pub(in crate::plugin::tables) iterate_entries: unsafe extern "C-unwind" fn(
+    pub(crate) iterate_entries: unsafe extern "C-unwind" fn(
         t: *mut ss_plugin_table_t,
         it: ss_plugin_table_iterator_func_t,
         s: *mut ss_plugin_table_iterator_state_t,
-    )
-        -> ss_plugin_bool,
+    ) -> ss_plugin_bool,
 
-    pub(in crate::plugin::tables) last_error: LastError,
+    pub(crate) last_error: LastError,
     lifetime: PhantomData<&'t ()>,
 }
 
