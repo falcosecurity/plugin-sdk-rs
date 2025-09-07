@@ -62,10 +62,22 @@
 //!# plugin!(#[no_capabilities] MyPlugin);
 //! ```
 
-pub use crate::plugin::exported_tables::field::private::Private;
-pub use crate::plugin::exported_tables::field::public::Public;
-pub use crate::plugin::exported_tables::field::readonly::Readonly;
-pub use crate::plugin::exported_tables::table::Table;
+pub(crate) mod entry;
+pub(crate) mod field;
+pub(crate) mod field_descriptor;
+pub(crate) mod field_value;
+pub(crate) mod macros;
+pub(crate) mod metadata;
+pub(crate) mod ref_shared;
+pub(crate) mod static_field_specialization;
+pub(crate) mod table;
+pub(crate) mod vtable;
+pub(crate) mod wrappers;
+
+pub use field::private::Private;
+pub use field::public::Public;
+pub use field::readonly::Readonly;
+pub use table::Table;
 
 /// Mark a struct type as a table value
 ///

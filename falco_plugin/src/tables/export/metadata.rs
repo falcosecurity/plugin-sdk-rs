@@ -1,4 +1,4 @@
-use crate::plugin::exported_tables::ref_shared::{new_shared_ref, RefShared};
+use crate::tables::export::ref_shared::{new_shared_ref, RefShared};
 use anyhow::Error;
 use std::ffi::CStr;
 

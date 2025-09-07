@@ -1,4 +1,4 @@
-use crate::plugin::exported_tables::metadata::HasMetadata;
+use crate::tables::export::metadata::HasMetadata;
 use anyhow::Error;
 use std::ffi::CStr;
 use std::ops::{Deref, DerefMut};

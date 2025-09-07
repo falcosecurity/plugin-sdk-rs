@@ -1,7 +1,7 @@
-use crate::plugin::exported_tables::entry::table_metadata::dynamic::DynamicFieldsOnly;
-use crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
-use crate::plugin::exported_tables::field_descriptor::FieldRef;
-use crate::plugin::exported_tables::metadata::Metadata;
+use crate::tables::export::entry::table_metadata::dynamic::DynamicFieldsOnly;
+use crate::tables::export::entry::table_metadata::traits::TableMetadata;
+use crate::tables::export::field_descriptor::FieldRef;
+use crate::tables::export::metadata::Metadata;
 use crate::tables::import::data::FieldTypeId;
 use anyhow::Error;
 use falco_plugin_api::ss_plugin_table_fieldinfo;
@@ -9,7 +9,7 @@ use std::ffi::CStr;
 
 #[derive(Debug)]
 pub struct ExtensibleEntryMetadata<M> {
-    pub(in crate::plugin::exported_tables) inner: M,
+    pub(crate) inner: M,
     custom_fields: DynamicFieldsOnly,
 }
 

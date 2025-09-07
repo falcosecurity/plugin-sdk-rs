@@ -1,7 +1,7 @@
-use crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
-use crate::plugin::exported_tables::field_descriptor::FieldDescriptor;
-use crate::plugin::exported_tables::field_descriptor::{FieldId, FieldRef};
-use crate::plugin::exported_tables::metadata::Metadata;
+use crate::tables::export::entry::table_metadata::traits::TableMetadata;
+use crate::tables::export::field_descriptor::FieldDescriptor;
+use crate::tables::export::field_descriptor::{FieldId, FieldRef};
+use crate::tables::export::metadata::Metadata;
 use crate::tables::import::data::FieldTypeId;
 use falco_plugin_api::{ss_plugin_bool, ss_plugin_state_type, ss_plugin_table_fieldinfo};
 use std::collections::BTreeMap;

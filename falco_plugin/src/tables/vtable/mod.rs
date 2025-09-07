@@ -1,10 +1,10 @@
 use crate::internals::tables::RawTable;
 use crate::plugin::error::as_result::{AsResult, WithLastError};
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
-use crate::plugin::exported_tables::entry::traits::Entry;
-use crate::plugin::exported_tables::table::Table;
-use crate::plugin::exported_tables::wrappers::{fields_vtable, reader_vtable, writer_vtable};
+use crate::tables::export::entry::table_metadata::traits::TableMetadata;
+use crate::tables::export::entry::traits::Entry;
+use crate::tables::export::table::Table;
+use crate::tables::export::wrappers::{fields_vtable, reader_vtable, writer_vtable};
 use crate::tables::import::data::Key;
 use crate::tables::import::traits::{TableAccess, TableMetadata as ImportedTableMetadata};
 use falco_plugin_api::{

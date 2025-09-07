@@ -1,10 +1,10 @@
-use crate::plugin::exported_tables::entry::dynamic::DynamicEntry;
-use crate::plugin::exported_tables::entry::table_metadata::extensible::ExtensibleEntryMetadata;
-use crate::plugin::exported_tables::entry::traits::Entry;
-use crate::plugin::exported_tables::field_descriptor::FieldId;
-use crate::plugin::exported_tables::field_value::dynamic::DynamicFieldValue;
-use crate::plugin::exported_tables::metadata::HasMetadata;
-use crate::plugin::exported_tables::ref_shared::RefShared;
+use crate::tables::export::entry::dynamic::DynamicEntry;
+use crate::tables::export::entry::table_metadata::extensible::ExtensibleEntryMetadata;
+use crate::tables::export::entry::traits::Entry;
+use crate::tables::export::field_descriptor::FieldId;
+use crate::tables::export::field_value::dynamic::DynamicFieldValue;
+use crate::tables::export::metadata::HasMetadata;
+use crate::tables::export::ref_shared::RefShared;
 use crate::tables::import::data::FieldTypeId;
 use anyhow::Error;
 use falco_plugin_api::ss_plugin_state_data;

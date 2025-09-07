@@ -43,9 +43,9 @@ impl AsRef<FieldDescriptor> for FieldRef {
 /// the defined type on all incoming data.
 #[derive(Debug)]
 pub struct FieldDescriptor {
-    pub(in crate::plugin::exported_tables) index: FieldId,
-    pub(in crate::plugin::exported_tables) type_id: FieldTypeId,
-    pub(in crate::plugin::exported_tables) read_only: bool,
+    pub(crate) index: FieldId,
+    pub(crate) type_id: FieldTypeId,
+    pub(crate) read_only: bool,
 }
 
 impl FieldDescriptor {

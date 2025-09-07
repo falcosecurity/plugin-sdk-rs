@@ -3,22 +3,22 @@
 macro_rules! table_export_expose_internals {
     () => {
         pub mod export {
-            pub use $crate::plugin::exported_tables::entry::table_metadata::traits::TableMetadata;
-            pub use $crate::plugin::exported_tables::entry::traits::Entry;
-            pub use $crate::plugin::exported_tables::field_descriptor::FieldDescriptor;
-            pub use $crate::plugin::exported_tables::field_descriptor::FieldId;
-            pub use $crate::plugin::exported_tables::field_descriptor::FieldRef;
-            pub use $crate::plugin::exported_tables::field_value::dynamic::DynamicFieldValue;
-            pub use $crate::plugin::exported_tables::metadata::HasMetadata;
-            pub use $crate::plugin::exported_tables::metadata::Metadata;
-            pub use $crate::plugin::exported_tables::ref_shared::RefShared;
+            pub use $crate::tables::export::entry::table_metadata::traits::TableMetadata;
+            pub use $crate::tables::export::entry::traits::Entry;
+            pub use $crate::tables::export::field_descriptor::FieldDescriptor;
+            pub use $crate::tables::export::field_descriptor::FieldId;
+            pub use $crate::tables::export::field_descriptor::FieldRef;
+            pub use $crate::tables::export::field_value::dynamic::DynamicFieldValue;
+            pub use $crate::tables::export::metadata::HasMetadata;
+            pub use $crate::tables::export::metadata::Metadata;
+            pub use $crate::tables::export::ref_shared::RefShared;
 
-            pub use $crate::plugin::exported_tables::static_field_specialization::StaticFieldCheck;
-            pub use $crate::plugin::exported_tables::static_field_specialization::StaticFieldFallback;
-            pub use $crate::plugin::exported_tables::static_field_specialization::StaticFieldGet;
-            pub use $crate::plugin::exported_tables::static_field_specialization::StaticFieldGetFallback;
-            pub use $crate::plugin::exported_tables::static_field_specialization::StaticFieldSet;
-            pub use $crate::plugin::exported_tables::static_field_specialization::StaticFieldSetFallback;
+            pub use $crate::tables::export::static_field_specialization::StaticFieldCheck;
+            pub use $crate::tables::export::static_field_specialization::StaticFieldFallback;
+            pub use $crate::tables::export::static_field_specialization::StaticFieldGet;
+            pub use $crate::tables::export::static_field_specialization::StaticFieldGetFallback;
+            pub use $crate::tables::export::static_field_specialization::StaticFieldSet;
+            pub use $crate::tables::export::static_field_specialization::StaticFieldSetFallback;
 
             pub use $crate::tables::import::data::FieldTypeId;
         }
