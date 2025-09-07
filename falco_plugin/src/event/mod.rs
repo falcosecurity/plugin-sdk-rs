@@ -1,3 +1,8 @@
+//! # Event-related types
+//!
+//! This module reexports the whole of [`falco_event`] (except the macros), as well as exports
+//! the event types defined by this crate (the minimal subset of the full Falco schema)
+
 mod async_event;
 mod event_input;
 mod json;
@@ -6,6 +11,7 @@ mod plugin_event;
 pub use async_event::AsyncEvent;
 pub use event_input::EventInput;
 use falco_event::fields::{FromBytes, ToBytes};
+pub use falco_event::{events, fields};
 pub use json::JsonPayload;
 pub use plugin_event::PluginEvent;
 use std::fmt::Debug;
