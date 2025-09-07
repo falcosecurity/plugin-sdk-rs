@@ -1,7 +1,7 @@
 use crate::base::wrappers::PluginWrapper;
+use crate::listen::CaptureListenInput;
 use crate::listen::CaptureListenPlugin;
 use crate::plugin::error::ffi_result::FfiResult;
-use crate::plugin::listen::CaptureListenInput;
 use falco_plugin_api::{
     plugin_api__bindgen_ty_5 as listen_plugin_api, ss_plugin_capture_listen_input, ss_plugin_rc,
     ss_plugin_rc_SS_PLUGIN_FAILURE, ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_t,
@@ -114,11 +114,11 @@ pub unsafe extern "C-unwind" fn plugin_capture_close<T: CaptureListenPlugin>(
 #[macro_export]
 macro_rules! capture_listen_plugin {
     ($ty:ty) => {
-        unsafe impl $crate::internals::listen::wrappers::CaptureListenPluginExported for $ty {}
+        unsafe impl $crate::listen::wrappers::CaptureListenPluginExported for $ty {}
 
         $crate::wrap_ffi! {
             #[unsafe(no_mangle)]
-            use $crate::internals::listen::wrappers: <$ty>;
+            use $crate::listen::wrappers: <$ty>;
 
             unsafe fn plugin_capture_open(
                 plugin: *mut falco_plugin::api::ss_plugin_t,

@@ -479,7 +479,7 @@ macro_rules! static_plugin {
         unsafe impl $crate::base::wrappers::BasePluginExported for $ty {}
         unsafe impl $crate::async_event::wrappers::AsyncPluginExported for $ty {}
         unsafe impl $crate::extract::wrappers::ExtractPluginExported for $ty {}
-        unsafe impl $crate::internals::listen::wrappers::CaptureListenPluginExported for $ty {}
+        unsafe impl $crate::listen::wrappers::CaptureListenPluginExported for $ty {}
         unsafe impl $crate::parse::wrappers::ParsePluginExported for $ty {}
         unsafe impl $crate::source::wrappers::SourcePluginExported for $ty {}
     };
@@ -497,7 +497,7 @@ macro_rules! ensure_plugin_capabilities {
         const _: () = {
             use $crate::async_event::wrappers::AsyncPluginFallbackApi;
             use $crate::extract::wrappers::ExtractPluginFallbackApi;
-            use $crate::internals::listen::wrappers::CaptureListenFallbackApi;
+            use $crate::listen::wrappers::CaptureListenFallbackApi;
             use $crate::parse::wrappers::ParsePluginFallbackApi;
             use $crate::source::wrappers::SourcePluginFallbackApi;
 
@@ -506,7 +506,7 @@ macro_rules! ensure_plugin_capabilities {
             let impls_extract =
                 $crate::extract::wrappers::ExtractPluginApi::<$ty>::IMPLEMENTS_EXTRACT;
             let impls_listen =
-                $crate::internals::listen::wrappers::CaptureListenApi::<$ty>::IMPLEMENTS_LISTEN;
+                $crate::listen::wrappers::CaptureListenApi::<$ty>::IMPLEMENTS_LISTEN;
             let impls_parse =
                 $crate::parse::wrappers::ParsePluginApi::<$ty>::IMPLEMENTS_PARSE;
             let impls_source =
@@ -567,7 +567,7 @@ macro_rules! base_plugin_ffi_wrappers {
         pub const fn __plugin_base_api() -> falco_plugin::api::plugin_api {
             use $crate::async_event::wrappers::AsyncPluginFallbackApi;
             use $crate::extract::wrappers::ExtractPluginFallbackApi;
-            use $crate::internals::listen::wrappers::CaptureListenFallbackApi;
+            use $crate::listen::wrappers::CaptureListenFallbackApi;
             use $crate::parse::wrappers::ParsePluginFallbackApi;
             use $crate::source::wrappers::SourcePluginFallbackApi;
             falco_plugin::api::plugin_api {
@@ -589,7 +589,7 @@ macro_rules! base_plugin_ffi_wrappers {
                 __bindgen_anon_4:
                     $crate::async_event::wrappers::AsyncPluginApi::<$ty>::ASYNC_API,
                 __bindgen_anon_5:
-                    $crate::internals::listen::wrappers::CaptureListenApi::<$ty>::LISTEN_API,
+                    $crate::listen::wrappers::CaptureListenApi::<$ty>::LISTEN_API,
                 set_config: Some(plugin_set_config),
                 get_metrics: Some(plugin_get_metrics),
                 get_required_event_schema_version: Some(plugin_get_required_event_schema_version),

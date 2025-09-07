@@ -8,7 +8,7 @@ use std::ops::ControlFlow;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum ThreadPoolError {
+pub(super) enum ThreadPoolError {
     #[error("Missing entry {0} in thread pool operations vtable")]
     BadVtable(&'static str),
 }
@@ -60,7 +60,7 @@ pub struct ThreadPool {
 }
 
 impl ThreadPool {
-    pub(in crate::plugin::listen) fn try_from(
+    pub(super) fn try_from(
         owner: *mut ss_plugin_owner_t,
         vtable: *const ss_plugin_routine_vtable,
         last_error: LastError,
