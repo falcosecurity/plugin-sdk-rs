@@ -1,7 +1,59 @@
+//! # Event parsing support
+//!
+//! Plugins with event parsing capability can hook into an event stream and receive all of its events
+//! sequentially. The parsing phase is the stage in the event processing loop in which
+//! the Falcosecurity libraries inspect the content of the events' payload and use it to apply
+//! internal state updates or implement additional logic. This phase happens before any field
+//! extraction for a given event. Each event in a given stream is guaranteed to be received at most once.
+//!
+//! For your plugin to support event parsing, you will need to implement the [`ParsePlugin`]
+//! trait and invoke the [`parse_plugin`](crate::parse_plugin) macro, for example:
+//!
+//! ```
+//!# use std::ffi::CStr;
+//! use falco_event::events::RawEvent;
+//! use falco_plugin::anyhow::Error;
+//! use falco_plugin::base::Plugin;
+//! use falco_plugin::{parse_plugin, plugin};
+//! use falco_plugin::parse::{EventInput, ParseInput, ParsePlugin};
+//!# use falco_plugin::tables::TablesInput;
+//!
+//! struct MyParsePlugin;
+//!
+//! impl Plugin for MyParsePlugin {
+//!     // ...
+//! #    const NAME: &'static CStr = c"sample-plugin-rs";
+//! #    const PLUGIN_VERSION: &'static CStr = c"0.0.1";
+//! #    const DESCRIPTION: &'static CStr = c"A sample Falco plugin that does nothing";
+//! #    const CONTACT: &'static CStr = c"you@example.com";
+//! #    type ConfigType = ();
+//! #
+//! #    fn new(input: Option<&TablesInput>, config: Self::ConfigType)
+//! #        -> Result<Self, Error> {
+//! #        Ok(MyParsePlugin)
+//! #    }
+//! }
+//!
+//! impl ParsePlugin for MyParsePlugin {
+//!     type Event<'a> = RawEvent<'a>;
+//!
+//!     fn parse_event(&mut self, event: &EventInput<RawEvent>, parse_input: &ParseInput)
+//!         -> Result<(), Error> {
+//!         let event = event.event()?;
+//!
+//!         // any processing you want here, e.g. involving tables
+//!
+//!         Ok(())
+//!     }
+//! }
+//!
+//! plugin!(MyParsePlugin);
+//! parse_plugin!(MyParsePlugin);
+//! ```
+
 use crate::base::Plugin;
-use crate::parse::EventInput;
+use crate::parse::wrappers::ParsePluginExported;
 use crate::plugin::error::last_error::LastError;
-use crate::plugin::parse::wrappers::ParsePluginExported;
 use crate::plugin::tables::vtable::writer::LazyTableWriter;
 use crate::tables::LazyTableReader;
 use falco_event::events::{AnyEventPayload, RawEvent};
@@ -9,6 +61,8 @@ use falco_plugin_api::ss_plugin_event_parse_input;
 
 #[doc(hidden)]
 pub mod wrappers;
+
+pub use crate::event::EventInput;
 
 /// Support for event parse plugins
 pub trait ParsePlugin: Plugin + ParsePluginExported {
@@ -59,7 +113,7 @@ pub struct ParseInput<'t> {
 }
 
 impl ParseInput<'_> {
-    pub(in crate::plugin::parse) unsafe fn try_from(
+    pub(crate) unsafe fn try_from(
         value: *const ss_plugin_event_parse_input,
         last_error: LastError,
     ) -> Result<Self, anyhow::Error> {
