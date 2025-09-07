@@ -12,7 +12,7 @@ pub struct EventBatch<'a> {
 }
 
 impl EventBatch<'_> {
-    pub(in crate::plugin::source) fn new(alloc: &bumpalo::Bump) -> EventBatch<'_> {
+    pub(super) fn new(alloc: &bumpalo::Bump) -> EventBatch<'_> {
         let pointers = bumpalo::collections::Vec::new_in(alloc);
         EventBatch { alloc, pointers }
     }
@@ -51,7 +51,7 @@ impl EventBatch<'_> {
         self.pointers.reserve(num_events);
     }
 
-    pub(in crate::plugin::source) fn get_events(&self) -> &[*const u8] {
+    pub(super) fn get_events(&self) -> &[*const u8] {
         self.pointers.as_slice()
     }
 }

@@ -12,100 +12,6 @@ pub use serde;
 
 pub use crate::plugin::error::FailureReason;
 
-/// # Event sourcing support
-///
-/// Plugins with event sourcing capability provide a new event source and make it available to
-/// libscap and libsinsp. They have the ability to "open" and "close" a stream of events and return
-/// those events to the plugin framework. They also provide a plugin ID, which is globally unique
-/// and is used in capture files. Event sources provided by plugins with this capability are tied
-/// to the events they generate and can be used by [plugins with field extraction](crate::source)
-/// capabilities and within Falco rules.
-/// For your plugin to support event sourcing, you will need to implement the [`source::SourcePlugin`]
-/// trait and invoke the [`source_plugin`] macro, for example:
-///
-/// ```
-/// use std::ffi::{CStr, CString};
-/// use anyhow::Error;
-/// use falco_event::events::{Event, RawEvent};
-/// use falco_plugin::base::{Metric, Plugin};
-/// use falco_plugin::{plugin, source_plugin};
-/// use falco_plugin::source::{EventBatch, EventInput, PluginEvent, SourcePlugin, SourcePluginInstance};
-/// use falco_plugin::tables::TablesInput;
-/// use falco_plugin_api::ss_plugin_event_input;
-///
-/// struct MySourcePlugin;
-///
-/// impl Plugin for MySourcePlugin {
-///     // ...
-/// #    const NAME: &'static CStr = c"sample-plugin-rs";
-/// #    const PLUGIN_VERSION: &'static CStr = c"0.0.1";
-/// #    const DESCRIPTION: &'static CStr = c"A sample Falco plugin that does nothing";
-/// #    const CONTACT: &'static CStr = c"you@example.com";
-/// #    type ConfigType = ();
-/// #
-/// #    fn new(input: Option<&TablesInput>, config: Self::ConfigType)
-/// #        -> Result<Self, anyhow::Error> {
-/// #        Ok(MySourcePlugin)
-/// #    }
-/// #
-/// #    fn set_config(&mut self, config: Self::ConfigType) -> Result<(), anyhow::Error> {
-/// #        Ok(())
-/// #    }
-/// #
-/// #    fn get_metrics(&mut self) -> impl IntoIterator<Item=Metric> {
-/// #        []
-/// #    }
-/// }
-///
-/// struct MySourcePluginInstance;
-///
-/// impl SourcePlugin for MySourcePlugin {
-///     type Instance = MySourcePluginInstance;
-///     const EVENT_SOURCE: &'static CStr = c"my-source-plugin";
-///     const PLUGIN_ID: u32 = 0; // we do not have one assigned for this example :)
-///
-///     type Event<'a> = Event<PluginEvent<&'a [u8]>>;
-///
-///     fn open(&mut self, params: Option<&str>) -> Result<Self::Instance, Error> {
-///         // we do not use the open parameters in this example
-///         Ok((MySourcePluginInstance))
-///     }
-///
-///     fn event_to_string(&mut self, event: &EventInput<Self::Event<'_>>) -> Result<CString, Error> {
-///         // a string representation for our event; just copy out the whole event data
-///         // (it's an ASCII string); please note we need the copy because we need to add
-///         // a NUL terminator to convert the byte buffer to a C string
-///
-///         // get the plugin event
-///         let plugin_event = event.event()?;
-///
-///         // convert the data to a CString and return it
-///         Ok(CString::new(plugin_event.params.event_data)?)
-///     }
-/// }
-///
-/// impl SourcePluginInstance for MySourcePluginInstance {
-///     type Plugin = MySourcePlugin;
-///
-///     fn next_batch(&mut self, plugin: &mut Self::Plugin, batch: &mut EventBatch)
-///     -> Result<(), Error> {
-///         let event = Self::plugin_event(b"hello, world");
-///         batch.add(event)?;
-///
-///         Ok(())
-///     }}
-///
-/// plugin!(MySourcePlugin);
-/// source_plugin!(MySourcePlugin);
-/// ```
-pub mod source {
-    pub use crate::event::EventInput;
-    pub use crate::event::PluginEvent;
-    pub use crate::plugin::source::event_batch::EventBatch;
-    pub use crate::plugin::source::open_params::{serialize_open_params, OpenParam};
-    pub use crate::plugin::source::{ProgressInfo, SourcePlugin, SourcePluginInstance};
-}
-
 /// # Capture listening plugins
 ///
 /// Plugins with capture listening capability can receive notifications whenever a capture is
@@ -768,14 +674,11 @@ pub mod event;
 pub mod extract;
 pub mod parse;
 mod plugin;
+pub mod source;
 pub mod strings;
 
 #[doc(hidden)]
 pub mod internals {
-    pub mod source {
-        pub use crate::plugin::source::wrappers;
-    }
-
     pub mod listen {
         pub use crate::plugin::listen::wrappers;
     }

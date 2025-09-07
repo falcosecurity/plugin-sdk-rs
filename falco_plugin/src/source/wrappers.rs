@@ -1,6 +1,6 @@
 use crate::base::wrappers::PluginWrapper;
 use crate::plugin::error::ffi_result::FfiResult;
-use crate::plugin::source::SourcePluginInstanceWrapper;
+use crate::source::SourcePluginInstanceWrapper;
 use crate::source::{EventBatch, EventInput, SourcePlugin, SourcePluginInstance};
 use crate::strings::cstring_writer::WriteIntoCString;
 use crate::strings::from_ptr::try_str_from_ptr;
@@ -307,11 +307,11 @@ pub unsafe extern "C-unwind" fn plugin_event_to_string<T: SourcePlugin>(
 #[macro_export]
 macro_rules! source_plugin {
     ($ty:ty) => {
-        unsafe impl $crate::internals::source::wrappers::SourcePluginExported for $ty {}
+        unsafe impl $crate::source::wrappers::SourcePluginExported for $ty {}
 
         $crate::wrap_ffi! {
             #[unsafe(no_mangle)]
-            use $crate::internals::source::wrappers: <$ty>;
+            use $crate::source::wrappers: <$ty>;
             unsafe fn plugin_next_batch(
                 plugin: *mut falco_plugin::api::ss_plugin_t,
                 instance: *mut falco_plugin::api::ss_instance_t,
