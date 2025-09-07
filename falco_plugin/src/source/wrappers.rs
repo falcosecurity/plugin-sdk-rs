@@ -1,5 +1,5 @@
 use crate::base::wrappers::PluginWrapper;
-use crate::plugin::error::ffi_result::FfiResult;
+use crate::error::ffi_result::FfiResult;
 use crate::source::SourcePluginInstanceWrapper;
 use crate::source::{EventBatch, EventInput, SourcePlugin, SourcePluginInstance};
 use crate::strings::cstring_writer::WriteIntoCString;

@@ -1,4 +1,4 @@
-use crate::plugin::error::last_error::LastError;
+use crate::error::last_error::LastError;
 use crate::FailureReason;
 use anyhow::Context;
 use falco_plugin_api::ss_plugin_rc;

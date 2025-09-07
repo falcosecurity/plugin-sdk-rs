@@ -1,6 +1,6 @@
+use crate::error::as_result::{AsResult, WithLastError};
+use crate::error::last_error::LastError;
 use crate::internals::tables::RawTable;
-use crate::plugin::error::as_result::{AsResult, WithLastError};
-use crate::plugin::error::last_error::LastError;
 use crate::tables::export::entry::table_metadata::traits::TableMetadata;
 use crate::tables::export::entry::traits::Entry;
 use crate::tables::export::table::Table;

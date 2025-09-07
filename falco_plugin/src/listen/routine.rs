@@ -1,5 +1,5 @@
-use crate::plugin::error::as_result::{AsResult, WithLastError};
-use crate::plugin::error::last_error::LastError;
+use crate::error::as_result::{AsResult, WithLastError};
+use crate::error::last_error::LastError;
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_owner_t, ss_plugin_rc, ss_plugin_routine_fn_t,
     ss_plugin_routine_state_t, ss_plugin_routine_t, ss_plugin_routine_vtable, ss_plugin_t,

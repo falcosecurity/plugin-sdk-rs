@@ -1,7 +1,7 @@
 use crate::base::wrappers::PluginWrapper;
+use crate::error::ffi_result::FfiResult;
 use crate::event::EventInput;
 use crate::extract::ExtractPlugin;
-use crate::plugin::error::ffi_result::FfiResult;
 use crate::tables::LazyTableReader;
 use falco_event::events::AnyEventPayload;
 use falco_plugin_api::plugin_api__bindgen_ty_2 as extract_plugin_api;
