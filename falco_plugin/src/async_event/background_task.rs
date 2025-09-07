@@ -104,7 +104,7 @@ impl BackgroundTask {
 
 #[cfg(test)]
 mod tests {
-    use crate::plugin::async_event::background_task::BackgroundTask;
+    use crate::async_event::background_task::BackgroundTask;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::sync::Arc;
     use std::time::{Duration, Instant};
