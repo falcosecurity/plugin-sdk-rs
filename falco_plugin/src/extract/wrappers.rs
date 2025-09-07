@@ -1,7 +1,7 @@
 use crate::base::wrappers::PluginWrapper;
 use crate::event::EventInput;
+use crate::extract::ExtractPlugin;
 use crate::plugin::error::ffi_result::FfiResult;
-use crate::plugin::extract::ExtractPlugin;
 use crate::tables::LazyTableReader;
 use falco_event::events::AnyEventPayload;
 use falco_plugin_api::plugin_api__bindgen_ty_2 as extract_plugin_api;
@@ -144,11 +144,11 @@ pub unsafe extern "C-unwind" fn plugin_extract_fields<T: ExtractPlugin>(
 #[macro_export]
 macro_rules! extract_plugin {
     ($ty:ty) => {
-        unsafe impl $crate::internals::extract::wrappers::ExtractPluginExported for $ty {}
+        unsafe impl $crate::extract::wrappers::ExtractPluginExported for $ty {}
 
         $crate::wrap_ffi! {
             #[unsafe(no_mangle)]
-            use $crate::internals::extract::wrappers: <$ty>;
+            use $crate::extract::wrappers: <$ty>;
 
             unsafe fn plugin_get_extract_event_sources() -> *const ::std::ffi::c_char;
             unsafe fn plugin_get_extract_event_types(
