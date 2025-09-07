@@ -1,10 +1,44 @@
 use crate::extract::{ExtractPlugin, ExtractRequest};
 use crate::plugin::extract::fields::Extract;
 use crate::plugin::extract::schema::ExtractArgType;
-use crate::plugin::extract::{ExtractField, ExtractFieldRequestArg};
 use anyhow::Error;
 use falco_plugin_api::ss_plugin_extract_field;
 use std::ffi::CStr;
+
+/// The actual argument passed to the extractor function
+///
+/// It is validated based on the [`ExtractFieldInfo`] definition (use [`ExtractFieldInfo::with_arg`]
+/// to specify the expected argument type).
+///
+/// **Note**: this type describes the actual argument in a particular invocation.
+/// For describing the type of arguments the extractor accepts, please see [`ExtractArgType`]`
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub enum ExtractFieldRequestArg<'a> {
+    /// no argument, the extractor was invoked as plain `field_name`
+    None,
+    /// an integer argument, the extractor was invoked as e.g. `field_name[1]`
+    Int(u64),
+    /// a string argument, the extractor was invoked as e.g. `field_name[foo]`
+    String(&'a CStr),
+}
+
+trait ExtractField {
+    unsafe fn key_unchecked(&self) -> ExtractFieldRequestArg<'_>;
+}
+
+impl ExtractField for ss_plugin_extract_field {
+    unsafe fn key_unchecked(&self) -> ExtractFieldRequestArg<'_> {
+        if self.arg_present == 0 {
+            return ExtractFieldRequestArg::None;
+        }
+
+        if self.arg_key.is_null() {
+            return ExtractFieldRequestArg::Int(self.arg_index);
+        }
+
+        unsafe { ExtractFieldRequestArg::String(CStr::from_ptr(self.arg_key)) }
+    }
+}
 
 #[derive(Debug)]
 pub struct ExtractLambda<P: ExtractPlugin> {
