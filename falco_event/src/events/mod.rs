@@ -13,6 +13,6 @@ pub use to_bytes::EventToBytes;
 
 mod event;
 mod metadata;
-pub(crate) mod payload;
+mod payload;
 mod raw_event;
 mod to_bytes;
