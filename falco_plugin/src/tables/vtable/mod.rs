@@ -1,6 +1,5 @@
 use crate::error::as_result::{AsResult, WithLastError};
 use crate::error::last_error::LastError;
-use crate::tables::export::table::Table;
 use crate::tables::export::traits::Entry;
 use crate::tables::export::traits::TableMetadata;
 use crate::tables::export::wrappers::{fields_vtable, reader_vtable, writer_vtable};
@@ -19,6 +18,7 @@ pub mod fields;
 pub mod reader;
 pub mod writer;
 
+use crate::tables::export::Table;
 use crate::tables::LazyTableReader;
 use fields::TableFields;
 use writer::LazyTableWriter;

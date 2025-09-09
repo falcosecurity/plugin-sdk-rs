@@ -70,7 +70,7 @@ mod macros;
 mod metadata;
 mod ref_shared;
 mod static_field_specialization;
-pub(crate) mod table;
+mod table;
 pub(crate) mod vtable;
 pub(crate) mod wrappers;
 
