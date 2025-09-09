@@ -13,12 +13,12 @@ macro_rules! table_export_expose_internals {
             pub use $crate::tables::export::Metadata;
             pub use $crate::tables::export::RefShared;
 
-            pub use $crate::tables::export::static_field_specialization::StaticFieldCheck;
-            pub use $crate::tables::export::static_field_specialization::StaticFieldFallback;
-            pub use $crate::tables::export::static_field_specialization::StaticFieldGet;
-            pub use $crate::tables::export::static_field_specialization::StaticFieldGetFallback;
-            pub use $crate::tables::export::static_field_specialization::StaticFieldSet;
-            pub use $crate::tables::export::static_field_specialization::StaticFieldSetFallback;
+            pub use $crate::tables::export::StaticFieldCheck;
+            pub use $crate::tables::export::StaticFieldFallback;
+            pub use $crate::tables::export::StaticFieldGet;
+            pub use $crate::tables::export::StaticFieldGetFallback;
+            pub use $crate::tables::export::StaticFieldSet;
+            pub use $crate::tables::export::StaticFieldSetFallback;
 
             pub use $crate::tables::import::FieldTypeId;
         }
