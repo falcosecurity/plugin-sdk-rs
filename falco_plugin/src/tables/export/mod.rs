@@ -68,7 +68,7 @@ mod field_descriptor;
 mod field_value;
 mod macros;
 mod metadata;
-pub(crate) mod ref_shared;
+mod ref_shared;
 pub(crate) mod static_field_specialization;
 pub(crate) mod table;
 pub(crate) mod vtable;
@@ -97,6 +97,10 @@ pub use field_value::dynamic::DynamicFieldValue;
 // for macro use only
 #[doc(hidden)]
 pub use metadata::{HasMetadata, Metadata};
+
+// for macro use only
+#[doc(hidden)]
+pub use ref_shared::RefShared;
 
 /// Mark a struct type as a table value
 ///
