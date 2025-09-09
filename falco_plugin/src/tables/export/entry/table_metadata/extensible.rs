@@ -2,7 +2,7 @@ use crate::tables::export::entry::table_metadata::dynamic::DynamicFieldsOnly;
 use crate::tables::export::entry::table_metadata::traits::TableMetadata;
 use crate::tables::export::field_descriptor::FieldRef;
 use crate::tables::export::metadata::Metadata;
-use crate::tables::import::data::FieldTypeId;
+use crate::tables::import::FieldTypeId;
 use anyhow::Error;
 use falco_plugin_api::ss_plugin_table_fieldinfo;
 use std::ffi::CStr;

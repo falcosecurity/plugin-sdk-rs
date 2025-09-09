@@ -321,7 +321,7 @@
 //! See the [`Table`] type for additional methods on tables, to e.g. iterate
 //! over entries or clear the whole table.
 
-pub(crate) mod data;
+mod data;
 pub(crate) mod entry;
 pub(crate) mod field;
 pub(crate) mod macros;
@@ -336,6 +336,14 @@ pub use entry::Entry;
 pub use field::Field;
 pub use runtime::RuntimeEntry;
 pub use table::Table;
+
+// for macro use only
+#[doc(hidden)]
+pub use data::{Key, Value};
+
+// for macro and crate-local use only
+#[doc(hidden)]
+pub use data::FieldTypeId;
 
 /// Mark a struct type as an imported table entry metadata
 ///

@@ -4,7 +4,7 @@ use crate::tables::export::entry::traits::Entry;
 use crate::tables::export::metadata::HasMetadata;
 use crate::tables::export::ref_shared::RefShared;
 use crate::tables::export::table::Table;
-use crate::tables::import::data::Key;
+use crate::tables::import::Key;
 use anyhow::Error;
 use std::borrow::Borrow;
 use std::ffi::CStr;
