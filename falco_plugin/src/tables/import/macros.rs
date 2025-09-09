@@ -9,8 +9,8 @@ macro_rules! table_import_expose_internals {
         pub use $crate::tables::import::Key;
         pub use $crate::tables::import::Value;
 
-        pub use $crate::tables::import::table::raw::RawTable;
         pub use $crate::tables::import::traits::TableMetadata;
+        pub use $crate::tables::import::RawTable;
     };
 }
 

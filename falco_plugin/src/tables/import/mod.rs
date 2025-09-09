@@ -327,7 +327,7 @@ mod field;
 mod macros;
 mod runtime;
 mod runtime_table_validator;
-pub(crate) mod table;
+mod table;
 pub(crate) mod traits;
 
 pub use data::Bool;
@@ -344,6 +344,10 @@ pub use data::{Key, Value};
 // for macro and crate-local use only
 #[doc(hidden)]
 pub use data::FieldTypeId;
+
+// for macro use only
+#[doc(hidden)]
+pub use table::raw::RawTable;
 
 /// Mark a struct type as an imported table entry metadata
 ///
