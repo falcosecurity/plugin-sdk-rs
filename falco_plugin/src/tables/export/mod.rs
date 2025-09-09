@@ -63,7 +63,7 @@
 //! ```
 
 mod entry;
-pub(crate) mod field;
+mod field;
 pub(crate) mod field_descriptor;
 pub(crate) mod field_value;
 pub(crate) mod macros;
