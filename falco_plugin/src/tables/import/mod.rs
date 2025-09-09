@@ -327,8 +327,9 @@ mod macros;
 mod runtime;
 mod runtime_table_validator;
 mod table;
+mod table_input;
 
-// for macro and crate-local use only
+// for macro use only
 #[doc(hidden)]
 pub mod traits;
 

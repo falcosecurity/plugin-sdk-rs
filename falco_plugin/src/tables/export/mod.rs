@@ -71,15 +71,16 @@ mod metadata;
 mod ref_shared;
 mod static_field_specialization;
 mod table;
+mod tables_input;
 mod vtable;
-pub(crate) mod wrappers;
+mod wrappers;
 
 pub use field::private::Private;
 pub use field::public::Public;
 pub use field::readonly::Readonly;
 pub use table::Table;
 
-// for macro and crate-local use only
+// for macro use only
 #[doc(hidden)]
 pub mod traits {
     pub use super::entry::table_metadata::traits::TableMetadata;
