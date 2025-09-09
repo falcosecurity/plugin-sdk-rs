@@ -66,7 +66,7 @@ mod entry;
 mod field;
 mod field_descriptor;
 mod field_value;
-pub(crate) mod macros;
+mod macros;
 pub(crate) mod metadata;
 pub(crate) mod ref_shared;
 pub(crate) mod static_field_specialization;
