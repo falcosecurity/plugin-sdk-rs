@@ -71,7 +71,7 @@ mod metadata;
 mod ref_shared;
 mod static_field_specialization;
 mod table;
-pub(crate) mod vtable;
+mod vtable;
 pub(crate) mod wrappers;
 
 pub use field::private::Private;
