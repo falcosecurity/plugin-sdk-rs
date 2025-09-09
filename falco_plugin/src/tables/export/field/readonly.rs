@@ -1,4 +1,4 @@
-use crate::internals::tables::export::DynamicFieldValue;
+use crate::tables::export::field_value::dynamic::DynamicFieldValue;
 use crate::tables::export::field_value::traits::FieldValue;
 use crate::tables::export::field_value::traits::{seal, StaticField};
 use crate::tables::export::metadata::HasMetadata;

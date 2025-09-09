@@ -65,7 +65,7 @@
 mod entry;
 mod field;
 mod field_descriptor;
-pub(crate) mod field_value;
+mod field_value;
 pub(crate) mod macros;
 pub(crate) mod metadata;
 pub(crate) mod ref_shared;
@@ -89,6 +89,10 @@ pub mod traits {
 // for macro use only
 #[doc(hidden)]
 pub use field_descriptor::{FieldDescriptor, FieldId, FieldRef};
+
+// for macro use only
+#[doc(hidden)]
+pub use field_value::dynamic::DynamicFieldValue;
 
 /// Mark a struct type as a table value
 ///
