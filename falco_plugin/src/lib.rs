@@ -22,10 +22,3 @@ pub mod parse;
 pub mod source;
 pub mod strings;
 pub mod tables;
-
-#[doc(hidden)]
-pub mod internals {
-    pub mod tables {
-        crate::table_export_expose_internals!();
-    }
-}

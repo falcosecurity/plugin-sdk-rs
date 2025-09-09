@@ -1,5 +1,5 @@
 use crate::error::as_result::{AsResult, WithLastError};
-use crate::internals::tables::export::{Entry, TableMetadata};
+use crate::tables::export::traits::{Entry, TableMetadata};
 use crate::tables::export::wrappers::{fields_vtable, reader_vtable, writer_vtable};
 use crate::tables::export::Table;
 use crate::tables::{Key, TablesInput};

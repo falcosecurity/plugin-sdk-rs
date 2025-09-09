@@ -1,57 +1,5 @@
 #[doc(hidden)]
 #[macro_export]
-macro_rules! table_export_expose_internals {
-    () => {
-        pub mod export {
-            pub use $crate::tables::export::traits::Entry;
-            pub use $crate::tables::export::traits::TableMetadata;
-            pub use $crate::tables::export::DynamicFieldValue;
-            pub use $crate::tables::export::FieldDescriptor;
-            pub use $crate::tables::export::FieldId;
-            pub use $crate::tables::export::FieldRef;
-            pub use $crate::tables::export::HasMetadata;
-            pub use $crate::tables::export::Metadata;
-            pub use $crate::tables::export::RefShared;
-
-            pub use $crate::tables::export::StaticFieldCheck;
-            pub use $crate::tables::export::StaticFieldFallback;
-            pub use $crate::tables::export::StaticFieldGet;
-            pub use $crate::tables::export::StaticFieldGetFallback;
-            pub use $crate::tables::export::StaticFieldSet;
-            pub use $crate::tables::export::StaticFieldSetFallback;
-
-            pub use $crate::tables::FieldTypeId;
-        }
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! table_export_use_internals {
-    () => {
-        use $crate::internals::tables::export::DynamicFieldValue;
-        use $crate::internals::tables::export::FieldDescriptor;
-        use $crate::internals::tables::export::FieldId;
-        use $crate::internals::tables::export::FieldRef;
-        use $crate::internals::tables::export::FieldTypeId;
-        use $crate::internals::tables::export::HasMetadata;
-        use $crate::internals::tables::export::Metadata;
-        use $crate::internals::tables::export::RefShared;
-        use $crate::internals::tables::export::StaticFieldCheck;
-        use $crate::internals::tables::export::StaticFieldFallback;
-        use $crate::internals::tables::export::StaticFieldGet;
-        use $crate::internals::tables::export::StaticFieldGetFallback;
-        use $crate::internals::tables::export::StaticFieldSet;
-        use $crate::internals::tables::export::StaticFieldSetFallback;
-        use $crate::internals::tables::export::TableMetadata;
-
-        use $crate::api::ss_plugin_table_fieldinfo;
-        use $crate::phf;
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
 macro_rules! impl_export_table_get {
     (
         $self:ident,
@@ -98,7 +46,24 @@ macro_rules! impl_export_table {
         $([$i:literal] $field_tag:literal ($field_name_bstr:literal) as $field_name:ident: $field_type:ty)*
     }) => {
         const _: () = {
-            $crate::table_export_use_internals!();
+            use $crate::tables::export::traits::TableMetadata;
+            use $crate::tables::export::DynamicFieldValue;
+            use $crate::tables::export::FieldDescriptor;
+            use $crate::tables::export::FieldId;
+            use $crate::tables::export::FieldRef;
+            use $crate::tables::export::HasMetadata;
+            use $crate::tables::export::Metadata;
+            use $crate::tables::export::RefShared;
+            use $crate::tables::export::StaticFieldCheck;
+            use $crate::tables::export::StaticFieldFallback;
+            use $crate::tables::export::StaticFieldGet;
+            use $crate::tables::export::StaticFieldGetFallback;
+            use $crate::tables::export::StaticFieldSet;
+            use $crate::tables::export::StaticFieldSetFallback;
+            use $crate::tables::FieldTypeId;
+
+            use $crate::api::ss_plugin_table_fieldinfo;
+            use $crate::phf;
 
             static STATIC_FIELDS: $crate::phf::Map<&'static [u8], std::option::Option<FieldDescriptor>> = $crate::phf::phf_map! {
                 $($field_name_bstr => FieldDescriptor::maybe_new(
@@ -162,7 +127,7 @@ macro_rules! impl_export_table {
                 }
             }
 
-            impl $crate::internals::tables::export::Entry for $name {
+            impl $crate::tables::export::traits::Entry for $name {
                 $crate::impl_export_table_get!(
                     self,
                     static: $($i: $field_name,)*
