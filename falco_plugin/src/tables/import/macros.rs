@@ -1,39 +1,10 @@
 #[doc(hidden)]
 #[macro_export]
-macro_rules! table_import_expose_internals {
-    () => {
-        pub use $crate::tables::import::traits::Entry;
-        pub use $crate::tables::import::traits::EntryWrite;
-        pub use $crate::tables::import::traits::RawFieldValueType;
-        pub use $crate::tables::import::traits::TableAccess;
-        pub use $crate::tables::import::Key;
-        pub use $crate::tables::import::Value;
-
-        pub use $crate::tables::import::traits::TableMetadata;
-        pub use $crate::tables::import::RawTable;
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-macro_rules! table_import_use_internals {
-    () => {
-        use $crate::internals::tables::Entry;
-        use $crate::internals::tables::EntryWrite;
-        use $crate::internals::tables::Key;
-        use $crate::internals::tables::RawFieldValueType;
-        use $crate::internals::tables::TableAccess;
-        use $crate::internals::tables::Value;
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
 macro_rules! impl_import_table_metadata {
     (for $meta:ident => { $($access_fn:ident($field:ident, $field_cstr:literal);)* }) => {
-        impl $crate::internals::tables::TableMetadata for $meta {
+        impl $crate::tables::import::traits::TableMetadata for $meta {
             fn new(
-                raw_table: &$crate::internals::tables::RawTable,
+                raw_table: &$crate::tables::import::RawTable,
                 tables_input: &$crate::tables::TablesInput)
             -> $crate::anyhow::Result<Self> {
                 Ok(Self {
@@ -52,7 +23,7 @@ macro_rules! impl_import_table_accessor_traits {
         pub mod $m {
             #[allow(non_camel_case_types)]
             pub trait $getter<'a> {
-                type TableValue: $crate::internals::tables::Value + ?Sized;
+                type TableValue: $crate::tables::import::Value + ?Sized;
                 type EntryValue: 'a;
 
                 fn $getter(
@@ -75,7 +46,7 @@ macro_rules! impl_import_table_accessor_traits {
 
             #[allow(non_camel_case_types)]
             pub trait $setter<'a> {
-                type ScalarValue: $crate::internals::tables::Value<AssocData = ()> + ?Sized;
+                type ScalarValue: $crate::tables::import::Value<AssocData = ()> + ?Sized;
 
                 fn $setter(
                     &'a self,
@@ -101,7 +72,12 @@ macro_rules! impl_import_table_accessor_impls {
         $table_getter:ident,
         $setter:ident) => {
         const _: () = {
-            $crate::table_import_use_internals!();
+            use $crate::tables::import::traits::Entry;
+            use $crate::tables::import::traits::EntryWrite;
+            use $crate::tables::import::traits::RawFieldValueType;
+            use $crate::tables::import::traits::TableAccess;
+            use $crate::tables::import::Key;
+            use $crate::tables::import::Value;
             use $m::{$getter, $setter, $table_getter};
 
             impl<'a> $getter<'a> for $entry_ty {
