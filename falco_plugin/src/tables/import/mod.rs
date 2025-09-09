@@ -328,7 +328,10 @@ mod macros;
 mod runtime;
 mod runtime_table_validator;
 mod table;
-pub(crate) mod traits;
+
+// for macro and crate-local use only
+#[doc(hidden)]
+pub mod traits;
 
 pub use data::Bool;
 pub use data::TableData;

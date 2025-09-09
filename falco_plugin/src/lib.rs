@@ -26,7 +26,6 @@ pub mod tables;
 #[doc(hidden)]
 pub mod internals {
     pub mod tables {
-        crate::table_import_expose_internals!();
         crate::table_export_expose_internals!();
     }
 }
