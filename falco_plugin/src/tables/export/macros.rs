@@ -20,7 +20,7 @@ macro_rules! table_export_expose_internals {
             pub use $crate::tables::export::StaticFieldSet;
             pub use $crate::tables::export::StaticFieldSetFallback;
 
-            pub use $crate::tables::import::FieldTypeId;
+            pub use $crate::tables::FieldTypeId;
         }
     };
 }

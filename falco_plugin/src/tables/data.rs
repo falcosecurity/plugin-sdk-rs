@@ -1,4 +1,4 @@
-use crate::tables::import::table::raw::RawTable;
+use crate::tables::import::RawTable;
 use crate::tables::TablesInput;
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_field_type_FTYPE_UINT64, ss_plugin_state_data,

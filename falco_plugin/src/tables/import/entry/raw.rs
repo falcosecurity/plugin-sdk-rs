@@ -1,4 +1,4 @@
-use crate::tables::import::data::Value;
+use crate::tables::data::Value;
 use crate::tables::TableReader;
 use crate::tables::TableWriter;
 use falco_plugin_api::{

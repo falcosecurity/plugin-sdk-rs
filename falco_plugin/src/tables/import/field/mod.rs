@@ -1,4 +1,4 @@
-use crate::tables::import::data::Value;
+use crate::tables::data::Value;
 use crate::tables::import::field::raw::RawField;
 use crate::tables::import::runtime::RuntimeEntry;
 use crate::tables::import::runtime_table_validator::RuntimeTableValidator;

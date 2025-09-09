@@ -1,6 +1,6 @@
 use crate::error::as_result::{AsResult, WithLastError};
 use crate::strings::from_ptr::try_str_from_ptr_with_lifetime;
-use crate::tables::import::data::{FieldTypeId, Key, Value};
+use crate::tables::data::{FieldTypeId, Key, Value};
 use crate::tables::import::entry::raw::RawEntry;
 use crate::tables::import::field::raw::RawField;
 use crate::tables::import::traits::TableMetadata;

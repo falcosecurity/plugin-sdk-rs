@@ -149,6 +149,15 @@ pub use vtable::writer::TableWriter;
 pub use vtable::writer::ValidatedTableWriter;
 pub use vtable::TablesInput;
 
+mod data;
 pub mod export;
 pub mod import;
 mod vtable;
+
+// for macro use only
+#[doc(hidden)]
+pub use crate::tables::data::{Key, Value};
+
+// for macro and crate-local use only
+#[doc(hidden)]
+pub use crate::tables::data::FieldTypeId;

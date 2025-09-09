@@ -3,7 +3,7 @@ use crate::tables::export::entry::table_metadata::traits::TableMetadata;
 use crate::tables::export::entry::traits::Entry;
 use crate::tables::export::field_descriptor::FieldDescriptor;
 use crate::tables::export::table::{Table, TableEntryType};
-use crate::tables::import::{FieldTypeId, Key};
+use crate::tables::{FieldTypeId, Key};
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_rc, ss_plugin_rc_SS_PLUGIN_FAILURE, ss_plugin_rc_SS_PLUGIN_SUCCESS,
     ss_plugin_state_data, ss_plugin_state_type, ss_plugin_table_entry_t, ss_plugin_table_field_t,
