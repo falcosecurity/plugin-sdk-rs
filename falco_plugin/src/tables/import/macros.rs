@@ -2,12 +2,12 @@
 #[macro_export]
 macro_rules! table_import_expose_internals {
     () => {
-        pub use $crate::tables::import::data::Key;
-        pub use $crate::tables::import::data::Value;
         pub use $crate::tables::import::traits::Entry;
         pub use $crate::tables::import::traits::EntryWrite;
         pub use $crate::tables::import::traits::RawFieldValueType;
         pub use $crate::tables::import::traits::TableAccess;
+        pub use $crate::tables::import::Key;
+        pub use $crate::tables::import::Value;
 
         pub use $crate::tables::import::table::raw::RawTable;
         pub use $crate::tables::import::traits::TableMetadata;
