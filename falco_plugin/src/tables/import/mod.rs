@@ -323,7 +323,7 @@
 
 mod data;
 mod entry;
-pub(crate) mod field;
+mod field;
 pub(crate) mod macros;
 pub(crate) mod runtime;
 pub(crate) mod runtime_table_validator;
