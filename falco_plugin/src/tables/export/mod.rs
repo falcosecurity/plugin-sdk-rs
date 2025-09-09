@@ -62,7 +62,7 @@
 //!# plugin!(#[no_capabilities] MyPlugin);
 //! ```
 
-pub(crate) mod entry;
+mod entry;
 pub(crate) mod field;
 pub(crate) mod field_descriptor;
 pub(crate) mod field_value;
@@ -78,6 +78,13 @@ pub use field::private::Private;
 pub use field::public::Public;
 pub use field::readonly::Readonly;
 pub use table::Table;
+
+// for macro and crate-local use only
+#[doc(hidden)]
+pub mod traits {
+    pub use super::entry::table_metadata::traits::TableMetadata;
+    pub use super::entry::traits::Entry;
+}
 
 /// Mark a struct type as a table value
 ///
