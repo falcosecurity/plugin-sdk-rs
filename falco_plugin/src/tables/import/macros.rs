@@ -23,7 +23,7 @@ macro_rules! impl_import_table_accessor_traits {
         pub mod $m {
             #[allow(non_camel_case_types)]
             pub trait $getter<'a> {
-                type TableValue: $crate::tables::import::Value + ?Sized;
+                type TableValue: $crate::tables::Value + ?Sized;
                 type EntryValue: 'a;
 
                 fn $getter(
@@ -46,7 +46,7 @@ macro_rules! impl_import_table_accessor_traits {
 
             #[allow(non_camel_case_types)]
             pub trait $setter<'a> {
-                type ScalarValue: $crate::tables::import::Value<AssocData = ()> + ?Sized;
+                type ScalarValue: $crate::tables::Value<AssocData = ()> + ?Sized;
 
                 fn $setter(
                     &'a self,
@@ -76,8 +76,8 @@ macro_rules! impl_import_table_accessor_impls {
             use $crate::tables::import::traits::EntryWrite;
             use $crate::tables::import::traits::RawFieldValueType;
             use $crate::tables::import::traits::TableAccess;
-            use $crate::tables::import::Key;
-            use $crate::tables::import::Value;
+            use $crate::tables::Key;
+            use $crate::tables::Value;
             use $m::{$getter, $setter, $table_getter};
 
             impl<'a> $getter<'a> for $entry_ty {

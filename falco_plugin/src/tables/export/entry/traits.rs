@@ -1,7 +1,7 @@
 use crate::tables::export::field_descriptor::FieldId;
 use crate::tables::export::field_value::dynamic::DynamicFieldValue;
 use crate::tables::export::metadata::HasMetadata;
-use crate::tables::import::FieldTypeId;
+use crate::tables::FieldTypeId;
 use falco_plugin_api::ss_plugin_state_data;
 
 /// # A trait for structs that can be stored as table values

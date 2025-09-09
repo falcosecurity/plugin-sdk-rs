@@ -1,4 +1,4 @@
-use crate::tables::import::data::{Key, Value};
+use crate::tables::data::{Key, Value};
 use crate::tables::import::entry::raw::RawEntry;
 use crate::tables::import::table::raw::RawTable;
 use crate::tables::TableReader;

@@ -5,7 +5,7 @@ use crate::tables::export::field_value::dynamic::DynamicFieldValue;
 use crate::tables::export::field_value::traits::FieldValue;
 use crate::tables::export::metadata::HasMetadata;
 use crate::tables::export::ref_shared::RefShared;
-use crate::tables::import::FieldTypeId;
+use crate::tables::FieldTypeId;
 use falco_plugin_api::ss_plugin_state_data;
 use std::ffi::CStr;
 

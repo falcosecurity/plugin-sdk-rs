@@ -1,7 +1,7 @@
 use crate::tables::export::field_descriptor::FieldRef;
 use crate::tables::export::metadata::Metadata;
 use crate::tables::export::ref_shared::RefShared;
-use crate::tables::import::FieldTypeId;
+use crate::tables::FieldTypeId;
 use falco_plugin_api::ss_plugin_table_fieldinfo;
 use std::ffi::CStr;
 

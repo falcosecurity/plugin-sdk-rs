@@ -321,7 +321,6 @@
 //! See the [`Table`] type for additional methods on tables, to e.g. iterate
 //! over entries or clear the whole table.
 
-mod data;
 mod entry;
 mod field;
 mod macros;
@@ -333,20 +332,12 @@ mod table;
 #[doc(hidden)]
 pub mod traits;
 
-pub use data::Bool;
-pub use data::TableData;
+pub use crate::tables::data::Bool;
+pub use crate::tables::data::TableData;
 pub use entry::Entry;
 pub use field::Field;
 pub use runtime::RuntimeEntry;
 pub use table::Table;
-
-// for macro use only
-#[doc(hidden)]
-pub use data::{Key, Value};
-
-// for macro and crate-local use only
-#[doc(hidden)]
-pub use data::FieldTypeId;
 
 // for macro use only
 #[doc(hidden)]

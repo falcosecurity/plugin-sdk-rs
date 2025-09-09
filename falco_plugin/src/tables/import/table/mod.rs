@@ -1,4 +1,4 @@
-use crate::tables::import::data::{seal, FieldTypeId, Key, TableData, Value};
+use crate::tables::data::{seal, FieldTypeId, Key, TableData, Value};
 use crate::tables::import::entry;
 use crate::tables::import::field::Field;
 use crate::tables::import::runtime::NoMetadata;

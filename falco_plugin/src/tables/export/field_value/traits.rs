@@ -1,4 +1,4 @@
-use crate::tables::import::FieldTypeId;
+use crate::tables::FieldTypeId;
 use falco_plugin_api::ss_plugin_state_data;
 
 pub(crate) mod seal {

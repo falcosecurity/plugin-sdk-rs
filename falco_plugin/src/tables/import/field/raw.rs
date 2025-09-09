@@ -1,4 +1,4 @@
-use crate::tables::import::data::Value;
+use crate::tables::data::Value;
 use falco_plugin_api::ss_plugin_table_field_t;
 
 #[derive(Debug)]
