@@ -64,7 +64,7 @@
 
 mod entry;
 mod field;
-pub(crate) mod field_descriptor;
+mod field_descriptor;
 pub(crate) mod field_value;
 pub(crate) mod macros;
 pub(crate) mod metadata;
@@ -85,6 +85,10 @@ pub mod traits {
     pub use super::entry::table_metadata::traits::TableMetadata;
     pub use super::entry::traits::Entry;
 }
+
+// for macro use only
+#[doc(hidden)]
+pub use field_descriptor::{FieldDescriptor, FieldId, FieldRef};
 
 /// Mark a struct type as a table value
 ///
