@@ -326,7 +326,7 @@ mod entry;
 mod field;
 mod macros;
 mod runtime;
-pub(crate) mod runtime_table_validator;
+mod runtime_table_validator;
 pub(crate) mod table;
 pub(crate) mod traits;
 
