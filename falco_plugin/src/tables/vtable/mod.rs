@@ -1,8 +1,8 @@
 use crate::error::as_result::{AsResult, WithLastError};
 use crate::error::last_error::LastError;
-use crate::tables::export::entry::table_metadata::traits::TableMetadata;
-use crate::tables::export::entry::traits::Entry;
 use crate::tables::export::table::Table;
+use crate::tables::export::traits::Entry;
+use crate::tables::export::traits::TableMetadata;
 use crate::tables::export::wrappers::{fields_vtable, reader_vtable, writer_vtable};
 use crate::tables::import::traits::{TableAccess, TableMetadata as ImportedTableMetadata};
 use crate::tables::import::{Key, RawTable};
