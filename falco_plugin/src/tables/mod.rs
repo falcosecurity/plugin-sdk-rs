@@ -158,6 +158,6 @@ mod vtable;
 #[doc(hidden)]
 pub use crate::tables::data::{Key, Value};
 
-// for macro and crate-local use only
+// for macro use only
 #[doc(hidden)]
 pub use crate::tables::data::FieldTypeId;
