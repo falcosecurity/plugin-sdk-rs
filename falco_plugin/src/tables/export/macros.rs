@@ -3,8 +3,6 @@
 macro_rules! table_export_expose_internals {
     () => {
         pub mod export {
-            pub use $crate::tables::export::metadata::HasMetadata;
-            pub use $crate::tables::export::metadata::Metadata;
             pub use $crate::tables::export::ref_shared::RefShared;
             pub use $crate::tables::export::traits::Entry;
             pub use $crate::tables::export::traits::TableMetadata;
@@ -12,6 +10,8 @@ macro_rules! table_export_expose_internals {
             pub use $crate::tables::export::FieldDescriptor;
             pub use $crate::tables::export::FieldId;
             pub use $crate::tables::export::FieldRef;
+            pub use $crate::tables::export::HasMetadata;
+            pub use $crate::tables::export::Metadata;
 
             pub use $crate::tables::export::static_field_specialization::StaticFieldCheck;
             pub use $crate::tables::export::static_field_specialization::StaticFieldFallback;
