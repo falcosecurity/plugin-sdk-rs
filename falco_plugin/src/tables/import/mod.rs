@@ -322,7 +322,7 @@
 //! over entries or clear the whole table.
 
 mod data;
-pub(crate) mod entry;
+mod entry;
 pub(crate) mod field;
 pub(crate) mod macros;
 pub(crate) mod runtime;
