@@ -69,7 +69,7 @@ mod field_value;
 mod macros;
 mod metadata;
 mod ref_shared;
-pub(crate) mod static_field_specialization;
+mod static_field_specialization;
 pub(crate) mod table;
 pub(crate) mod vtable;
 pub(crate) mod wrappers;
@@ -101,6 +101,13 @@ pub use metadata::{HasMetadata, Metadata};
 // for macro use only
 #[doc(hidden)]
 pub use ref_shared::RefShared;
+
+// for macro use only
+#[doc(hidden)]
+pub use static_field_specialization::{
+    StaticFieldCheck, StaticFieldFallback, StaticFieldGet, StaticFieldGetFallback, StaticFieldSet,
+    StaticFieldSetFallback,
+};
 
 /// Mark a struct type as a table value
 ///
