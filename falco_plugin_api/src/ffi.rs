@@ -351,20 +351,20 @@ const _: () = {
 #[derive(Debug, Copy, Clone)]
 pub struct ss_plugin_table_fields_vtable {
     pub list_table_fields: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             nfields: *mut u32,
         ) -> *const ss_plugin_table_fieldinfo,
     >,
     pub get_table_field: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             name: *const ::std::os::raw::c_char,
             data_type: ss_plugin_state_type,
         ) -> *mut ss_plugin_table_field_t,
     >,
     pub add_table_field: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             name: *const ::std::os::raw::c_char,
             data_type: ss_plugin_state_type,
@@ -388,20 +388,20 @@ const _: () = {
 #[derive(Debug, Copy, Clone)]
 pub struct ss_plugin_table_fields_vtable_ext {
     pub list_table_fields: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             nfields: *mut u32,
         ) -> *const ss_plugin_table_fieldinfo,
     >,
     pub get_table_field: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             name: *const ::std::os::raw::c_char,
             data_type: ss_plugin_state_type,
         ) -> *mut ss_plugin_table_field_t,
     >,
     pub add_table_field: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             name: *const ::std::os::raw::c_char,
             data_type: ss_plugin_state_type,
@@ -425,18 +425,18 @@ const _: () = {
 #[derive(Debug, Copy, Clone)]
 pub struct ss_plugin_table_reader_vtable {
     pub get_table_name: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
     >,
     pub get_table_size:
-        ::std::option::Option<unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64>,
+        ::std::option::Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> u64>,
     pub get_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             key: *const ss_plugin_state_data,
         ) -> *mut ss_plugin_table_entry_t,
     >,
     pub read_entry_field: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             e: *mut ss_plugin_table_entry_t,
             f: *const ss_plugin_table_field_t,
@@ -463,7 +463,7 @@ const _: () = {
 #[derive(Debug)]
 pub struct ss_plugin_table_iterator_state_t(pub ::std::os::raw::c_void);
 pub type ss_plugin_table_iterator_func_t = ::std::option::Option<
-    unsafe extern "C-unwind" fn(
+    unsafe extern "C" fn(
         s: *mut ss_plugin_table_iterator_state_t,
         e: *mut ss_plugin_table_entry_t,
     ) -> ss_plugin_bool,
@@ -472,18 +472,18 @@ pub type ss_plugin_table_iterator_func_t = ::std::option::Option<
 #[derive(Debug, Copy, Clone)]
 pub struct ss_plugin_table_reader_vtable_ext {
     pub get_table_name: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
     >,
     pub get_table_size:
-        ::std::option::Option<unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64>,
+        ::std::option::Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> u64>,
     pub get_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             key: *const ss_plugin_state_data,
         ) -> *mut ss_plugin_table_entry_t,
     >,
     pub read_entry_field: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             e: *mut ss_plugin_table_entry_t,
             f: *const ss_plugin_table_field_t,
@@ -491,10 +491,10 @@ pub struct ss_plugin_table_reader_vtable_ext {
         ) -> ss_plugin_rc,
     >,
     pub release_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
     >,
     pub iterate_entries: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             it: ss_plugin_table_iterator_func_t,
             s: *mut ss_plugin_table_iterator_state_t,
@@ -523,30 +523,29 @@ const _: () = {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct ss_plugin_table_writer_vtable {
-    pub clear_table: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
-    >,
+    pub clear_table:
+        ::std::option::Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc>,
     pub erase_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             key: *const ss_plugin_state_data,
         ) -> ss_plugin_rc,
     >,
     pub create_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
     >,
     pub destroy_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
     >,
     pub add_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             key: *const ss_plugin_state_data,
             entry: *mut ss_plugin_table_entry_t,
         ) -> *mut ss_plugin_table_entry_t,
     >,
     pub write_entry_field: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             e: *mut ss_plugin_table_entry_t,
             f: *const ss_plugin_table_field_t,
@@ -576,30 +575,29 @@ const _: () = {
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct ss_plugin_table_writer_vtable_ext {
-    pub clear_table: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
-    >,
+    pub clear_table:
+        ::std::option::Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc>,
     pub erase_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             key: *const ss_plugin_state_data,
         ) -> ss_plugin_rc,
     >,
     pub create_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
     >,
     pub destroy_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
     >,
     pub add_table_entry: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             key: *const ss_plugin_state_data,
             entry: *mut ss_plugin_table_entry_t,
         ) -> *mut ss_plugin_table_entry_t,
     >,
     pub write_entry_field: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             e: *mut ss_plugin_table_entry_t,
             f: *const ss_plugin_table_field_t,
@@ -667,20 +665,20 @@ const _: () = {
 #[derive(Debug, Copy, Clone)]
 pub struct ss_plugin_init_tables_input {
     pub list_tables: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             o: *mut ss_plugin_owner_t,
             ntables: *mut u32,
         ) -> *mut ss_plugin_table_info,
     >,
     pub get_table: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             o: *mut ss_plugin_owner_t,
             name: *const ::std::os::raw::c_char,
             key_type: ss_plugin_state_type,
         ) -> *mut ss_plugin_table_t,
     >,
     pub add_table: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             o: *mut ss_plugin_owner_t,
             in_: *const ss_plugin_table_input,
         ) -> ss_plugin_rc,
@@ -712,7 +710,7 @@ const _: () = {
         [::std::mem::offset_of!(ss_plugin_init_tables_input, writer_ext) - 64usize];
 };
 pub type ss_plugin_log_fn_t = ::std::option::Option<
-    unsafe extern "C-unwind" fn(
+    unsafe extern "C" fn(
         o: *mut ss_plugin_owner_t,
         component: *const ::std::os::raw::c_char,
         msg: *const ::std::os::raw::c_char,
@@ -725,7 +723,7 @@ pub struct ss_plugin_init_input {
     pub config: *const ::std::os::raw::c_char,
     pub owner: *mut ss_plugin_owner_t,
     pub get_owner_last_error: ::std::option::Option<
-        unsafe extern "C-unwind" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
     >,
     pub tables: *const ss_plugin_init_tables_input,
     pub log_fn: ss_plugin_log_fn_t,
@@ -750,7 +748,7 @@ const _: () = {
 pub struct ss_plugin_field_extract_input {
     pub owner: *mut ss_plugin_owner_t,
     pub get_owner_last_error: ::std::option::Option<
-        unsafe extern "C-unwind" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
     >,
     pub num_fields: u32,
     pub fields: *mut ss_plugin_extract_field,
@@ -784,7 +782,7 @@ const _: () = {
 pub struct ss_plugin_event_parse_input {
     pub owner: *mut ss_plugin_owner_t,
     pub get_owner_last_error: ::std::option::Option<
-        unsafe extern "C-unwind" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
     >,
     pub table_reader: ss_plugin_table_reader_vtable,
     pub table_writer: ss_plugin_table_writer_vtable,
@@ -831,23 +829,20 @@ pub struct ss_plugin_routine_t(pub ::std::os::raw::c_void);
 #[derive(Debug)]
 pub struct ss_plugin_routine_state_t(pub ::std::os::raw::c_void);
 pub type ss_plugin_routine_fn_t = ::std::option::Option<
-    unsafe extern "C-unwind" fn(
-        s: *mut ss_plugin_t,
-        i: *mut ss_plugin_routine_state_t,
-    ) -> ss_plugin_bool,
+    unsafe extern "C" fn(s: *mut ss_plugin_t, i: *mut ss_plugin_routine_state_t) -> ss_plugin_bool,
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct ss_plugin_routine_vtable {
     pub subscribe: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             o: *mut ss_plugin_owner_t,
             f: ss_plugin_routine_fn_t,
             i: *mut ss_plugin_routine_state_t,
         ) -> *mut ss_plugin_routine_t,
     >,
     pub unsubscribe: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             o: *mut ss_plugin_owner_t,
             r: *mut ss_plugin_routine_t,
         ) -> ss_plugin_rc,
@@ -872,7 +867,7 @@ pub struct ss_plugin_capture_listen_input {
     pub table_reader_ext: *mut ss_plugin_table_reader_vtable_ext,
     pub table_writer_ext: *mut ss_plugin_table_writer_vtable_ext,
     pub get_owner_last_error: ::std::option::Option<
-        unsafe extern "C-unwind" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C" fn(o: *mut ss_plugin_owner_t) -> *const ::std::os::raw::c_char,
     >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
@@ -893,7 +888,7 @@ const _: () = {
         [::std::mem::offset_of!(ss_plugin_capture_listen_input, get_owner_last_error) - 32usize];
 };
 pub type ss_plugin_async_event_handler_t = ::std::option::Option<
-    unsafe extern "C-unwind" fn(
+    unsafe extern "C" fn(
         o: *mut ss_plugin_owner_t,
         evt: *const ss_plugin_event,
         err: *mut ::std::os::raw::c_char,
@@ -903,88 +898,81 @@ pub type ss_plugin_async_event_handler_t = ::std::option::Option<
 #[derive(Debug, Copy, Clone)]
 pub struct plugin_api {
     pub get_required_api_version:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
+        ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub get_init_schema: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             schema_type: *mut ss_plugin_schema_type,
         ) -> *const ::std::os::raw::c_char,
     >,
     pub init: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             input: *const ss_plugin_init_input,
             rc: *mut ss_plugin_rc,
         ) -> *mut ss_plugin_t,
     >,
-    pub destroy: ::std::option::Option<unsafe extern "C-unwind" fn(s: *mut ss_plugin_t)>,
+    pub destroy: ::std::option::Option<unsafe extern "C" fn(s: *mut ss_plugin_t)>,
     pub get_last_error: ::std::option::Option<
-        unsafe extern "C-unwind" fn(s: *mut ss_plugin_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C" fn(s: *mut ss_plugin_t) -> *const ::std::os::raw::c_char,
     >,
-    pub get_name:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
+    pub get_name: ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub get_description:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
-    pub get_contact:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
-    pub get_version:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
+        ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
+    pub get_contact: ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
+    pub get_version: ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub __bindgen_anon_1: plugin_api__bindgen_ty_1,
     pub __bindgen_anon_2: plugin_api__bindgen_ty_2,
     pub __bindgen_anon_3: plugin_api__bindgen_ty_3,
     pub __bindgen_anon_4: plugin_api__bindgen_ty_4,
     pub set_config: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             i: *const ss_plugin_set_config_input,
         ) -> ss_plugin_rc,
     >,
     pub get_metrics: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
-            s: *mut ss_plugin_t,
-            num_metrics: *mut u32,
-        ) -> *mut ss_plugin_metric,
+        unsafe extern "C" fn(s: *mut ss_plugin_t, num_metrics: *mut u32) -> *mut ss_plugin_metric,
     >,
     pub __bindgen_anon_5: plugin_api__bindgen_ty_5,
     pub get_required_event_schema_version: ::std::option::Option<
-        unsafe extern "C-unwind" fn(s: *mut ss_plugin_t) -> *const ::std::os::raw::c_char,
+        unsafe extern "C" fn(s: *mut ss_plugin_t) -> *const ::std::os::raw::c_char,
     >,
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct plugin_api__bindgen_ty_1 {
-    pub get_id: ::std::option::Option<unsafe extern "C-unwind" fn() -> u32>,
+    pub get_id: ::std::option::Option<unsafe extern "C" fn() -> u32>,
     pub get_event_source:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
+        ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub open: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             params: *const ::std::os::raw::c_char,
             rc: *mut ss_plugin_rc,
         ) -> *mut ss_instance_t,
     >,
-    pub close: ::std::option::Option<
-        unsafe extern "C-unwind" fn(s: *mut ss_plugin_t, h: *mut ss_instance_t),
-    >,
+    pub close:
+        ::std::option::Option<unsafe extern "C" fn(s: *mut ss_plugin_t, h: *mut ss_instance_t)>,
     pub list_open_params: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             rc: *mut ss_plugin_rc,
         ) -> *const ::std::os::raw::c_char,
     >,
     pub get_progress: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             h: *mut ss_instance_t,
             progress_pct: *mut u32,
         ) -> *const ::std::os::raw::c_char,
     >,
     pub event_to_string: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             evt: *const ss_plugin_event_input,
         ) -> *const ::std::os::raw::c_char,
     >,
     pub next_batch: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             h: *mut ss_instance_t,
             nevts: *mut u32,
@@ -1019,14 +1007,13 @@ const _: () = {
 #[derive(Debug, Copy, Clone)]
 pub struct plugin_api__bindgen_ty_2 {
     pub get_extract_event_types: ::std::option::Option<
-        unsafe extern "C-unwind" fn(numtypes: *mut u32, s: *mut ss_plugin_t) -> *mut u16,
+        unsafe extern "C" fn(numtypes: *mut u32, s: *mut ss_plugin_t) -> *mut u16,
     >,
     pub get_extract_event_sources:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
-    pub get_fields:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
+        ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
+    pub get_fields: ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub extract_fields: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             evt: *const ss_plugin_event_input,
             in_: *const ss_plugin_field_extract_input,
@@ -1052,12 +1039,12 @@ const _: () = {
 #[derive(Debug, Copy, Clone)]
 pub struct plugin_api__bindgen_ty_3 {
     pub get_parse_event_types: ::std::option::Option<
-        unsafe extern "C-unwind" fn(numtypes: *mut u32, s: *mut ss_plugin_t) -> *mut u16,
+        unsafe extern "C" fn(numtypes: *mut u32, s: *mut ss_plugin_t) -> *mut u16,
     >,
     pub get_parse_event_sources:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
+        ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub parse_event: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             evt: *const ss_plugin_event_input,
             in_: *const ss_plugin_event_parse_input,
@@ -1081,18 +1068,18 @@ const _: () = {
 #[derive(Debug, Copy, Clone)]
 pub struct plugin_api__bindgen_ty_4 {
     pub get_async_event_sources:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
+        ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub get_async_events:
-        ::std::option::Option<unsafe extern "C-unwind" fn() -> *const ::std::os::raw::c_char>,
+        ::std::option::Option<unsafe extern "C" fn() -> *const ::std::os::raw::c_char>,
     pub set_async_event_handler: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             owner: *mut ss_plugin_owner_t,
             handler: ss_plugin_async_event_handler_t,
         ) -> ss_plugin_rc,
     >,
     pub dump_state: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             owner: *mut ss_plugin_owner_t,
             handler: ss_plugin_async_event_handler_t,
@@ -1118,13 +1105,13 @@ const _: () = {
 #[derive(Debug, Copy, Clone)]
 pub struct plugin_api__bindgen_ty_5 {
     pub capture_open: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             i: *const ss_plugin_capture_listen_input,
         ) -> ss_plugin_rc,
     >,
     pub capture_close: ::std::option::Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             s: *mut ss_plugin_t,
             i: *const ss_plugin_capture_listen_input,
         ) -> ss_plugin_rc,

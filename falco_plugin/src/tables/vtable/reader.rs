@@ -44,14 +44,12 @@ pub(crate) mod private {
 
         fn release_table_entry_fn(
             &self,
-        ) -> Option<
-            unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-        >;
+        ) -> Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t)>;
 
         fn iterate_entries_fn(
             &self,
         ) -> Result<
-            unsafe extern "C-unwind" fn(
+            unsafe extern "C" fn(
                 t: *mut ss_plugin_table_t,
                 it: ss_plugin_table_iterator_func_t,
                 s: *mut ss_plugin_table_iterator_state_t,
@@ -172,16 +170,15 @@ impl private::TableReaderImpl for LazyTableReader<'_> {
 
     fn release_table_entry_fn(
         &self,
-    ) -> Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    > {
+    ) -> Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t)>
+    {
         self.reader_ext.release_table_entry
     }
 
     fn iterate_entries_fn(
         &self,
     ) -> Result<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             t: *mut ss_plugin_table_t,
             it: ss_plugin_table_iterator_func_t,
             s: *mut ss_plugin_table_iterator_state_t,
@@ -205,21 +202,21 @@ impl private::TableReaderImpl for LazyTableReader<'_> {
 #[derive(Debug)]
 pub struct ValidatedTableReader<'t> {
     pub(crate) get_table_name:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
-    pub(crate) get_table_size: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> u64,
-    pub(crate) get_table_entry: unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> *const ::std::os::raw::c_char,
+    pub(crate) get_table_size: unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> u64,
+    pub(crate) get_table_entry: unsafe extern "C" fn(
         t: *mut ss_plugin_table_t,
         key: *const ss_plugin_state_data,
     ) -> *mut ss_plugin_table_entry_t,
-    pub(crate) read_entry_field: unsafe extern "C-unwind" fn(
+    pub(crate) read_entry_field: unsafe extern "C" fn(
         t: *mut ss_plugin_table_t,
         e: *mut ss_plugin_table_entry_t,
         f: *const ss_plugin_table_field_t,
         out: *mut ss_plugin_state_data,
     ) -> ss_plugin_rc,
     pub(crate) release_table_entry:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    pub(crate) iterate_entries: unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+    pub(crate) iterate_entries: unsafe extern "C" fn(
         t: *mut ss_plugin_table_t,
         it: ss_plugin_table_iterator_func_t,
         s: *mut ss_plugin_table_iterator_state_t,
@@ -263,15 +260,14 @@ impl private::TableReaderImpl for ValidatedTableReader<'_> {
 
     fn release_table_entry_fn(
         &self,
-    ) -> Option<unsafe extern "C-unwind" fn(*mut ss_plugin_table_t, *mut ss_plugin_table_entry_t)>
-    {
+    ) -> Option<unsafe extern "C" fn(*mut ss_plugin_table_t, *mut ss_plugin_table_entry_t)> {
         Some(self.release_table_entry)
     }
 
     fn iterate_entries_fn(
         &self,
     ) -> Result<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             *mut ss_plugin_table_t,
             ss_plugin_table_iterator_func_t,
             *mut ss_plugin_table_iterator_state_t,

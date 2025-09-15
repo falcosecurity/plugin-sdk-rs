@@ -68,18 +68,18 @@ impl<T: SourcePlugin> SourcePluginApi<T> {
     pub const IMPLEMENTS_SOURCE: bool = true;
 }
 
-pub extern "C-unwind" fn plugin_get_event_source<T: SourcePlugin>() -> *const c_char {
+pub extern "C" fn plugin_get_event_source<T: SourcePlugin>() -> *const c_char {
     T::EVENT_SOURCE.as_ptr()
 }
 
-pub extern "C-unwind" fn plugin_get_id<T: SourcePlugin>() -> u32 {
+pub extern "C" fn plugin_get_id<T: SourcePlugin>() -> u32 {
     T::PLUGIN_ID
 }
 
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C-unwind" fn plugin_list_open_params<T: SourcePlugin>(
+pub unsafe extern "C" fn plugin_list_open_params<T: SourcePlugin>(
     plugin: *mut ss_plugin_t,
     rc: *mut i32,
 ) -> *const c_char {
@@ -114,7 +114,7 @@ pub unsafe extern "C-unwind" fn plugin_list_open_params<T: SourcePlugin>(
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C-unwind" fn plugin_open<T: SourcePlugin>(
+pub unsafe extern "C" fn plugin_open<T: SourcePlugin>(
     plugin: *mut ss_plugin_t,
     params: *const c_char,
     rc: *mut ss_plugin_rc,
@@ -170,7 +170,7 @@ pub unsafe extern "C-unwind" fn plugin_open<T: SourcePlugin>(
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C-unwind" fn plugin_close<T: SourcePlugin>(
+pub unsafe extern "C" fn plugin_close<T: SourcePlugin>(
     plugin: *mut ss_plugin_t,
     instance: *mut ss_instance_t,
 ) {
@@ -198,7 +198,7 @@ pub unsafe extern "C-unwind" fn plugin_close<T: SourcePlugin>(
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C-unwind" fn plugin_next_batch<T: SourcePlugin>(
+pub unsafe extern "C" fn plugin_next_batch<T: SourcePlugin>(
     plugin: *mut ss_plugin_t,
     instance: *mut ss_instance_t,
     nevts: *mut u32,
@@ -243,7 +243,7 @@ pub unsafe extern "C-unwind" fn plugin_next_batch<T: SourcePlugin>(
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C-unwind" fn plugin_get_progress<T: SourcePlugin>(
+pub unsafe extern "C" fn plugin_get_progress<T: SourcePlugin>(
     _plugin: *mut ss_plugin_t,
     instance: *mut ss_instance_t,
     progress_pct: *mut u32,
@@ -272,7 +272,7 @@ pub unsafe extern "C-unwind" fn plugin_get_progress<T: SourcePlugin>(
 /// # Safety
 ///
 /// All pointers must be valid
-pub unsafe extern "C-unwind" fn plugin_event_to_string<T: SourcePlugin>(
+pub unsafe extern "C" fn plugin_event_to_string<T: SourcePlugin>(
     plugin: *mut ss_plugin_t,
     event: *const ss_plugin_event_input,
 ) -> *const c_char {

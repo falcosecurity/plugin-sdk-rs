@@ -43,18 +43,18 @@ macro_rules! delegate_table_method {
     }};
 }
 
-unsafe extern "C-unwind" fn get_table_name(table: *mut ss_plugin_table_t) -> *const c_char {
+unsafe extern "C" fn get_table_name(table: *mut ss_plugin_table_t) -> *const c_char {
     let (get_table_name, table) =
         delegate_table_method!(table => reader_ext.get_table_name or std::ptr::null());
     unsafe { get_table_name(table) }
 }
 
-unsafe extern "C-unwind" fn get_table_size(table: *mut ss_plugin_table_t) -> u64 {
+unsafe extern "C" fn get_table_size(table: *mut ss_plugin_table_t) -> u64 {
     let (get_table_size, table) = delegate_table_method!(table => reader_ext.get_table_size or 0);
     unsafe { get_table_size(table) }
 }
 
-unsafe extern "C-unwind" fn get_table_entry(
+unsafe extern "C" fn get_table_entry(
     table: *mut ss_plugin_table_t,
     key: *const ss_plugin_state_data,
 ) -> *mut ss_plugin_table_entry_t {
@@ -63,7 +63,7 @@ unsafe extern "C-unwind" fn get_table_entry(
     unsafe { get_table_entry(table, key) }
 }
 
-unsafe extern "C-unwind" fn read_entry_field(
+unsafe extern "C" fn read_entry_field(
     table: *mut ss_plugin_table_t,
     entry: *mut ss_plugin_table_entry_t,
     field: *const ss_plugin_table_field_t,
@@ -73,7 +73,7 @@ unsafe extern "C-unwind" fn read_entry_field(
     unsafe { read_entry_field(table, entry, field, out) }
 }
 
-unsafe extern "C-unwind" fn release_table_entry(
+unsafe extern "C" fn release_table_entry(
     table: *mut ss_plugin_table_t,
     entry: *mut ss_plugin_table_entry_t,
 ) {
@@ -82,7 +82,7 @@ unsafe extern "C-unwind" fn release_table_entry(
     unsafe { release_table_entry(table, entry) }
 }
 
-unsafe extern "C-unwind" fn iterate_entries(
+unsafe extern "C" fn iterate_entries(
     table: *mut ss_plugin_table_t,
     iter: ss_plugin_table_iterator_func_t,
     state: *mut ss_plugin_table_iterator_state_t,
@@ -91,13 +91,13 @@ unsafe extern "C-unwind" fn iterate_entries(
     unsafe { iterate_entries(table, iter, state) }
 }
 
-unsafe extern "C-unwind" fn clear_table(table: *mut ss_plugin_table_t) -> ss_plugin_rc {
+unsafe extern "C" fn clear_table(table: *mut ss_plugin_table_t) -> ss_plugin_rc {
     let (clear_table, table) =
         delegate_table_method!(table => writer_ext.clear_table or ss_plugin_rc_SS_PLUGIN_FAILURE);
     unsafe { clear_table(table) }
 }
 
-unsafe extern "C-unwind" fn erase_table_entry(
+unsafe extern "C" fn erase_table_entry(
     table: *mut ss_plugin_table_t,
     key: *const ss_plugin_state_data,
 ) -> ss_plugin_rc {
@@ -105,7 +105,7 @@ unsafe extern "C-unwind" fn erase_table_entry(
     unsafe { erase_table_entry(table, key) }
 }
 
-unsafe extern "C-unwind" fn create_table_entry(
+unsafe extern "C" fn create_table_entry(
     table: *mut ss_plugin_table_t,
 ) -> *mut ss_plugin_table_entry_t {
     let (create_table_entry, table) =
@@ -113,7 +113,7 @@ unsafe extern "C-unwind" fn create_table_entry(
     unsafe { create_table_entry(table) }
 }
 
-unsafe extern "C-unwind" fn destroy_table_entry(
+unsafe extern "C" fn destroy_table_entry(
     table: *mut ss_plugin_table_t,
     entry: *mut ss_plugin_table_entry_t,
 ) {
@@ -122,7 +122,7 @@ unsafe extern "C-unwind" fn destroy_table_entry(
     unsafe { destroy_table_entry(table, entry) }
 }
 
-unsafe extern "C-unwind" fn add_table_entry(
+unsafe extern "C" fn add_table_entry(
     table: *mut ss_plugin_table_t,
     key: *const ss_plugin_state_data,
     entry: *mut ss_plugin_table_entry_t,
@@ -132,7 +132,7 @@ unsafe extern "C-unwind" fn add_table_entry(
     unsafe { add_table_entry(table, key, entry) }
 }
 
-unsafe extern "C-unwind" fn write_entry_field(
+unsafe extern "C" fn write_entry_field(
     table: *mut ss_plugin_table_t,
     entry: *mut ss_plugin_table_entry_t,
     field: *const ss_plugin_table_field_t,
@@ -142,7 +142,7 @@ unsafe extern "C-unwind" fn write_entry_field(
     unsafe { write_entry_field(table, entry, field, value) }
 }
 
-unsafe extern "C-unwind" fn list_table_fields(
+unsafe extern "C" fn list_table_fields(
     table: *mut ss_plugin_table_t,
     nfields: *mut u32,
 ) -> *const ss_plugin_table_fieldinfo {
@@ -151,7 +151,7 @@ unsafe extern "C-unwind" fn list_table_fields(
     unsafe { list_table_fields(table, nfields) }
 }
 
-unsafe extern "C-unwind" fn get_table_field(
+unsafe extern "C" fn get_table_field(
     table: *mut ss_plugin_table_t,
     name: *const c_char,
     data_type: ss_plugin_state_type,
@@ -161,7 +161,7 @@ unsafe extern "C-unwind" fn get_table_field(
     unsafe { get_table_field(table, name, data_type) }
 }
 
-unsafe extern "C-unwind" fn add_table_field(
+unsafe extern "C" fn add_table_field(
     table: *mut ss_plugin_table_t,
     name: *const c_char,
     data_type: ss_plugin_state_type,

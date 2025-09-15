@@ -30,7 +30,7 @@ use std::sync::Mutex;
 )]
 pub unsafe trait BasePluginExported {}
 
-pub extern "C-unwind" fn plugin_get_required_api_version<
+pub extern "C" fn plugin_get_required_api_version<
     const MAJOR: usize,
     const MINOR: usize,
     const PATCH: usize,
@@ -49,26 +49,26 @@ pub extern "C-unwind" fn plugin_get_required_api_version<
         .as_ptr()
 }
 
-pub extern "C-unwind" fn plugin_get_version<T: Plugin>() -> *const c_char {
+pub extern "C" fn plugin_get_version<T: Plugin>() -> *const c_char {
     T::PLUGIN_VERSION.as_ptr()
 }
 
-pub extern "C-unwind" fn plugin_get_name<T: Plugin>() -> *const c_char {
+pub extern "C" fn plugin_get_name<T: Plugin>() -> *const c_char {
     T::NAME.as_ptr()
 }
 
-pub extern "C-unwind" fn plugin_get_description<T: Plugin>() -> *const c_char {
+pub extern "C" fn plugin_get_description<T: Plugin>() -> *const c_char {
     T::DESCRIPTION.as_ptr()
 }
 
-pub extern "C-unwind" fn plugin_get_contact<T: Plugin>() -> *const c_char {
+pub extern "C" fn plugin_get_contact<T: Plugin>() -> *const c_char {
     T::CONTACT.as_ptr()
 }
 
 /// # Safety
 ///
 /// init_input must be null or a valid pointer
-pub unsafe extern "C-unwind" fn plugin_init<P: Plugin>(
+pub unsafe extern "C" fn plugin_init<P: Plugin>(
     init_input: *const ss_plugin_init_input,
     rc: *mut ss_plugin_rc,
 ) -> *mut falco_plugin_api::ss_plugin_t {
@@ -127,7 +127,7 @@ pub unsafe extern "C-unwind" fn plugin_init<P: Plugin>(
 /// # Safety
 ///
 /// schema_type must be null or a valid pointer
-pub unsafe extern "C-unwind" fn plugin_get_init_schema<P: Plugin>(
+pub unsafe extern "C" fn plugin_get_init_schema<P: Plugin>(
     schema_type: *mut falco_plugin_api::ss_plugin_schema_type,
 ) -> *const c_char {
     let schema_type = unsafe {
@@ -151,9 +151,7 @@ pub unsafe extern "C-unwind" fn plugin_get_init_schema<P: Plugin>(
 /// # Safety
 ///
 /// `plugin` must have been created by `init()` and not destroyed since
-pub unsafe extern "C-unwind" fn plugin_destroy<P: Plugin>(
-    plugin: *mut falco_plugin_api::ss_plugin_t,
-) {
+pub unsafe extern "C" fn plugin_destroy<P: Plugin>(plugin: *mut falco_plugin_api::ss_plugin_t) {
     unsafe {
         let plugin = plugin as *mut PluginWrapper<P>;
         let _ = Box::from_raw(plugin);
@@ -163,7 +161,7 @@ pub unsafe extern "C-unwind" fn plugin_destroy<P: Plugin>(
 /// # Safety
 ///
 /// `plugin` must be a valid pointer to `PluginWrapper<P>`
-pub unsafe extern "C-unwind" fn plugin_get_last_error<P: Plugin>(
+pub unsafe extern "C" fn plugin_get_last_error<P: Plugin>(
     plugin: *mut falco_plugin_api::ss_plugin_t,
 ) -> *const c_char {
     let plugin = plugin as *mut PluginWrapper<P>;
@@ -173,7 +171,7 @@ pub unsafe extern "C-unwind" fn plugin_get_last_error<P: Plugin>(
     }
 }
 
-pub unsafe extern "C-unwind" fn plugin_set_config<P: Plugin>(
+pub unsafe extern "C" fn plugin_set_config<P: Plugin>(
     plugin: *mut falco_plugin_api::ss_plugin_t,
     config_input: *const falco_plugin_api::ss_plugin_set_config_input,
 ) -> falco_plugin_api::ss_plugin_rc {
@@ -202,7 +200,7 @@ pub unsafe extern "C-unwind" fn plugin_set_config<P: Plugin>(
     res.rc(&mut plugin.error_buf)
 }
 
-pub unsafe extern "C-unwind" fn plugin_get_metrics<P: Plugin>(
+pub unsafe extern "C" fn plugin_get_metrics<P: Plugin>(
     plugin: *mut ss_plugin_t,
     num_metrics: *mut u32,
 ) -> *mut ss_plugin_metric {
@@ -236,7 +234,7 @@ pub unsafe extern "C-unwind" fn plugin_get_metrics<P: Plugin>(
     plugin.metric_storage.as_ptr().cast_mut()
 }
 
-pub extern "C-unwind" fn plugin_get_required_event_schema_version<T: Plugin>(
+pub extern "C" fn plugin_get_required_event_schema_version<T: Plugin>(
     _plugin: *mut ss_plugin_t,
 ) -> *const c_char {
     T::SCHEMA_VERSION.as_ptr()
@@ -253,7 +251,7 @@ macro_rules! wrap_ffi {
     ) => {
         $(
         #[$attr]
-        pub unsafe extern "C-unwind" fn $name ( $($param: $param_ty),*) -> $ret {
+        pub unsafe extern "C" fn $name ( $($param: $param_ty),*) -> $ret {
             use $mod as wrappers;
 
             wrappers::$name::<$ty>($($param),*)
@@ -525,7 +523,7 @@ macro_rules! ensure_plugin_capabilities {
 macro_rules! base_plugin_ffi_wrappers {
     ($maj:expr; $min:expr; $patch:expr => #[$attr:meta] $ty:ty) => {
         #[$attr]
-        pub extern "C-unwind" fn plugin_get_required_api_version() -> *const std::ffi::c_char {
+        pub extern "C" fn plugin_get_required_api_version() -> *const std::ffi::c_char {
             $crate::base::wrappers::plugin_get_required_api_version::<
                 { $maj },
                 { $min },

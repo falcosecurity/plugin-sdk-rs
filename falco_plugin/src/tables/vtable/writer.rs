@@ -45,9 +45,7 @@ pub(crate) mod private {
 
         fn destroy_table_entry_fn(
             &self,
-        ) -> Option<
-            unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-        >;
+        ) -> Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t)>;
 
         unsafe fn add_table_entry(
             &self,
@@ -180,9 +178,8 @@ impl private::TableWriterImpl for LazyTableWriter<'_> {
 
     fn destroy_table_entry_fn(
         &self,
-    ) -> Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    > {
+    ) -> Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t)>
+    {
         self.writer_ext.destroy_table_entry
     }
 
@@ -229,21 +226,21 @@ impl private::TableWriterImpl for LazyTableWriter<'_> {
 /// It's used as a token to prove you're allowed to write tables in a particular context
 #[derive(Debug)]
 pub struct ValidatedTableWriter<'t> {
-    clear_table: unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
-    erase_table_entry: unsafe extern "C-unwind" fn(
+    clear_table: unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> ss_plugin_rc,
+    erase_table_entry: unsafe extern "C" fn(
         t: *mut ss_plugin_table_t,
         key: *const ss_plugin_state_data,
     ) -> ss_plugin_rc,
     create_table_entry:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t) -> *mut ss_plugin_table_entry_t,
     destroy_table_entry:
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    add_table_entry: unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
+    add_table_entry: unsafe extern "C" fn(
         t: *mut ss_plugin_table_t,
         key: *const ss_plugin_state_data,
         entry: *mut ss_plugin_table_entry_t,
     ) -> *mut ss_plugin_table_entry_t,
-    write_entry_field: unsafe extern "C-unwind" fn(
+    write_entry_field: unsafe extern "C" fn(
         t: *mut ss_plugin_table_t,
         e: *mut ss_plugin_table_entry_t,
         f: *const ss_plugin_table_field_t,
@@ -286,9 +283,8 @@ impl private::TableWriterImpl for ValidatedTableWriter<'_> {
 
     fn destroy_table_entry_fn(
         &self,
-    ) -> Option<
-        unsafe extern "C-unwind" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t),
-    > {
+    ) -> Option<unsafe extern "C" fn(t: *mut ss_plugin_table_t, e: *mut ss_plugin_table_entry_t)>
+    {
         Some(self.destroy_table_entry)
     }
 

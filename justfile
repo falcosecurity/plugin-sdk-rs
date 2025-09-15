@@ -26,7 +26,6 @@ regen_api:
         --new-type-alias ss_plugin_routine_t --no-copy ss_plugin_routine_t \
         --new-type-alias ss_plugin_routine_state_t --no-copy ss_plugin_routine_state_t \
         --no-debug 'ss_plugin_table_info|ss_plugin_table_fieldinfo' \
-        --override-abi '.*=C-unwind' \
         --allowlist-item plugin_api \
         --allowlist-item 'ss_plugin_.*' \
         --allowlist-item 'PLUGIN_.*' \

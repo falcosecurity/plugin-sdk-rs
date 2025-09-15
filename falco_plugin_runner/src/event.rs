@@ -6,7 +6,7 @@ pub struct Event {
     pub source: *const c_char,
     pub source_plugin: *mut ss_plugin_t,
     pub to_string: Option<
-        unsafe extern "C-unwind" fn(
+        unsafe extern "C" fn(
             *mut falco_plugin_api::ss_plugin_t,
             *const falco_plugin_api::ss_plugin_event_input,
         ) -> *const c_char,

@@ -42,7 +42,7 @@ impl<T: CaptureListenPlugin + 'static> CaptureListenApi<T> {
     pub const IMPLEMENTS_LISTEN: bool = true;
 }
 
-pub unsafe extern "C-unwind" fn plugin_capture_open<T: CaptureListenPlugin>(
+pub unsafe extern "C" fn plugin_capture_open<T: CaptureListenPlugin>(
     plugin: *mut ss_plugin_t,
     listen_input: *const ss_plugin_capture_listen_input,
 ) -> ss_plugin_rc {
@@ -74,7 +74,7 @@ pub unsafe extern "C-unwind" fn plugin_capture_open<T: CaptureListenPlugin>(
     ss_plugin_rc_SS_PLUGIN_SUCCESS
 }
 
-pub unsafe extern "C-unwind" fn plugin_capture_close<T: CaptureListenPlugin>(
+pub unsafe extern "C" fn plugin_capture_close<T: CaptureListenPlugin>(
     plugin: *mut ss_plugin_t,
     listen_input: *const ss_plugin_capture_listen_input,
 ) -> ss_plugin_rc {

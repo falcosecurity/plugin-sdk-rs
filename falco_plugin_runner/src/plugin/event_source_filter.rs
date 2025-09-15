@@ -11,8 +11,8 @@ impl EventSourceFilter {
     pub fn new(
         plugin: *mut ss_plugin_t,
         api: &plugin_api,
-        event_types_fn: Option<unsafe extern "C-unwind" fn(*mut u32, *mut ss_plugin_t) -> *mut u16>,
-        event_sources_fn: Option<unsafe extern "C-unwind" fn() -> *const c_char>,
+        event_types_fn: Option<unsafe extern "C" fn(*mut u32, *mut ss_plugin_t) -> *mut u16>,
+        event_sources_fn: Option<unsafe extern "C" fn() -> *const c_char>,
     ) -> Result<Self, anyhow::Error> {
         let mut event_sources = match event_sources_fn {
             Some(event_sources_fn) => {
