@@ -83,7 +83,7 @@ impl CaptureListenPlugin {
         }))
     }
 
-    unsafe extern "C-unwind" fn subscribe(
+    unsafe extern "C" fn subscribe(
         owner: *mut ss_plugin_owner_t,
         func: ss_plugin_routine_fn_t,
         state: *mut ss_plugin_routine_state_t,
@@ -103,7 +103,7 @@ impl CaptureListenPlugin {
         ret
     }
 
-    unsafe extern "C-unwind" fn unsubscribe(
+    unsafe extern "C" fn unsubscribe(
         owner: *mut ss_plugin_owner_t,
         routine: *mut ss_plugin_routine_t,
     ) -> ss_plugin_rc {
@@ -116,7 +116,7 @@ impl CaptureListenPlugin {
         ss_plugin_rc_SS_PLUGIN_SUCCESS
     }
 
-    extern "C-unwind" fn get_owner_last_error(_owner: *mut ss_plugin_owner_t) -> *const c_char {
+    extern "C" fn get_owner_last_error(_owner: *mut ss_plugin_owner_t) -> *const c_char {
         std::ptr::null()
     }
 

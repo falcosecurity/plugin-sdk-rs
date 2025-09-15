@@ -489,11 +489,11 @@ impl Plugin {
     }
 }
 
-extern "C-unwind" fn get_last_owner_error(_owner: *mut ss_plugin_owner_t) -> *const c_char {
+extern "C" fn get_last_owner_error(_owner: *mut ss_plugin_owner_t) -> *const c_char {
     std::ptr::null()
 }
 
-unsafe extern "C-unwind" fn log(
+unsafe extern "C" fn log(
     _owner: *mut ss_plugin_owner_t,
     component: *const c_char,
     msg: *const c_char,
@@ -509,7 +509,7 @@ unsafe extern "C-unwind" fn log(
     eprintln!();
 }
 
-unsafe extern "C-unwind" fn list_tables(
+unsafe extern "C" fn list_tables(
     owner: *mut ss_plugin_owner_t,
     ntables: *mut u32,
 ) -> *mut ss_plugin_table_info {
@@ -523,7 +523,7 @@ unsafe extern "C-unwind" fn list_tables(
     tables.as_mut_ptr()
 }
 
-pub unsafe extern "C-unwind" fn get_table(
+pub unsafe extern "C" fn get_table(
     owner: *mut ss_plugin_owner_t,
     name: *const ::std::os::raw::c_char,
     key_type: ss_plugin_state_type,
@@ -544,7 +544,7 @@ pub unsafe extern "C-unwind" fn get_table(
     }
 }
 
-pub unsafe extern "C-unwind" fn add_table(
+pub unsafe extern "C" fn add_table(
     owner: *mut ss_plugin_owner_t,
     table_input: *const ss_plugin_table_input,
 ) -> ss_plugin_rc {

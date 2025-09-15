@@ -27,16 +27,16 @@ pub enum TableError {
 pub struct TablesInput<'t> {
     pub(crate) owner: *mut ss_plugin_owner_t,
     pub(crate) last_error: LastError,
-    pub(crate) list_tables: unsafe extern "C-unwind" fn(
+    pub(crate) list_tables: unsafe extern "C" fn(
         o: *mut ss_plugin_owner_t,
         ntables: *mut u32,
     ) -> *mut ss_plugin_table_info,
-    pub(crate) get_table: unsafe extern "C-unwind" fn(
+    pub(crate) get_table: unsafe extern "C" fn(
         o: *mut ss_plugin_owner_t,
         name: *const ::std::os::raw::c_char,
         key_type: ss_plugin_state_type,
     ) -> *mut ss_plugin_table_t,
-    pub(crate) add_table: unsafe extern "C-unwind" fn(
+    pub(crate) add_table: unsafe extern "C" fn(
         o: *mut ss_plugin_owner_t,
         in_: *const ss_plugin_table_input,
     ) -> ss_plugin_rc,

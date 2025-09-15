@@ -106,7 +106,7 @@ pub struct AsyncEvent<'a> {
     pub data: &'a [u8],
 }
 
-unsafe extern "C-unwind" fn async_handler(
+unsafe extern "C" fn async_handler(
     owner: *mut ss_plugin_owner_t,
     event: *const ss_plugin_event,
     err: *mut c_char,
