@@ -2,6 +2,11 @@
 name = "falco_event_serde"
 version = "0.5.0"
 edition = "2024"
+license = "Apache-2.0"
+description = "Serde support for falco_event types"
+homepage = "https://falcosecurity.github.io/plugin-sdk-rs/falco_event_serde/"
+repository = "https://github.com/falcosecurity/plugin-sdk-rs"
+keywords = ["falco", "security"]
 
 [dependencies]
 bstr = { version = "1.12.0", features = ["serde"] }
