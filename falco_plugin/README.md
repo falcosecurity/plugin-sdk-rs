@@ -25,7 +25,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-falco_plugin = "0.4.0"
+falco_plugin = "0.5.0"
 ```
 
 The general layout of your plugin code would be:
@@ -93,7 +93,7 @@ edition = "2021"
 crate-type = ["staticlib"]
 
 [dependencies]
-falco_plugin = "0.4.0"
+falco_plugin = "0.5.0"
 ```
 
 The outline of the plugin code would look like:

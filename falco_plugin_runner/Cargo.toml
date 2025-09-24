@@ -1,6 +1,6 @@
 [package]
 name = "falco_plugin_runner"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "Pure-Rust runner for Falco plugins"
@@ -14,8 +14,8 @@ workspace = true
 
 [dependencies]
 anyhow = "1.0.89"
-falco_event = { version = "0.4.0", path = "../falco_event" }
-falco_plugin_api = { version = "0.4.0", path = "../falco_plugin_api" }
+falco_event = { version = "0.5.0", path = "../falco_event" }
+falco_plugin_api = { version = "0.5.0", path = "../falco_plugin_api" }
 serde = { version = "1.0.210", features = ["derive"] }
 serde_json = "1.0.128"
 chrono = "0.4.39"

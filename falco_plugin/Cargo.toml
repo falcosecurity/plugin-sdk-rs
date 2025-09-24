@@ -1,6 +1,6 @@
 [package]
 name = "falco_plugin"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "High level bindings for the Falco plugin API"
@@ -42,9 +42,9 @@ thread-safe-tables = ["dep:parking_lot"]
 
 [dependencies]
 thiserror = "2.0.12"
-falco_event = { path = "../falco_event", version = "0.4.0" }
-falco_plugin_api = { path = "../falco_plugin_api", version = "0.4.0" }
-falco_plugin_derive = { path = "../falco_plugin_derive", version = "0.4.0" }
+falco_event = { path = "../falco_event", version = "0.5.0" }
+falco_plugin_api = { path = "../falco_plugin_api", version = "0.5.0" }
+falco_plugin_derive = { path = "../falco_plugin_derive", version = "0.5.0" }
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
 schemars = "1.0.1"

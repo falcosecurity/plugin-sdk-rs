@@ -1,6 +1,6 @@
 [package]
 name = "falco_event_schema"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 
 [lints]
@@ -13,9 +13,9 @@ derive_deftly = ["dep:derive-deftly"]
 bitflags = { version = "2.4.2" }
 chrono = "0.4.38"
 derive-deftly = { version = "1.0.1", optional = true }
-falco_event = { path = "../falco_event", version = "0.4.0" }
-falco_event_derive = { path = "../falco_event_derive", version = "0.4.0" }
-falco_schema_derive = { path = "../falco_schema_derive", version = "0.4.0" }
+falco_event = { path = "../falco_event", version = "0.5.0" }
+falco_event_derive = { path = "../falco_event_derive", version = "0.5.0" }
+falco_schema_derive = { path = "../falco_schema_derive", version = "0.5.0" }
 typed-path = "0.11.0"
 
 [target.'cfg(target_os = "linux")'.dependencies]

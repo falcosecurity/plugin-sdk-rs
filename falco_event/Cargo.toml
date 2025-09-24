@@ -1,6 +1,6 @@
 [package]
 name = "falco_event"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "Type-safe wrappers for Falco events"
@@ -18,7 +18,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 workspace = true
 
 [dependencies]
-falco_event_derive = { path = "../falco_event_derive", version = "0.4.0" }
+falco_event_derive = { path = "../falco_event_derive", version = "0.5.0" }
 thiserror = "2.0.12"
 anyhow = "1.0.81"
 chrono = "0.4.38"

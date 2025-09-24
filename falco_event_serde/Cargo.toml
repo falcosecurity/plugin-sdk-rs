@@ -1,13 +1,13 @@
 [package]
 name = "falco_event_serde"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2024"
 
 [dependencies]
 bstr = { version = "1.12.0", features = ["serde"] }
 derive-deftly = "1.0.1"
-falco_event = { version = "0.4.0", path = "../falco_event" }
-falco_event_schema = { version = "0.4.0", path = "../falco_event_schema", features = ["derive_deftly"] }
+falco_event = { version = "0.5.0", path = "../falco_event" }
+falco_event_schema = { version = "0.5.0", path = "../falco_event_schema", features = ["derive_deftly"] }
 serde = { version = "1.0.219", features = ["derive"] }
 
 [lints]
