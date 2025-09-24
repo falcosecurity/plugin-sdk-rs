@@ -2,6 +2,12 @@
 name = "falco_event_schema"
 version = "0.5.0"
 edition = "2024"
+license = "Apache-2.0"
+description = "Schema definitions for Falco events"
+homepage = "https://falcosecurity.github.io/plugin-sdk-rs/falco_event_schema/"
+repository = "https://github.com/falcosecurity/plugin-sdk-rs"
+readme = "README.md"
+keywords = ["falco", "security"]
 
 [lints]
 workspace = true
