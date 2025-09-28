@@ -2,6 +2,7 @@ use crate::async_event::async_handler::AsyncHandler;
 use crate::async_event::AsyncEventPlugin;
 use crate::base::wrappers::PluginWrapper;
 use crate::error::ffi_result::FfiResult;
+use crate::error::panic::catch_panic;
 use falco_plugin_api::plugin_api__bindgen_ty_4 as async_plugin_api;
 use falco_plugin_api::{
     ss_plugin_async_event_handler_t, ss_plugin_owner_t, ss_plugin_rc,
@@ -10,6 +11,7 @@ use falco_plugin_api::{
 use std::any::TypeId;
 use std::collections::BTreeMap;
 use std::ffi::{c_char, CString};
+use std::panic::AssertUnwindSafe;
 use std::sync::Mutex;
 
 /// Marker trait to mark an async plugin as exported to the API
@@ -101,7 +103,7 @@ pub unsafe extern "C" fn plugin_set_async_event_handler<T: AsyncEventPlugin>(
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
 
-        if let Err(e) = actual_plugin.plugin.stop_async() {
+        if let Err(e) = catch_panic(AssertUnwindSafe(|| actual_plugin.plugin.stop_async())) {
             e.set_last_error(&mut plugin.error_buf);
             return e.status_code();
         }
@@ -114,7 +116,9 @@ pub unsafe extern "C" fn plugin_set_async_event_handler<T: AsyncEventPlugin>(
             owner,
             raw_handler: *raw_handler,
         };
-        if let Err(e) = actual_plugin.plugin.start_async(handler) {
+        if let Err(e) = catch_panic(AssertUnwindSafe(|| {
+            actual_plugin.plugin.start_async(handler)
+        })) {
             e.set_last_error(&mut plugin.error_buf);
             return e.status_code();
         }
@@ -148,7 +152,9 @@ pub unsafe extern "C" fn plugin_dump_state<T: AsyncEventPlugin>(
             owner,
             raw_handler: *raw_handler,
         };
-        if let Err(e) = actual_plugin.plugin.dump_state(handler) {
+        if let Err(e) = catch_panic(AssertUnwindSafe(|| {
+            actual_plugin.plugin.dump_state(handler)
+        })) {
             e.set_last_error(&mut plugin.error_buf);
             return e.status_code();
         }
