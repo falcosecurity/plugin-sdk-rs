@@ -1,11 +1,13 @@
 use crate::base::wrappers::PluginWrapper;
 use crate::error::ffi_result::FfiResult;
+use crate::error::panic::catch_panic;
 use crate::listen::CaptureListenInput;
 use crate::listen::CaptureListenPlugin;
 use falco_plugin_api::{
     plugin_api__bindgen_ty_5 as listen_plugin_api, ss_plugin_capture_listen_input, ss_plugin_rc,
     ss_plugin_rc_SS_PLUGIN_FAILURE, ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_t,
 };
+use std::panic::AssertUnwindSafe;
 
 /// Marker trait to mark a capture listen plugin as exported to the API
 ///
@@ -66,7 +68,9 @@ pub unsafe extern "C" fn plugin_capture_open<T: CaptureListenPlugin>(
         listen_input
     };
 
-    if let Err(e) = actual_plugin.plugin.capture_open(&listen_input) {
+    if let Err(e) = catch_panic(AssertUnwindSafe(|| {
+        actual_plugin.plugin.capture_open(&listen_input)
+    })) {
         e.set_last_error(&mut plugin.error_buf);
         return e.status_code();
     }
@@ -98,7 +102,9 @@ pub unsafe extern "C" fn plugin_capture_close<T: CaptureListenPlugin>(
         listen_input
     };
 
-    if let Err(e) = actual_plugin.plugin.capture_close(&listen_input) {
+    if let Err(e) = catch_panic(AssertUnwindSafe(|| {
+        actual_plugin.plugin.capture_close(&listen_input)
+    })) {
         e.set_last_error(&mut plugin.error_buf);
         return e.status_code();
     }
