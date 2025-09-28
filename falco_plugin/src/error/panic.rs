@@ -1,6 +1,5 @@
 use std::panic::UnwindSafe;
 
-#[expect(dead_code)]
 pub(crate) fn catch_panic<T, F>(f: F) -> Result<T, anyhow::Error>
 where
     F: UnwindSafe + FnOnce() -> Result<T, anyhow::Error>,
