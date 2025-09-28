@@ -1,5 +1,6 @@
 use crate::base::wrappers::PluginWrapper;
 use crate::error::ffi_result::FfiResult;
+use crate::error::panic::catch_panic;
 use crate::parse::EventInput;
 use crate::parse::{ParseInput, ParsePlugin};
 use falco_event::events::AnyEventPayload;
@@ -12,6 +13,7 @@ use std::any::TypeId;
 use std::collections::BTreeMap;
 use std::ffi::{c_char, CString};
 use std::marker::PhantomData;
+use std::panic::AssertUnwindSafe;
 use std::sync::Mutex;
 
 /// Marker trait to mark a parse plugin as exported to the API
@@ -112,10 +114,10 @@ pub unsafe extern "C" fn plugin_parse_event<T: ParsePlugin>(
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
 
-        actual_plugin
-            .plugin
-            .parse_event(&event, &parse_input)
-            .rc(&mut plugin.error_buf)
+        catch_panic(AssertUnwindSafe(|| {
+            actual_plugin.plugin.parse_event(&event, &parse_input)
+        }))
+        .rc(&mut plugin.error_buf)
     }
 }
 
