@@ -1,5 +1,6 @@
 use crate::base::wrappers::PluginWrapper;
 use crate::error::ffi_result::FfiResult;
+use crate::error::panic::catch_panic;
 use crate::event::EventInput;
 use crate::extract::ExtractPlugin;
 use crate::tables::LazyTableReader;
@@ -12,6 +13,7 @@ use std::any::TypeId;
 use std::collections::BTreeMap;
 use std::ffi::{c_char, CString};
 use std::marker::PhantomData;
+use std::panic::AssertUnwindSafe;
 use std::sync::Mutex;
 
 /// Marker trait to mark an extract plugin as exported to the API
@@ -124,16 +126,16 @@ pub unsafe extern "C" fn plugin_extract_fields<T: ExtractPlugin>(
         let table_reader = LazyTableReader::new(reader_ext, actual_plugin.last_error.clone());
 
         plugin.field_storage.reset();
-        actual_plugin
-            .plugin
-            .extract_fields(
+        catch_panic(AssertUnwindSafe(|| {
+            actual_plugin.plugin.extract_fields(
                 &event_input,
                 &table_reader,
                 fields,
                 offsets,
                 &plugin.field_storage,
             )
-            .rc(&mut plugin.error_buf)
+        }))
+        .rc(&mut plugin.error_buf)
     }
 }
 
