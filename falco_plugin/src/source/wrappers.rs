@@ -1,5 +1,6 @@
 use crate::base::wrappers::PluginWrapper;
 use crate::error::ffi_result::FfiResult;
+use crate::error::panic::catch_panic;
 use crate::source::SourcePluginInstanceWrapper;
 use crate::source::{EventBatch, EventInput, SourcePlugin, SourcePluginInstance};
 use crate::strings::cstring_writer::WriteIntoCString;
@@ -12,6 +13,7 @@ use falco_plugin_api::{
 use std::ffi::c_char;
 use std::io::Write;
 use std::marker::PhantomData;
+use std::panic::AssertUnwindSafe;
 
 /// Marker trait to mark a source plugin as exported to the API
 ///
@@ -94,12 +96,17 @@ pub unsafe extern "C" fn plugin_list_open_params<T: SourcePlugin>(
         return std::ptr::null();
     };
 
-    match actual_plugin.plugin.list_open_params() {
+    // .as_ptr() breaks the lifetime requirement, which implies that the caller
+    // cannot hold on to the result before the next API call. As this whole method
+    // is apparently unused, this holds (for now).
+    match catch_panic(AssertUnwindSafe(|| {
+        actual_plugin.plugin.list_open_params().map(|s| s.as_ptr())
+    })) {
         Ok(s) => {
             unsafe {
                 *rc = ss_plugin_rc_SS_PLUGIN_SUCCESS;
             }
-            s.as_ptr()
+            s
         }
         Err(e) => {
             unsafe {
@@ -149,7 +156,7 @@ pub unsafe extern "C" fn plugin_open<T: SourcePlugin>(
             }
         };
 
-        match actual_plugin.plugin.open(params) {
+        match catch_panic(AssertUnwindSafe(|| actual_plugin.plugin.open(params))) {
             Ok(instance) => {
                 *rc = ss_plugin_rc_SS_PLUGIN_SUCCESS;
                 Box::into_raw(Box::new(SourcePluginInstanceWrapper {
@@ -191,7 +198,14 @@ pub unsafe extern "C" fn plugin_close<T: SourcePlugin>(
     }
     unsafe {
         let mut inst = Box::from_raw(instance);
-        actual_plugin.plugin.close(&mut inst.instance);
+        let res = catch_panic(AssertUnwindSafe(|| {
+            actual_plugin.plugin.close(&mut inst.instance);
+            Ok(())
+        }));
+
+        if let Err(e) = res {
+            log::error!("Error closing source plugin instance: {}", e)
+        }
     }
 }
 
@@ -220,9 +234,11 @@ pub unsafe extern "C" fn plugin_next_batch<T: SourcePlugin>(
 
         instance.batch.reset();
         let mut batch = EventBatch::new(&instance.batch);
-        let batch_result = instance
-            .instance
-            .next_batch(&mut actual_plugin.plugin, &mut batch);
+        let batch_result = catch_panic(AssertUnwindSafe(|| {
+            instance
+                .instance
+                .next_batch(&mut actual_plugin.plugin, &mut batch)
+        }));
         match batch_result {
             Ok(()) => {
                 let events = batch.get_events();
@@ -249,23 +265,39 @@ pub unsafe extern "C" fn plugin_get_progress<T: SourcePlugin>(
     progress_pct: *mut u32,
 ) -> *const c_char {
     let instance = instance as *mut SourcePluginInstanceWrapper<T::Instance>;
-    let progress = unsafe { instance.as_mut() }.map(|instance| instance.instance.get_progress());
-
-    if let Some(progress) = progress {
-        unsafe {
-            *progress_pct = (progress.value * 100.0) as u32;
-        }
-
-        match progress.detail {
-            Some(s) => s.as_ptr(),
-            None => std::ptr::null(),
-        }
-    } else {
+    let Some(instance) = (unsafe { instance.as_mut() }) else {
         unsafe {
             *progress_pct = 0;
         }
+        return std::ptr::null();
+    };
 
-        std::ptr::null()
+    // .as_ptr() implies that the caller cannot hold on to the result before the next API call
+    let progress = catch_panic(AssertUnwindSafe(|| {
+        let progress = instance.instance.get_progress();
+        match progress.detail {
+            Some(s) => Ok((progress.value, s.as_ptr())),
+            None => Ok((progress.value, std::ptr::null())),
+        }
+    }));
+
+    match progress {
+        Ok((pct, detail)) => {
+            unsafe {
+                *progress_pct = (pct * 100.0) as u32;
+            }
+
+            detail
+        }
+        Err(e) => {
+            log::error!("Error getting progress for source plugin instance: {}", e);
+
+            unsafe {
+                *progress_pct = 0;
+            }
+
+            std::ptr::null()
+        }
     }
 }
 
@@ -290,7 +322,9 @@ pub unsafe extern "C" fn plugin_event_to_string<T: SourcePlugin>(
         };
         let event = EventInput(*event, PhantomData);
 
-        match actual_plugin.plugin.event_to_string(&event) {
+        match catch_panic(AssertUnwindSafe(|| {
+            actual_plugin.plugin.event_to_string(&event)
+        })) {
             Ok(s) => {
                 plugin.string_storage = s;
                 plugin.string_storage.as_ptr()
