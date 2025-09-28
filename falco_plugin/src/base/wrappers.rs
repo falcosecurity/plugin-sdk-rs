@@ -3,6 +3,7 @@ use crate::base::schema::{ConfigSchema, ConfigSchemaType};
 use crate::base::Plugin;
 use crate::error::ffi_result::FfiResult;
 use crate::error::last_error::LastError;
+use crate::error::panic::catch_panic;
 use crate::strings::from_ptr::try_str_from_ptr;
 use crate::strings::WriteIntoCString;
 use crate::tables::TablesInput;
@@ -15,6 +16,7 @@ use std::collections::BTreeMap;
 use std::ffi::{c_char, CString};
 use std::fmt::Display;
 use std::io::Write;
+use std::panic::AssertUnwindSafe;
 use std::sync::Mutex;
 
 /// Marker trait to mark a plugin as exported to the API
@@ -72,38 +74,40 @@ pub unsafe extern "C" fn plugin_init<P: Plugin>(
     init_input: *const ss_plugin_init_input,
     rc: *mut ss_plugin_rc,
 ) -> *mut falco_plugin_api::ss_plugin_t {
-    let res = (|| -> Result<*mut PluginWrapper<P>, anyhow::Error> {
-        let init_input = unsafe { init_input.as_ref() }
-            .ok_or_else(|| anyhow::anyhow!("Got empty init_input"))?;
+    let res = catch_panic(AssertUnwindSafe(
+        || -> Result<*mut PluginWrapper<P>, anyhow::Error> {
+            let init_input = unsafe { init_input.as_ref() }
+                .ok_or_else(|| anyhow::anyhow!("Got empty init_input"))?;
 
-        let init_config =
-            try_str_from_ptr(&init_input.config).context("Failed to get config string")?;
+            let init_config =
+                try_str_from_ptr(&init_input.config).context("Failed to get config string")?;
 
-        let config = P::ConfigType::from_str(init_config).context("Failed to parse config")?;
-        if let Some(log_fn) = init_input.log_fn {
-            let logger_impl = FalcoPluginLoggerImpl {
-                owner: init_input.owner,
-                logger_fn: log_fn,
-            };
+            let config = P::ConfigType::from_str(init_config).context("Failed to parse config")?;
+            if let Some(log_fn) = init_input.log_fn {
+                let logger_impl = FalcoPluginLoggerImpl {
+                    owner: init_input.owner,
+                    logger_fn: log_fn,
+                };
 
-            *FALCO_LOGGER.inner.write().unwrap() = Some(logger_impl);
-            log::set_logger(&FALCO_LOGGER).ok();
+                *FALCO_LOGGER.inner.write().unwrap() = Some(logger_impl);
+                log::set_logger(&FALCO_LOGGER).ok();
 
-            #[cfg(debug_assertions)]
-            log::set_max_level(log::LevelFilter::Trace);
+                #[cfg(debug_assertions)]
+                log::set_max_level(log::LevelFilter::Trace);
 
-            #[cfg(not(debug_assertions))]
-            log::set_max_level(log::LevelFilter::Info);
-        }
+                #[cfg(not(debug_assertions))]
+                log::set_max_level(log::LevelFilter::Info);
+            }
 
-        let tables_input =
-            TablesInput::try_from(init_input).context("Failed to build tables input")?;
+            let tables_input =
+                TablesInput::try_from(init_input).context("Failed to build tables input")?;
 
-        let last_error = unsafe { LastError::from(init_input)? };
+            let last_error = unsafe { LastError::from(init_input)? };
 
-        P::new(tables_input.as_ref(), config)
-            .map(|plugin| Box::into_raw(Box::new(PluginWrapper::new(plugin, last_error))))
-    })();
+            P::new(tables_input.as_ref(), config)
+                .map(|plugin| Box::into_raw(Box::new(PluginWrapper::new(plugin, last_error))))
+        },
+    ));
 
     match res {
         Ok(plugin) => {
@@ -154,7 +158,15 @@ pub unsafe extern "C" fn plugin_get_init_schema<P: Plugin>(
 pub unsafe extern "C" fn plugin_destroy<P: Plugin>(plugin: *mut falco_plugin_api::ss_plugin_t) {
     unsafe {
         let plugin = plugin as *mut PluginWrapper<P>;
-        let _ = Box::from_raw(plugin);
+        match catch_panic(AssertUnwindSafe(|| {
+            let _ = Box::from_raw(plugin);
+            Ok(())
+        })) {
+            Ok(()) => {}
+            Err(e) => {
+                log::error!("Failed to destroy plugin: {e}");
+            }
+        }
     }
 }
 
@@ -187,7 +199,7 @@ pub unsafe extern "C" fn plugin_set_config<P: Plugin>(
         return ss_plugin_rc_SS_PLUGIN_FAILURE;
     };
 
-    let res = (|| -> Result<(), anyhow::Error> {
+    let res = catch_panic(AssertUnwindSafe(|| -> Result<(), anyhow::Error> {
         let config_input = unsafe { config_input.as_ref() }.context("Got NULL config")?;
 
         let updated_config =
@@ -195,7 +207,7 @@ pub unsafe extern "C" fn plugin_set_config<P: Plugin>(
         let config = P::ConfigType::from_str(updated_config).context("Failed to parse config")?;
 
         actual_plugin.plugin.set_config(config)
-    })();
+    }));
 
     res.rc(&mut plugin.error_buf)
 }
@@ -226,8 +238,15 @@ pub unsafe extern "C" fn plugin_get_metrics<P: Plugin>(
     };
 
     plugin.metric_storage.clear();
-    for metric in actual_plugin.plugin.get_metrics() {
-        plugin.metric_storage.push(metric.as_raw());
+    if let Err(e) = catch_panic(AssertUnwindSafe(|| {
+        for metric in actual_plugin.plugin.get_metrics() {
+            plugin.metric_storage.push(metric.as_raw());
+        }
+        Ok(())
+    })) {
+        e.set_last_error(&mut plugin.error_buf);
+        *num_metrics = 0;
+        return std::ptr::null_mut();
     }
 
     *num_metrics = plugin.metric_storage.len() as u32;
