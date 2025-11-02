@@ -60,7 +60,7 @@ impl<P: Plugin> PluginWrapper<P> {
     }
 }
 
-/// # The latest schema supported by the current SDK version
+/// The latest schema supported by the current SDK version
 pub use falco_plugin_api::SCHEMA_VERSION as CURRENT_SCHEMA_VERSION;
 
 /// # A base trait for implementing Falco plugins
@@ -112,7 +112,7 @@ pub trait Plugin: BasePluginExported + Sized {
     const CONTACT: &'static CStr;
     /// the schema version supported by this plugin
     ///
-    /// usually should just be left as the default, but you may need to override it
+    /// Usually should just be left as the default, but you may need to override it
     /// if you're using a different version of the falco_event_schema crate.
     const SCHEMA_VERSION: &'static CStr = CURRENT_SCHEMA_VERSION;
 
