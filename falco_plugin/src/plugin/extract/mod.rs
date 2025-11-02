@@ -79,7 +79,7 @@ pub const UNSPECIFIED_RANGE: Range<usize> = 0..0;
 ///
 /// 26 bytes for the event header, plus 2*4 bytes for the parameter lengths,
 /// plus 4 bytes for the plugin ID.
-const PLUGIN_EVENT_PAYLOAD_OFFSET: usize = 38;
+const PLUGIN_EVENT_PAYLOAD_OFFSET: usize = falco_plugin_api::PLUGIN_EVENT_PAYLOAD_OFFSET as usize;
 
 /// Range extraction request/response
 #[derive(Debug, Eq, PartialEq)]
