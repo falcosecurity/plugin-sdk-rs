@@ -4,7 +4,7 @@ use crate::tables::data::{FieldTypeId, Key, Value};
 use crate::tables::import::entry::raw::RawEntry;
 use crate::tables::import::field::raw::RawField;
 use crate::tables::import::traits::TableMetadata;
-use crate::tables::TableFields;
+use crate::tables::import::FieldInfo;
 use crate::tables::TableReader;
 use crate::tables::TableReaderImpl;
 use crate::tables::TableWriter;
@@ -12,8 +12,8 @@ use crate::tables::TableWriterImpl;
 use crate::tables::TablesInput;
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_rc_SS_PLUGIN_SUCCESS, ss_plugin_state_data, ss_plugin_state_type,
-    ss_plugin_table_entry_t, ss_plugin_table_field_t, ss_plugin_table_fieldinfo,
-    ss_plugin_table_iterator_func_t, ss_plugin_table_iterator_state_t, ss_plugin_table_t,
+    ss_plugin_table_entry_t, ss_plugin_table_field_t, ss_plugin_table_iterator_func_t,
+    ss_plugin_table_iterator_state_t, ss_plugin_table_t,
 };
 use num_traits::FromPrimitive;
 use std::ffi::CStr;
@@ -65,19 +65,22 @@ pub struct RawTable {
 
 impl RawTable {
     /// # List the available fields
-    ///
-    /// **Note**: this method is of limited utility in actual plugin code (you know the fields you
-    /// want to access), so it returns the unmodified structure from the plugin API, including
-    /// raw pointers to C-style strings. This may change later.
-    pub fn list_fields(&self, fields_vtable: &TableFields) -> &[ss_plugin_table_fieldinfo] {
+    pub fn list_fields(&self, tables_input: &TablesInput) -> &[FieldInfo] {
         let mut num_fields = 0u32;
-        let fields = fields_vtable
+        let fields = tables_input
+            .fields_ext
             .list_table_fields(self.table, &mut num_fields as *mut _)
-            .unwrap_or(std::ptr::null_mut());
+            .unwrap_or(std::ptr::null());
         if fields.is_null() {
             &[]
         } else {
-            unsafe { std::slice::from_raw_parts(fields, num_fields as usize) }
+            // SAFETY: the plugin API guarantees that `fields` is valid and points
+            // to an array of `num_fields` `ss_plugin_table_fieldinfo` elements.
+            // `FieldInfo` is a `#[repr(transparent)]` wrapper around
+            // `ss_plugin_table_fieldinfo`, so casting the pointer to `FieldInfo`
+            // preserves the layout, and `from_raw_parts` can build a slice over
+            // those `num_fields` elements.
+            unsafe { std::slice::from_raw_parts(fields.cast(), num_fields as usize) }
         }
     }
 

@@ -1,15 +1,15 @@
 use crate::tables::data::{seal, FieldTypeId, Key, TableData, Value};
-use crate::tables::import::entry;
 use crate::tables::import::field::Field;
 use crate::tables::import::runtime::NoMetadata;
 use crate::tables::import::runtime_table_validator::RuntimeTableValidator;
 use crate::tables::import::table::raw::{IterationResult, RawTable};
 use crate::tables::import::traits::{Entry, TableAccess, TableMetadata};
+use crate::tables::import::{entry, FieldInfo};
 use crate::tables::TableReader;
 use crate::tables::TableWriter;
 use crate::tables::TablesInput;
 use anyhow::Error;
-use falco_plugin_api::{ss_plugin_state_data, ss_plugin_table_field_t, ss_plugin_table_fieldinfo};
+use falco_plugin_api::{ss_plugin_state_data, ss_plugin_table_field_t};
 use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::ops::ControlFlow;
@@ -144,12 +144,8 @@ where
     }
 
     /// # List the available fields
-    ///
-    /// **Note**: this method is of limited utility in actual plugin code (you know the fields you
-    /// want to access), so it returns the unmodified structure from the plugin API, including
-    /// raw pointers to C-style strings. This may change later.
-    pub fn list_fields(&self, fields_vtable: &TablesInput) -> &[ss_plugin_table_fieldinfo] {
-        self.raw_table.list_fields(&fields_vtable.fields_ext)
+    pub fn list_fields(&self, tables_input: &TablesInput) -> &[FieldInfo] {
+        self.raw_table.list_fields(tables_input)
     }
 
     /// # Get a table field by name
