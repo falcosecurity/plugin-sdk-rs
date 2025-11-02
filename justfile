@@ -20,8 +20,9 @@ regen_api:
         --new-type-alias ss_plugin_routine_state_t --no-copy ss_plugin_routine_state_t \
         --no-debug 'ss_plugin_table_info|ss_plugin_table_fieldinfo' \
         --override-abi '.*=C-unwind' \
-        --blocklist-item imaxdiv_t \
-        --blocklist-item imaxdiv \
+        --allowlist-item plugin_api \
+        --allowlist-item 'ss_plugin_.*' \
+        --allowlist-item 'PLUGIN_.*' \
         -- -I. > src/ffi.rs
 
 update_api version: (pull_api version) regen_api
