@@ -323,6 +323,7 @@
 
 mod entry;
 mod field;
+mod field_info;
 mod macros;
 mod runtime;
 mod runtime_table_validator;
@@ -337,6 +338,7 @@ pub use crate::tables::data::Bool;
 pub use crate::tables::data::TableData;
 pub use entry::Entry;
 pub use field::Field;
+pub use field_info::FieldInfo;
 pub use runtime::RuntimeEntry;
 pub use table::Table;
 

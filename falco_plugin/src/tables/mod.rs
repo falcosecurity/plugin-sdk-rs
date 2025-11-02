@@ -139,7 +139,6 @@
 //! (in the main thread).
 
 pub use crate::tables::data::FieldTypeId;
-pub(crate) use vtable::fields::TableFields;
 pub(crate) use vtable::reader::private::TableReaderImpl;
 pub use vtable::reader::LazyTableReader;
 pub use vtable::reader::TableReader;

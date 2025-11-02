@@ -30,25 +30,28 @@ impl Plugin for ListFieldsPlugin {
         let remaining_table_import: RemainingCounterImportTable = input.get_table(c"remaining")?;
 
         let fields = remaining_table_import.list_fields(input);
+        let mut num_fields = 0;
         for field in fields {
-            let name = unsafe { CStr::from_ptr(field.name) };
-            let name = name.to_str()?;
-            match name {
+            match field.name() {
                 "remaining" => {
-                    anyhow::ensure!(field.read_only == 0);
-                    anyhow::ensure!(field.field_type as u64 == FieldTypeId::U64 as u64);
+                    anyhow::ensure!(field.read_only() == false);
+                    anyhow::ensure!(field.field_type() == Ok(FieldTypeId::U64));
+                    num_fields += 1;
                 }
                 "readonly" => {
-                    anyhow::ensure!(field.read_only == 1);
-                    anyhow::ensure!(field.field_type as u64 == FieldTypeId::U64 as u64);
+                    anyhow::ensure!(field.read_only() == true);
+                    anyhow::ensure!(field.field_type() == Ok(FieldTypeId::U64));
+                    num_fields += 1;
                 }
                 "countdown" => {
-                    anyhow::ensure!(field.read_only == 1);
-                    anyhow::ensure!(field.field_type as u64 == FieldTypeId::Table as u64);
+                    anyhow::ensure!(field.read_only() == true);
+                    anyhow::ensure!(field.field_type() == Ok(FieldTypeId::Table));
+                    num_fields += 1;
                 }
-                _ => println!("unknown field: {}", name),
+                name => panic!("unknown field: {name}"),
             }
         }
+        anyhow::ensure!(num_fields == 3);
 
         Ok(Self {
             remaining_table_import,
