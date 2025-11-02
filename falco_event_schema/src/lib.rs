@@ -2,6 +2,7 @@
 
 #[cfg(feature = "derive_deftly")]
 pub use derive_deftly;
+use std::ffi::CStr;
 
 /// All the types available in event fields
 pub mod fields;
@@ -26,3 +27,15 @@ pub mod ffi;
 
 #[cfg(test)]
 mod tests;
+
+/// The schema version supported by this crate
+///
+/// If you're not using the same version of falco_event_schema and falco_plugin, you need
+/// to expose this constant as `Plugin::SCHEMA_VERSION`.
+pub const SCHEMA_VERSION: &CStr = {
+    match CStr::from_bytes_with_nul(concat!(include_str!("../api/SCHEMA_VERSION"), "\0").as_bytes())
+    {
+        Ok(s) => s,
+        Err(_) => panic!("Failed to parse SCHEMA_VERSION: embedded null byte in string"),
+    }
+};

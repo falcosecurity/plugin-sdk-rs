@@ -1,4 +1,4 @@
-use falco_event_schema::events::PPME_SYSCALL_READ_E;
+use falco_event_schema::events::PPME_SYSCALL_READ_X;
 use falco_event_schema::fields::types::PT_FD;
 use falco_plugin::anyhow;
 use falco_plugin::anyhow::{Context, Error};
@@ -83,11 +83,11 @@ impl ParsePlugin for DummyPlugin {
         self.event_num += 1;
 
         // matching against a random(ish) event in kexec_x86.scap
-        if self.event_num == 1452 {
+        if self.event_num == 1088 {
             let event = event
                 .event()
                 .context(format!("loading raw event {})", self.event_num))?;
-            let event: Event<PPME_SYSCALL_READ_E> = event
+            let event: Event<PPME_SYSCALL_READ_X> = event
                 .load()
                 .context(format!("parsing event #{} {event:?}", self.event_num))?;
 
@@ -176,6 +176,7 @@ mod tests {
         loop {
             match driver.next_event() {
                 Ok(_) => continue,
+                Err(ScapStatus::Filtered) => continue,
                 Err(ScapStatus::Eof) => break,
                 Err(e) => panic!("{e:?}"),
             }

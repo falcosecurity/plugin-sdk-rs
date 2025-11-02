@@ -130,7 +130,8 @@ fn test_roundtrip_socktuple_v4() {
     "SOCKET_CONNECT_X": {
         "res": 0,
         "tuple": ["192.168.1.2", 8080, "192.168.88.1", 9090],
-        "fd": 1
+        "fd": 1,
+        "addr": null
     }
     }"#;
 
@@ -165,7 +166,8 @@ fn test_roundtrip_socktuple_v6() {
     "SOCKET_CONNECT_X": {
         "res": 0,
         "tuple": ["bad:beef:cafe::f00d", 8080, "f00d::c0ff:ee", 9090],
-        "fd": 1
+        "fd": 1,
+        "addr": null
     }
     }"#;
 
@@ -200,7 +202,8 @@ fn test_roundtrip_socktuple_unix() {
     "SOCKET_CONNECT_X": {
         "res": 0,
         "tuple": [12345, 67890, "/var/run/nscd/socket"],
-        "fd": 1
+        "fd": 1,
+        "addr": null
     }
     }"#;
 
@@ -238,7 +241,8 @@ fn test_roundtrip_socktuple_other() {
     "SOCKET_CONNECT_X": {
         "res": 0,
         "tuple": [7, "/var/run/nscd/socket"],
-        "fd": 1
+        "fd": 1,
+        "addr": null
     }
     }"#;
 

@@ -5,6 +5,7 @@ default:
 pull_api version:
     wget https://raw.githubusercontent.com/falcosecurity/libs/{{ version }}/userspace/plugin/plugin_types.h -O plugin/plugin_types.h
     wget https://raw.githubusercontent.com/falcosecurity/libs/{{ version }}/userspace/plugin/plugin_api.h -O plugin/plugin_api.h
+    wget https://raw.githubusercontent.com/falcosecurity/libs/{{ version }}/driver/SCHEMA_VERSION -O plugin/SCHEMA_VERSION
 
 [working-directory('falco_plugin_api')]
 regen_api:
@@ -34,6 +35,7 @@ pull_events version:
     wget https://raw.githubusercontent.com/falcosecurity/libs/{{ version }}/driver/event_table.c -O api/event_table.c
     wget https://raw.githubusercontent.com/falcosecurity/libs/{{ version }}/driver/flags_table.c -O api/flags_table.c
     wget https://raw.githubusercontent.com/falcosecurity/libs/{{ version }}/driver/dynamic_params_table.c -O api/dynamic_params_table.c
+    wget https://raw.githubusercontent.com/falcosecurity/libs/{{ version }}/driver/SCHEMA_VERSION -O api/SCHEMA_VERSION
     > api/feature_gates.h
 
 [working-directory('falco_event_schema')]

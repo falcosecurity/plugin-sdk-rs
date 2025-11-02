@@ -60,6 +60,9 @@ impl<P: Plugin> PluginWrapper<P> {
     }
 }
 
+/// # The latest schema supported by the current SDK version
+pub use falco_plugin_api::SCHEMA_VERSION as CURRENT_SCHEMA_VERSION;
+
 /// # A base trait for implementing Falco plugins
 ///
 /// There are several constants you need to set to describe the metadata for your plugin, described
@@ -107,6 +110,11 @@ pub trait Plugin: BasePluginExported + Sized {
     const DESCRIPTION: &'static CStr;
     /// a way to contact you with issues regarding the plugin, be it email or a website
     const CONTACT: &'static CStr;
+    /// the schema version supported by this plugin
+    ///
+    /// usually should just be left as the default, but you may need to override it
+    /// if you're using a different version of the falco_event_schema crate.
+    const SCHEMA_VERSION: &'static CStr = CURRENT_SCHEMA_VERSION;
 
     /// The plugin can be configured in three different ways. In all cases, an instance of the type
     /// you specify will be passed to the [`Plugin::new`] method.
