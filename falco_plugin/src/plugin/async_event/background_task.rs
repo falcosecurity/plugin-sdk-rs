@@ -3,16 +3,11 @@ use std::thread::JoinHandle;
 use std::time::Duration;
 
 /// A trivial enum to indicate the requested state of the async background task
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
 pub enum RequestedState {
     Running,
+    #[default]
     Stopped,
-}
-
-impl Default for RequestedState {
-    fn default() -> Self {
-        Self::Stopped
-    }
 }
 
 /// # A helper to periodically run a background task until shutdown is requested
