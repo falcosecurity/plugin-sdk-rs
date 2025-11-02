@@ -29,7 +29,7 @@ extern "C" {
 //
 // todo(jasondellaluce): when/if major changes to v4, check and solve all todos
 #define PLUGIN_API_VERSION_MAJOR 3
-#define PLUGIN_API_VERSION_MINOR 11
+#define PLUGIN_API_VERSION_MINOR 12
 #define PLUGIN_API_VERSION_PATCH 0
 
 //
@@ -45,6 +45,15 @@ extern "C" {
 // The max length of errors returned by a plugin in some of its API symbols.
 //
 #define PLUGIN_MAX_ERRLEN 1024
+
+// The offset in the event where a plugin event payload starts
+// Since the event payload is at a fixed offset, you can add this value
+// to the start of an extracted field within the payload to get the offset
+// from the start of the event.
+//
+// 26 bytes for the event header, plus 2*4 bytes for the parameter lengths,
+// plus 4 bytes for the plugin ID.
+#define PLUGIN_EVENT_PAYLOAD_OFFSET 38
 
 // Supported by the API but deprecated. Use the extended version ss_plugin_table_reader_vtable_ext
 // instead. todo(jasondellaluce): when/if major changes to v4, remove this and give this name to the
@@ -371,9 +380,13 @@ typedef struct ss_plugin_field_extract_input {
 	// Vtable for controlling a state table for read operations.
 	ss_plugin_table_reader_vtable_ext* table_reader_ext;
 
-	// An array of ss_plugin_extract_value_offsets structs. The start
-	// and length in each entry should be set to nullptr, and as with
-	// the "fields" member, memory pointers set as output must be
+	// An optional ss_plugin_extract_value_offsets struct. If set, the plugin
+	// is expected to allocate two arrays of size num_fields, one for
+	// the offsets and one for the lengths of the extracted values.
+	// The offsets are counted starting from the beginning of the event
+	// (including the header), and the lengths are the number of bytes
+	// that the extracted value occupies in the event data.
+	// As with the "fields" member, memory pointers set as output must be
 	// allocated by the plugin and must not be deallocated or modified
 	// until the next extract_fields() call.
 	// This member is optional, and might be ignored by extractors.
@@ -1131,6 +1144,19 @@ typedef struct {
 		// Return value: A ss_plugin_rc with values SS_PLUGIN_SUCCESS or SS_PLUGIN_FAILURE.
 		ss_plugin_rc (*capture_close)(ss_plugin_t* s, const ss_plugin_capture_listen_input* i);
 	};
+
+	// Event schema version check
+	//
+	// Return the minimum event schema version required by this plugin.
+	// Required: no
+	// Arguments:
+	// - s: the plugin state, returned by init(). Can be NULL.
+	// Return value: the event schema version string, in the following format:
+	//       "<major>.<minor>.<patch>", e.g. "4.0.0".
+	//       If the function is not implemented or NULL is returned, the plugin is assumed to be
+	//       compatible with schema version 3.0.0.
+	//
+	const char* (*get_required_event_schema_version)(ss_plugin_t* s);
 } plugin_api;
 
 #ifdef __cplusplus

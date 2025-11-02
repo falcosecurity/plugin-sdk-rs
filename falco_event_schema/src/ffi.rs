@@ -1787,7 +1787,9 @@ pub const ppm_sc_code_PPM_SC_LISTXATTRAT: ppm_sc_code = 445;
 pub const ppm_sc_code_PPM_SC_GETXATTRAT: ppm_sc_code = 446;
 pub const ppm_sc_code_PPM_SC_SETXATTRAT: ppm_sc_code = 447;
 pub const ppm_sc_code_PPM_SC_OPEN_TREE_ATTR: ppm_sc_code = 448;
-pub const ppm_sc_code_PPM_SC_MAX: ppm_sc_code = 449;
+pub const ppm_sc_code_PPM_SC_FILE_GETATTR: ppm_sc_code = 449;
+pub const ppm_sc_code_PPM_SC_FILE_SETATTR: ppm_sc_code = 450;
+pub const ppm_sc_code_PPM_SC_MAX: ppm_sc_code = 451;
 pub type ppm_sc_code = ::std::os::raw::c_uint;
 pub const ppm_event_category_EC_UNKNOWN: ppm_event_category = 0;
 pub const ppm_event_category_EC_OTHER: ppm_event_category = 1;
@@ -1826,7 +1828,7 @@ pub const ppm_event_flags_EF_WAITS: ppm_event_flags = 128;
 pub const ppm_event_flags_EF_SKIPPARSERESET: ppm_event_flags = 256;
 pub const ppm_event_flags_EF_OLD_VERSION: ppm_event_flags = 512;
 pub const ppm_event_flags_EF_LARGE_PAYLOAD: ppm_event_flags = 2048;
-pub const ppm_event_flags_EF_TMP_CONVERTER_MANAGED: ppm_event_flags = 4096;
+pub const ppm_event_flags_EF_CONVERTER_MANAGED: ppm_event_flags = 4096;
 pub type ppm_event_flags = ::std::os::raw::c_uint;
 pub const ppm_param_type_PT_NONE: ppm_param_type = 0;
 pub const ppm_param_type_PT_INT8: ppm_param_type = 1;
@@ -2218,190 +2220,169 @@ pub const ppm_filler_id_PPM_FILLER_sys_autofill: ppm_filler_id = 0;
 pub const ppm_filler_id_PPM_FILLER_sys_generic: ppm_filler_id = 1;
 pub const ppm_filler_id_PPM_FILLER_sys_empty: ppm_filler_id = 2;
 pub const ppm_filler_id_PPM_FILLER_sys_getcwd_x: ppm_filler_id = 3;
-pub const ppm_filler_id_PPM_FILLER_sys_getdents_e: ppm_filler_id = 4;
-pub const ppm_filler_id_PPM_FILLER_sys_getdents64_e: ppm_filler_id = 5;
+pub const ppm_filler_id_PPM_FILLER_sys_getdents_x: ppm_filler_id = 4;
+pub const ppm_filler_id_PPM_FILLER_sys_getdents64_x: ppm_filler_id = 5;
 pub const ppm_filler_id_PPM_FILLER_sys_single: ppm_filler_id = 6;
 pub const ppm_filler_id_PPM_FILLER_sys_single_x: ppm_filler_id = 7;
-pub const ppm_filler_id_PPM_FILLER_sys_fstat_e: ppm_filler_id = 8;
+pub const ppm_filler_id_PPM_FILLER_sys_fstat_x: ppm_filler_id = 8;
 pub const ppm_filler_id_PPM_FILLER_sys_open_e: ppm_filler_id = 9;
 pub const ppm_filler_id_PPM_FILLER_sys_open_x: ppm_filler_id = 10;
-pub const ppm_filler_id_PPM_FILLER_sys_read_e: ppm_filler_id = 11;
-pub const ppm_filler_id_PPM_FILLER_sys_read_x: ppm_filler_id = 12;
-pub const ppm_filler_id_PPM_FILLER_sys_write_e: ppm_filler_id = 13;
-pub const ppm_filler_id_PPM_FILLER_sys_write_x: ppm_filler_id = 14;
-pub const ppm_filler_id_PPM_FILLER_sys_execve_e: ppm_filler_id = 15;
-pub const ppm_filler_id_PPM_FILLER_proc_startupdate: ppm_filler_id = 16;
-pub const ppm_filler_id_PPM_FILLER_proc_startupdate_2: ppm_filler_id = 17;
-pub const ppm_filler_id_PPM_FILLER_proc_startupdate_3: ppm_filler_id = 18;
-pub const ppm_filler_id_PPM_FILLER_sys_socketpair_x: ppm_filler_id = 19;
-pub const ppm_filler_id_PPM_FILLER_sys_setsockopt_x: ppm_filler_id = 20;
-pub const ppm_filler_id_PPM_FILLER_sys_getsockopt_x: ppm_filler_id = 21;
-pub const ppm_filler_id_PPM_FILLER_sys_connect_x: ppm_filler_id = 22;
-pub const ppm_filler_id_PPM_FILLER_sys_accept4_e: ppm_filler_id = 23;
-pub const ppm_filler_id_PPM_FILLER_sys_accept_x: ppm_filler_id = 24;
-pub const ppm_filler_id_PPM_FILLER_sys_send_e: ppm_filler_id = 25;
-pub const ppm_filler_id_PPM_FILLER_sys_send_x: ppm_filler_id = 26;
-pub const ppm_filler_id_PPM_FILLER_sys_sendto_e: ppm_filler_id = 27;
-pub const ppm_filler_id_PPM_FILLER_sys_sendmsg_e: ppm_filler_id = 28;
-pub const ppm_filler_id_PPM_FILLER_sys_sendmsg_x: ppm_filler_id = 29;
-pub const ppm_filler_id_PPM_FILLER_sys_sendmmsg_x: ppm_filler_id = 30;
-pub const ppm_filler_id_PPM_FILLER_sys_sendmmsg_x_failure: ppm_filler_id = 31;
-pub const ppm_filler_id_PPM_FILLER_sys_recv_x: ppm_filler_id = 32;
-pub const ppm_filler_id_PPM_FILLER_sys_recvfrom_x: ppm_filler_id = 33;
-pub const ppm_filler_id_PPM_FILLER_sys_recvmsg_x: ppm_filler_id = 34;
-pub const ppm_filler_id_PPM_FILLER_sys_recvmsg_x_2: ppm_filler_id = 35;
-pub const ppm_filler_id_PPM_FILLER_sys_recvmmsg_x: ppm_filler_id = 36;
-pub const ppm_filler_id_PPM_FILLER_sys_recvmmsg_x_2: ppm_filler_id = 37;
-pub const ppm_filler_id_PPM_FILLER_sys_shutdown_e: ppm_filler_id = 38;
-pub const ppm_filler_id_PPM_FILLER_sys_creat_e: ppm_filler_id = 39;
-pub const ppm_filler_id_PPM_FILLER_sys_creat_x: ppm_filler_id = 40;
-pub const ppm_filler_id_PPM_FILLER_sys_pipe_x: ppm_filler_id = 41;
-pub const ppm_filler_id_PPM_FILLER_sys_eventfd_e: ppm_filler_id = 42;
-pub const ppm_filler_id_PPM_FILLER_sys_futex_e: ppm_filler_id = 43;
-pub const ppm_filler_id_PPM_FILLER_sys_lseek_e: ppm_filler_id = 44;
-pub const ppm_filler_id_PPM_FILLER_sys_llseek_e: ppm_filler_id = 45;
-pub const ppm_filler_id_PPM_FILLER_sys_socket_bind_x: ppm_filler_id = 46;
-pub const ppm_filler_id_PPM_FILLER_sys_poll_e: ppm_filler_id = 47;
-pub const ppm_filler_id_PPM_FILLER_sys_poll_x: ppm_filler_id = 48;
-pub const ppm_filler_id_PPM_FILLER_sys_pread64_e: ppm_filler_id = 49;
-pub const ppm_filler_id_PPM_FILLER_sys_writev_e: ppm_filler_id = 50;
-pub const ppm_filler_id_PPM_FILLER_sys_pwrite64_e: ppm_filler_id = 51;
-pub const ppm_filler_id_PPM_FILLER_sys_readv_e: ppm_filler_id = 52;
-pub const ppm_filler_id_PPM_FILLER_sys_preadv_e: ppm_filler_id = 53;
-pub const ppm_filler_id_PPM_FILLER_sys_readv_preadv_x: ppm_filler_id = 54;
-pub const ppm_filler_id_PPM_FILLER_sys_writev_pwritev_x: ppm_filler_id = 55;
-pub const ppm_filler_id_PPM_FILLER_sys_pwritev_e: ppm_filler_id = 56;
-pub const ppm_filler_id_PPM_FILLER_sys_nanosleep_e: ppm_filler_id = 57;
-pub const ppm_filler_id_PPM_FILLER_sys_getrlimit_setrlimit_e: ppm_filler_id = 58;
-pub const ppm_filler_id_PPM_FILLER_sys_getrlimit_x: ppm_filler_id = 59;
-pub const ppm_filler_id_PPM_FILLER_sys_setrlimit_x: ppm_filler_id = 60;
-pub const ppm_filler_id_PPM_FILLER_sys_prlimit_e: ppm_filler_id = 61;
-pub const ppm_filler_id_PPM_FILLER_sys_prlimit_x: ppm_filler_id = 62;
-pub const ppm_filler_id_PPM_FILLER_sched_switch_e: ppm_filler_id = 63;
-pub const ppm_filler_id_PPM_FILLER_sched_drop: ppm_filler_id = 64;
-pub const ppm_filler_id_PPM_FILLER_sys_fcntl_e: ppm_filler_id = 65;
-pub const ppm_filler_id_PPM_FILLER_sys_fcntl_x: ppm_filler_id = 66;
-pub const ppm_filler_id_PPM_FILLER_sys_ptrace_e: ppm_filler_id = 67;
-pub const ppm_filler_id_PPM_FILLER_sys_ptrace_x: ppm_filler_id = 68;
-pub const ppm_filler_id_PPM_FILLER_sys_mmap_e: ppm_filler_id = 69;
-pub const ppm_filler_id_PPM_FILLER_sys_brk_munmap_mmap_x: ppm_filler_id = 70;
-pub const ppm_filler_id_PPM_FILLER_sys_renameat_x: ppm_filler_id = 71;
-pub const ppm_filler_id_PPM_FILLER_sys_renameat2_x: ppm_filler_id = 72;
-pub const ppm_filler_id_PPM_FILLER_sys_symlinkat_x: ppm_filler_id = 73;
-pub const ppm_filler_id_PPM_FILLER_sys_procexit_e: ppm_filler_id = 74;
-pub const ppm_filler_id_PPM_FILLER_sys_sendfile_e: ppm_filler_id = 75;
-pub const ppm_filler_id_PPM_FILLER_sys_sendfile_x: ppm_filler_id = 76;
-pub const ppm_filler_id_PPM_FILLER_sys_quotactl_e: ppm_filler_id = 77;
-pub const ppm_filler_id_PPM_FILLER_sys_quotactl_x: ppm_filler_id = 78;
-pub const ppm_filler_id_PPM_FILLER_sys_scapevent_e: ppm_filler_id = 79;
-pub const ppm_filler_id_PPM_FILLER_sys_getresuid_and_gid_x: ppm_filler_id = 80;
-pub const ppm_filler_id_PPM_FILLER_sys_signaldeliver_e: ppm_filler_id = 81;
-pub const ppm_filler_id_PPM_FILLER_sys_pagefault_e: ppm_filler_id = 82;
-pub const ppm_filler_id_PPM_FILLER_sys_setns_e: ppm_filler_id = 83;
-pub const ppm_filler_id_PPM_FILLER_sys_unshare_e: ppm_filler_id = 84;
-pub const ppm_filler_id_PPM_FILLER_sys_flock_e: ppm_filler_id = 85;
-pub const ppm_filler_id_PPM_FILLER_cpu_hotplug_e: ppm_filler_id = 86;
-pub const ppm_filler_id_PPM_FILLER_sys_semop_x: ppm_filler_id = 87;
-pub const ppm_filler_id_PPM_FILLER_sys_semget_e: ppm_filler_id = 88;
-pub const ppm_filler_id_PPM_FILLER_sys_semctl_e: ppm_filler_id = 89;
-pub const ppm_filler_id_PPM_FILLER_sys_ppoll_e: ppm_filler_id = 90;
-pub const ppm_filler_id_PPM_FILLER_sys_mount_e: ppm_filler_id = 91;
-pub const ppm_filler_id_PPM_FILLER_sys_access_e: ppm_filler_id = 92;
-pub const ppm_filler_id_PPM_FILLER_sys_socket_x: ppm_filler_id = 93;
-pub const ppm_filler_id_PPM_FILLER_sys_bpf_x: ppm_filler_id = 94;
-pub const ppm_filler_id_PPM_FILLER_sys_unlinkat_x: ppm_filler_id = 95;
-pub const ppm_filler_id_PPM_FILLER_sys_fchmodat_x: ppm_filler_id = 96;
-pub const ppm_filler_id_PPM_FILLER_sys_chmod_x: ppm_filler_id = 97;
-pub const ppm_filler_id_PPM_FILLER_sys_fchmod_x: ppm_filler_id = 98;
-pub const ppm_filler_id_PPM_FILLER_sys_chown_x: ppm_filler_id = 99;
-pub const ppm_filler_id_PPM_FILLER_sys_lchown_x: ppm_filler_id = 100;
-pub const ppm_filler_id_PPM_FILLER_sys_fchown_x: ppm_filler_id = 101;
-pub const ppm_filler_id_PPM_FILLER_sys_fchownat_x: ppm_filler_id = 102;
-pub const ppm_filler_id_PPM_FILLER_sys_mkdirat_x: ppm_filler_id = 103;
-pub const ppm_filler_id_PPM_FILLER_sys_openat_e: ppm_filler_id = 104;
-pub const ppm_filler_id_PPM_FILLER_sys_openat_x: ppm_filler_id = 105;
-pub const ppm_filler_id_PPM_FILLER_sys_openat2_e: ppm_filler_id = 106;
-pub const ppm_filler_id_PPM_FILLER_sys_openat2_x: ppm_filler_id = 107;
-pub const ppm_filler_id_PPM_FILLER_sys_linkat_x: ppm_filler_id = 108;
-pub const ppm_filler_id_PPM_FILLER_sys_mprotect_e: ppm_filler_id = 109;
-pub const ppm_filler_id_PPM_FILLER_sys_mprotect_x: ppm_filler_id = 110;
-pub const ppm_filler_id_PPM_FILLER_sys_execveat_e: ppm_filler_id = 111;
-pub const ppm_filler_id_PPM_FILLER_execve_extra_tail_1: ppm_filler_id = 112;
-pub const ppm_filler_id_PPM_FILLER_execve_extra_tail_2: ppm_filler_id = 113;
-pub const ppm_filler_id_PPM_FILLER_sys_copy_file_range_e: ppm_filler_id = 114;
-pub const ppm_filler_id_PPM_FILLER_sys_copy_file_range_x: ppm_filler_id = 115;
-pub const ppm_filler_id_PPM_FILLER_sys_connect_e: ppm_filler_id = 116;
-pub const ppm_filler_id_PPM_FILLER_sys_open_by_handle_at_x: ppm_filler_id = 117;
-pub const ppm_filler_id_PPM_FILLER_open_by_handle_at_x_extra_tail_1: ppm_filler_id = 118;
-pub const ppm_filler_id_PPM_FILLER_sys_io_uring_setup_x: ppm_filler_id = 119;
-pub const ppm_filler_id_PPM_FILLER_sys_io_uring_enter_x: ppm_filler_id = 120;
-pub const ppm_filler_id_PPM_FILLER_sys_io_uring_register_x: ppm_filler_id = 121;
-pub const ppm_filler_id_PPM_FILLER_sys_mlock_x: ppm_filler_id = 122;
-pub const ppm_filler_id_PPM_FILLER_sys_munlock_x: ppm_filler_id = 123;
-pub const ppm_filler_id_PPM_FILLER_sys_mlockall_x: ppm_filler_id = 124;
-pub const ppm_filler_id_PPM_FILLER_sys_munlockall_x: ppm_filler_id = 125;
-pub const ppm_filler_id_PPM_FILLER_sys_capset_x: ppm_filler_id = 126;
-pub const ppm_filler_id_PPM_FILLER_sys_dup2_e: ppm_filler_id = 127;
-pub const ppm_filler_id_PPM_FILLER_sys_dup2_x: ppm_filler_id = 128;
-pub const ppm_filler_id_PPM_FILLER_sys_dup3_e: ppm_filler_id = 129;
-pub const ppm_filler_id_PPM_FILLER_sys_dup3_x: ppm_filler_id = 130;
-pub const ppm_filler_id_PPM_FILLER_sys_dup_e: ppm_filler_id = 131;
-pub const ppm_filler_id_PPM_FILLER_sys_dup_x: ppm_filler_id = 132;
-pub const ppm_filler_id_PPM_FILLER_sched_prog_exec: ppm_filler_id = 133;
-pub const ppm_filler_id_PPM_FILLER_sched_prog_exec_2: ppm_filler_id = 134;
-pub const ppm_filler_id_PPM_FILLER_sched_prog_exec_3: ppm_filler_id = 135;
-pub const ppm_filler_id_PPM_FILLER_sched_prog_exec_4: ppm_filler_id = 136;
-pub const ppm_filler_id_PPM_FILLER_sched_prog_exec_5: ppm_filler_id = 137;
-pub const ppm_filler_id_PPM_FILLER_sched_prog_fork: ppm_filler_id = 138;
-pub const ppm_filler_id_PPM_FILLER_sched_prog_fork_2: ppm_filler_id = 139;
-pub const ppm_filler_id_PPM_FILLER_sched_prog_fork_3: ppm_filler_id = 140;
-pub const ppm_filler_id_PPM_FILLER_sys_mlock2_x: ppm_filler_id = 141;
-pub const ppm_filler_id_PPM_FILLER_sys_fsconfig_x: ppm_filler_id = 142;
-pub const ppm_filler_id_PPM_FILLER_sys_epoll_create_e: ppm_filler_id = 143;
-pub const ppm_filler_id_PPM_FILLER_sys_epoll_create_x: ppm_filler_id = 144;
-pub const ppm_filler_id_PPM_FILLER_sys_epoll_create1_e: ppm_filler_id = 145;
-pub const ppm_filler_id_PPM_FILLER_sys_epoll_create1_x: ppm_filler_id = 146;
-pub const ppm_filler_id_PPM_FILLER_sys_socket_bind_e: ppm_filler_id = 147;
-pub const ppm_filler_id_PPM_FILLER_sys_bpf_e: ppm_filler_id = 148;
-pub const ppm_filler_id_PPM_FILLER_sys_close_e: ppm_filler_id = 149;
-pub const ppm_filler_id_PPM_FILLER_sys_close_x: ppm_filler_id = 150;
-pub const ppm_filler_id_PPM_FILLER_sys_fchdir_e: ppm_filler_id = 151;
-pub const ppm_filler_id_PPM_FILLER_sys_fchdir_x: ppm_filler_id = 152;
-pub const ppm_filler_id_PPM_FILLER_sys_ioctl_e: ppm_filler_id = 153;
-pub const ppm_filler_id_PPM_FILLER_sys_mkdir_e: ppm_filler_id = 154;
-pub const ppm_filler_id_PPM_FILLER_sys_setpgid_e: ppm_filler_id = 155;
-pub const ppm_filler_id_PPM_FILLER_sys_recvfrom_e: ppm_filler_id = 156;
-pub const ppm_filler_id_PPM_FILLER_sys_recvmsg_e: ppm_filler_id = 157;
-pub const ppm_filler_id_PPM_FILLER_sys_listen_e: ppm_filler_id = 158;
-pub const ppm_filler_id_PPM_FILLER_sys_listen_x: ppm_filler_id = 159;
-pub const ppm_filler_id_PPM_FILLER_sys_signalfd_e: ppm_filler_id = 160;
-pub const ppm_filler_id_PPM_FILLER_sys_splice_e: ppm_filler_id = 161;
-pub const ppm_filler_id_PPM_FILLER_sys_umount_x: ppm_filler_id = 162;
-pub const ppm_filler_id_PPM_FILLER_sys_umount2_e: ppm_filler_id = 163;
-pub const ppm_filler_id_PPM_FILLER_sys_umount2_x: ppm_filler_id = 164;
-pub const ppm_filler_id_PPM_FILLER_sys_pipe2_x: ppm_filler_id = 165;
-pub const ppm_filler_id_PPM_FILLER_sys_inotify_init_e: ppm_filler_id = 166;
-pub const ppm_filler_id_PPM_FILLER_sys_inotify_init1_x: ppm_filler_id = 167;
-pub const ppm_filler_id_PPM_FILLER_sys_eventfd2_e: ppm_filler_id = 168;
-pub const ppm_filler_id_PPM_FILLER_sys_eventfd2_x: ppm_filler_id = 169;
-pub const ppm_filler_id_PPM_FILLER_sys_signalfd4_e: ppm_filler_id = 170;
-pub const ppm_filler_id_PPM_FILLER_sys_signalfd4_x: ppm_filler_id = 171;
-pub const ppm_filler_id_PPM_FILLER_sys_prctl_x: ppm_filler_id = 172;
-pub const ppm_filler_id_PPM_FILLER_sys_memfd_create_x: ppm_filler_id = 173;
-pub const ppm_filler_id_PPM_FILLER_sys_pidfd_getfd_x: ppm_filler_id = 174;
-pub const ppm_filler_id_PPM_FILLER_sys_pidfd_open_x: ppm_filler_id = 175;
-pub const ppm_filler_id_PPM_FILLER_sys_init_module_x: ppm_filler_id = 176;
-pub const ppm_filler_id_PPM_FILLER_sys_finit_module_x: ppm_filler_id = 177;
-pub const ppm_filler_id_PPM_FILLER_sys_mknod_x: ppm_filler_id = 178;
-pub const ppm_filler_id_PPM_FILLER_sys_mknodat_x: ppm_filler_id = 179;
-pub const ppm_filler_id_PPM_FILLER_sys_newfstatat_x: ppm_filler_id = 180;
-pub const ppm_filler_id_PPM_FILLER_sys_process_vm_readv_x: ppm_filler_id = 181;
-pub const ppm_filler_id_PPM_FILLER_sys_process_vm_writev_x: ppm_filler_id = 182;
-pub const ppm_filler_id_PPM_FILLER_sys_delete_module_x: ppm_filler_id = 183;
-pub const ppm_filler_id_PPM_FILLER_sys_pread64_x: ppm_filler_id = 184;
-pub const ppm_filler_id_PPM_FILLER_sys_pwrite64_x: ppm_filler_id = 185;
-pub const ppm_filler_id_PPM_FILLER_terminate_filler: ppm_filler_id = 186;
-pub const ppm_filler_id_PPM_FILLER_MAX: ppm_filler_id = 187;
+pub const ppm_filler_id_PPM_FILLER_sys_read_x: ppm_filler_id = 11;
+pub const ppm_filler_id_PPM_FILLER_sys_write_x: ppm_filler_id = 12;
+pub const ppm_filler_id_PPM_FILLER_proc_startupdate: ppm_filler_id = 13;
+pub const ppm_filler_id_PPM_FILLER_proc_startupdate_2: ppm_filler_id = 14;
+pub const ppm_filler_id_PPM_FILLER_proc_startupdate_3: ppm_filler_id = 15;
+pub const ppm_filler_id_PPM_FILLER_sys_socketpair_x: ppm_filler_id = 16;
+pub const ppm_filler_id_PPM_FILLER_sys_setsockopt_x: ppm_filler_id = 17;
+pub const ppm_filler_id_PPM_FILLER_sys_getsockopt_x: ppm_filler_id = 18;
+pub const ppm_filler_id_PPM_FILLER_sys_connect_x: ppm_filler_id = 19;
+pub const ppm_filler_id_PPM_FILLER_sys_accept4_x: ppm_filler_id = 20;
+pub const ppm_filler_id_PPM_FILLER_sys_accept_x: ppm_filler_id = 21;
+pub const ppm_filler_id_PPM_FILLER_sys_send_x: ppm_filler_id = 22;
+pub const ppm_filler_id_PPM_FILLER_sys_sendto_x: ppm_filler_id = 23;
+pub const ppm_filler_id_PPM_FILLER_sys_sendmsg_x: ppm_filler_id = 24;
+pub const ppm_filler_id_PPM_FILLER_sys_sendmsg_x_2: ppm_filler_id = 25;
+pub const ppm_filler_id_PPM_FILLER_sys_sendmmsg_x: ppm_filler_id = 26;
+pub const ppm_filler_id_PPM_FILLER_sys_sendmmsg_x_failure: ppm_filler_id = 27;
+pub const ppm_filler_id_PPM_FILLER_sys_recv_x: ppm_filler_id = 28;
+pub const ppm_filler_id_PPM_FILLER_sys_recvfrom_x: ppm_filler_id = 29;
+pub const ppm_filler_id_PPM_FILLER_sys_recvmsg_x: ppm_filler_id = 30;
+pub const ppm_filler_id_PPM_FILLER_sys_recvmsg_x_2: ppm_filler_id = 31;
+pub const ppm_filler_id_PPM_FILLER_sys_recvmmsg_x: ppm_filler_id = 32;
+pub const ppm_filler_id_PPM_FILLER_sys_recvmmsg_x_2: ppm_filler_id = 33;
+pub const ppm_filler_id_PPM_FILLER_sys_shutdown_x: ppm_filler_id = 34;
+pub const ppm_filler_id_PPM_FILLER_sys_creat_e: ppm_filler_id = 35;
+pub const ppm_filler_id_PPM_FILLER_sys_creat_x: ppm_filler_id = 36;
+pub const ppm_filler_id_PPM_FILLER_sys_pipe_x: ppm_filler_id = 37;
+pub const ppm_filler_id_PPM_FILLER_sys_eventfd_x: ppm_filler_id = 38;
+pub const ppm_filler_id_PPM_FILLER_sys_futex_x: ppm_filler_id = 39;
+pub const ppm_filler_id_PPM_FILLER_sys_lseek_x: ppm_filler_id = 40;
+pub const ppm_filler_id_PPM_FILLER_sys_llseek_x: ppm_filler_id = 41;
+pub const ppm_filler_id_PPM_FILLER_sys_socket_bind_x: ppm_filler_id = 42;
+pub const ppm_filler_id_PPM_FILLER_sys_poll_x: ppm_filler_id = 43;
+pub const ppm_filler_id_PPM_FILLER_sys_writev_x: ppm_filler_id = 44;
+pub const ppm_filler_id_PPM_FILLER_sys_readv_x: ppm_filler_id = 45;
+pub const ppm_filler_id_PPM_FILLER_sys_preadv_x: ppm_filler_id = 46;
+pub const ppm_filler_id_PPM_FILLER_sys_readv_preadv_x: ppm_filler_id = 47;
+pub const ppm_filler_id_PPM_FILLER_sys_pwritev_x: ppm_filler_id = 48;
+pub const ppm_filler_id_PPM_FILLER_sys_nanosleep_x: ppm_filler_id = 49;
+pub const ppm_filler_id_PPM_FILLER_sys_getrlimit_x: ppm_filler_id = 50;
+pub const ppm_filler_id_PPM_FILLER_sys_setrlimit_x: ppm_filler_id = 51;
+pub const ppm_filler_id_PPM_FILLER_sys_prlimit_x: ppm_filler_id = 52;
+pub const ppm_filler_id_PPM_FILLER_sched_switch_e: ppm_filler_id = 53;
+pub const ppm_filler_id_PPM_FILLER_sched_drop: ppm_filler_id = 54;
+pub const ppm_filler_id_PPM_FILLER_sys_fcntl_x: ppm_filler_id = 55;
+pub const ppm_filler_id_PPM_FILLER_sys_ptrace_x: ppm_filler_id = 56;
+pub const ppm_filler_id_PPM_FILLER_sys_mmap_x: ppm_filler_id = 57;
+pub const ppm_filler_id_PPM_FILLER_sys_mmap2_x: ppm_filler_id = 58;
+pub const ppm_filler_id_PPM_FILLER_sys_brk_x: ppm_filler_id = 59;
+pub const ppm_filler_id_PPM_FILLER_sys_munmap_x: ppm_filler_id = 60;
+pub const ppm_filler_id_PPM_FILLER_sys_renameat_x: ppm_filler_id = 61;
+pub const ppm_filler_id_PPM_FILLER_sys_renameat2_x: ppm_filler_id = 62;
+pub const ppm_filler_id_PPM_FILLER_sys_symlinkat_x: ppm_filler_id = 63;
+pub const ppm_filler_id_PPM_FILLER_sys_procexit_e: ppm_filler_id = 64;
+pub const ppm_filler_id_PPM_FILLER_sys_sendfile_x: ppm_filler_id = 65;
+pub const ppm_filler_id_PPM_FILLER_sys_quotactl_x: ppm_filler_id = 66;
+pub const ppm_filler_id_PPM_FILLER_sys_getresuid_and_gid_x: ppm_filler_id = 67;
+pub const ppm_filler_id_PPM_FILLER_sys_signaldeliver_e: ppm_filler_id = 68;
+pub const ppm_filler_id_PPM_FILLER_sys_pagefault_e: ppm_filler_id = 69;
+pub const ppm_filler_id_PPM_FILLER_sys_setns_x: ppm_filler_id = 70;
+pub const ppm_filler_id_PPM_FILLER_sys_unshare_x: ppm_filler_id = 71;
+pub const ppm_filler_id_PPM_FILLER_sys_flock_x: ppm_filler_id = 72;
+pub const ppm_filler_id_PPM_FILLER_cpu_hotplug_e: ppm_filler_id = 73;
+pub const ppm_filler_id_PPM_FILLER_sys_semop_x: ppm_filler_id = 74;
+pub const ppm_filler_id_PPM_FILLER_sys_semget_x: ppm_filler_id = 75;
+pub const ppm_filler_id_PPM_FILLER_sys_semctl_x: ppm_filler_id = 76;
+pub const ppm_filler_id_PPM_FILLER_sys_ppoll_x: ppm_filler_id = 77;
+pub const ppm_filler_id_PPM_FILLER_sys_mount_x: ppm_filler_id = 78;
+pub const ppm_filler_id_PPM_FILLER_sys_access_x: ppm_filler_id = 79;
+pub const ppm_filler_id_PPM_FILLER_sys_socket_x: ppm_filler_id = 80;
+pub const ppm_filler_id_PPM_FILLER_sys_bpf_x: ppm_filler_id = 81;
+pub const ppm_filler_id_PPM_FILLER_sys_seccomp_x: ppm_filler_id = 82;
+pub const ppm_filler_id_PPM_FILLER_sys_unlinkat_x: ppm_filler_id = 83;
+pub const ppm_filler_id_PPM_FILLER_sys_fchmodat_x: ppm_filler_id = 84;
+pub const ppm_filler_id_PPM_FILLER_sys_chmod_x: ppm_filler_id = 85;
+pub const ppm_filler_id_PPM_FILLER_sys_fchmod_x: ppm_filler_id = 86;
+pub const ppm_filler_id_PPM_FILLER_sys_chown_x: ppm_filler_id = 87;
+pub const ppm_filler_id_PPM_FILLER_sys_lchown_x: ppm_filler_id = 88;
+pub const ppm_filler_id_PPM_FILLER_sys_fchown_x: ppm_filler_id = 89;
+pub const ppm_filler_id_PPM_FILLER_sys_fchownat_x: ppm_filler_id = 90;
+pub const ppm_filler_id_PPM_FILLER_sys_mkdirat_x: ppm_filler_id = 91;
+pub const ppm_filler_id_PPM_FILLER_sys_openat_e: ppm_filler_id = 92;
+pub const ppm_filler_id_PPM_FILLER_sys_openat_x: ppm_filler_id = 93;
+pub const ppm_filler_id_PPM_FILLER_sys_openat2_e: ppm_filler_id = 94;
+pub const ppm_filler_id_PPM_FILLER_sys_openat2_x: ppm_filler_id = 95;
+pub const ppm_filler_id_PPM_FILLER_sys_linkat_x: ppm_filler_id = 96;
+pub const ppm_filler_id_PPM_FILLER_sys_mprotect_x: ppm_filler_id = 97;
+pub const ppm_filler_id_PPM_FILLER_execve_extra_tail_1: ppm_filler_id = 98;
+pub const ppm_filler_id_PPM_FILLER_execve_extra_tail_2: ppm_filler_id = 99;
+pub const ppm_filler_id_PPM_FILLER_sys_copy_file_range_x: ppm_filler_id = 100;
+pub const ppm_filler_id_PPM_FILLER_sys_connect_e: ppm_filler_id = 101;
+pub const ppm_filler_id_PPM_FILLER_sys_open_by_handle_at_x: ppm_filler_id = 102;
+pub const ppm_filler_id_PPM_FILLER_open_by_handle_at_x_extra_tail_1: ppm_filler_id = 103;
+pub const ppm_filler_id_PPM_FILLER_sys_io_uring_setup_x: ppm_filler_id = 104;
+pub const ppm_filler_id_PPM_FILLER_sys_io_uring_enter_x: ppm_filler_id = 105;
+pub const ppm_filler_id_PPM_FILLER_sys_io_uring_register_x: ppm_filler_id = 106;
+pub const ppm_filler_id_PPM_FILLER_sys_mlock_x: ppm_filler_id = 107;
+pub const ppm_filler_id_PPM_FILLER_sys_munlock_x: ppm_filler_id = 108;
+pub const ppm_filler_id_PPM_FILLER_sys_mlockall_x: ppm_filler_id = 109;
+pub const ppm_filler_id_PPM_FILLER_sys_munlockall_x: ppm_filler_id = 110;
+pub const ppm_filler_id_PPM_FILLER_sys_capset_x: ppm_filler_id = 111;
+pub const ppm_filler_id_PPM_FILLER_sys_dup2_x: ppm_filler_id = 112;
+pub const ppm_filler_id_PPM_FILLER_sys_dup3_x: ppm_filler_id = 113;
+pub const ppm_filler_id_PPM_FILLER_sys_dup_x: ppm_filler_id = 114;
+pub const ppm_filler_id_PPM_FILLER_sched_prog_exec: ppm_filler_id = 115;
+pub const ppm_filler_id_PPM_FILLER_sched_prog_exec_2: ppm_filler_id = 116;
+pub const ppm_filler_id_PPM_FILLER_sched_prog_exec_3: ppm_filler_id = 117;
+pub const ppm_filler_id_PPM_FILLER_sched_prog_exec_4: ppm_filler_id = 118;
+pub const ppm_filler_id_PPM_FILLER_sched_prog_exec_5: ppm_filler_id = 119;
+pub const ppm_filler_id_PPM_FILLER_sched_prog_fork: ppm_filler_id = 120;
+pub const ppm_filler_id_PPM_FILLER_sched_prog_fork_2: ppm_filler_id = 121;
+pub const ppm_filler_id_PPM_FILLER_sched_prog_fork_3: ppm_filler_id = 122;
+pub const ppm_filler_id_PPM_FILLER_sys_mlock2_x: ppm_filler_id = 123;
+pub const ppm_filler_id_PPM_FILLER_sys_fsconfig_x: ppm_filler_id = 124;
+pub const ppm_filler_id_PPM_FILLER_sys_epoll_create_x: ppm_filler_id = 125;
+pub const ppm_filler_id_PPM_FILLER_sys_epoll_create1_x: ppm_filler_id = 126;
+pub const ppm_filler_id_PPM_FILLER_sys_epoll_wait_x: ppm_filler_id = 127;
+pub const ppm_filler_id_PPM_FILLER_sys_close_x: ppm_filler_id = 128;
+pub const ppm_filler_id_PPM_FILLER_sys_fchdir_x: ppm_filler_id = 129;
+pub const ppm_filler_id_PPM_FILLER_sys_ioctl_x: ppm_filler_id = 130;
+pub const ppm_filler_id_PPM_FILLER_sys_mkdir_x: ppm_filler_id = 131;
+pub const ppm_filler_id_PPM_FILLER_sys_setgid_x: ppm_filler_id = 132;
+pub const ppm_filler_id_PPM_FILLER_sys_setpgid_x: ppm_filler_id = 133;
+pub const ppm_filler_id_PPM_FILLER_sys_setresgid_x: ppm_filler_id = 134;
+pub const ppm_filler_id_PPM_FILLER_sys_listen_x: ppm_filler_id = 135;
+pub const ppm_filler_id_PPM_FILLER_sys_signalfd_x: ppm_filler_id = 136;
+pub const ppm_filler_id_PPM_FILLER_sys_splice_x: ppm_filler_id = 137;
+pub const ppm_filler_id_PPM_FILLER_sys_umount_x: ppm_filler_id = 138;
+pub const ppm_filler_id_PPM_FILLER_sys_umount2_x: ppm_filler_id = 139;
+pub const ppm_filler_id_PPM_FILLER_sys_pipe2_x: ppm_filler_id = 140;
+pub const ppm_filler_id_PPM_FILLER_sys_timerfd_create_x: ppm_filler_id = 141;
+pub const ppm_filler_id_PPM_FILLER_sys_inotify_init_x: ppm_filler_id = 142;
+pub const ppm_filler_id_PPM_FILLER_sys_inotify_init1_x: ppm_filler_id = 143;
+pub const ppm_filler_id_PPM_FILLER_sys_eventfd2_x: ppm_filler_id = 144;
+pub const ppm_filler_id_PPM_FILLER_sys_signalfd4_x: ppm_filler_id = 145;
+pub const ppm_filler_id_PPM_FILLER_sys_kill_x: ppm_filler_id = 146;
+pub const ppm_filler_id_PPM_FILLER_sys_tkill_x: ppm_filler_id = 147;
+pub const ppm_filler_id_PPM_FILLER_sys_tgkill_x: ppm_filler_id = 148;
+pub const ppm_filler_id_PPM_FILLER_sys_prctl_x: ppm_filler_id = 149;
+pub const ppm_filler_id_PPM_FILLER_sys_memfd_create_x: ppm_filler_id = 150;
+pub const ppm_filler_id_PPM_FILLER_sys_pidfd_getfd_x: ppm_filler_id = 151;
+pub const ppm_filler_id_PPM_FILLER_sys_pidfd_open_x: ppm_filler_id = 152;
+pub const ppm_filler_id_PPM_FILLER_sys_init_module_x: ppm_filler_id = 153;
+pub const ppm_filler_id_PPM_FILLER_sys_finit_module_x: ppm_filler_id = 154;
+pub const ppm_filler_id_PPM_FILLER_sys_mknod_x: ppm_filler_id = 155;
+pub const ppm_filler_id_PPM_FILLER_sys_mknodat_x: ppm_filler_id = 156;
+pub const ppm_filler_id_PPM_FILLER_sys_newfstatat_x: ppm_filler_id = 157;
+pub const ppm_filler_id_PPM_FILLER_sys_process_vm_readv_x: ppm_filler_id = 158;
+pub const ppm_filler_id_PPM_FILLER_sys_process_vm_writev_x: ppm_filler_id = 159;
+pub const ppm_filler_id_PPM_FILLER_sys_delete_module_x: ppm_filler_id = 160;
+pub const ppm_filler_id_PPM_FILLER_sys_pread64_x: ppm_filler_id = 161;
+pub const ppm_filler_id_PPM_FILLER_sys_pwrite64_x: ppm_filler_id = 162;
+pub const ppm_filler_id_PPM_FILLER_sys_setuid_x: ppm_filler_id = 163;
+pub const ppm_filler_id_PPM_FILLER_sys_setresuid_x: ppm_filler_id = 164;
+pub const ppm_filler_id_PPM_FILLER_terminate_filler: ppm_filler_id = 165;
+pub const ppm_filler_id_PPM_FILLER_MAX: ppm_filler_id = 166;
 pub type ppm_filler_id = ::std::os::raw::c_uint;
 unsafe extern "C" {
     pub fn f_sys_autofill(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2416,10 +2397,10 @@ unsafe extern "C" {
     pub fn f_sys_getcwd_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_getdents_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_getdents_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_getdents64_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_getdents64_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_single(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2428,7 +2409,7 @@ unsafe extern "C" {
     pub fn f_sys_single_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_fstat_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_fstat_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_open_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2437,19 +2418,10 @@ unsafe extern "C" {
     pub fn f_sys_open_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_read_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_read_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_write_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_write_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_execve_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_proc_startupdate(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2473,25 +2445,22 @@ unsafe extern "C" {
     pub fn f_sys_connect_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_accept4_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_accept4_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_accept_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_send_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_send_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_sendto_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_sendmsg_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_sendto_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_sendmsg_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_sendmsg_x_2(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_sendmmsg_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2518,7 +2487,7 @@ unsafe extern "C" {
     pub fn f_sys_recvmmsg_x_2(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_shutdown_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_shutdown_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_creat_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2530,64 +2499,46 @@ unsafe extern "C" {
     pub fn f_sys_pipe_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_eventfd_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_eventfd_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_futex_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_futex_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_lseek_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_lseek_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_llseek_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_llseek_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_socket_bind_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_poll_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_poll_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_pread64_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_writev_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_writev_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_readv_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_pwrite64_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_readv_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_preadv_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_preadv_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_readv_preadv_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_writev_pwritev_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_pwritev_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_pwritev_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_nanosleep_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_getrlimit_setrlimit_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_nanosleep_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_getrlimit_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_setrlimit_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_prlimit_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_prlimit_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2599,22 +2550,22 @@ unsafe extern "C" {
     pub fn f_sched_drop(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_fcntl_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_fcntl_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_ptrace_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_ptrace_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_mmap_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_mmap_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_brk_munmap_mmap_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_mmap2_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_brk_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_munmap_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_renameat_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2629,19 +2580,10 @@ unsafe extern "C" {
     pub fn f_sys_procexit_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_sendfile_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_sendfile_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_quotactl_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_quotactl_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_scapevent_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_getresuid_and_gid_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2653,13 +2595,13 @@ unsafe extern "C" {
     pub fn f_sys_pagefault_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_setns_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_setns_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_unshare_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_unshare_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_flock_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_flock_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_cpu_hotplug_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2668,25 +2610,28 @@ unsafe extern "C" {
     pub fn f_sys_semop_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_semget_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_semget_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_semctl_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_semctl_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_ppoll_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_ppoll_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_mount_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_mount_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_access_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_access_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_socket_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_bpf_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_seccomp_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_unlinkat_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2731,22 +2676,13 @@ unsafe extern "C" {
     pub fn f_sys_linkat_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_mprotect_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_mprotect_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_execveat_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_execve_extra_tail_1(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_execve_extra_tail_2(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_copy_file_range_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_copy_file_range_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2787,19 +2723,10 @@ unsafe extern "C" {
     pub fn f_sys_capset_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_dup2_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_dup2_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_dup3_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_dup3_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_dup_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_dup_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2835,67 +2762,46 @@ unsafe extern "C" {
     pub fn f_sys_fsconfig_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_epoll_create_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_epoll_create_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_epoll_create1_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_epoll_create1_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_socket_bind_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_bpf_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_close_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_epoll_wait_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_close_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_fchdir_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_fchdir_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_ioctl_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_ioctl_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_mkdir_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_mkdir_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_setpgid_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_setgid_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_recvfrom_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_setpgid_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_recvmsg_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_listen_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_setresgid_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_listen_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_signalfd_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_signalfd_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_splice_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_splice_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_umount_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
-    pub fn f_sys_umount2_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_umount2_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2904,22 +2810,28 @@ unsafe extern "C" {
     pub fn f_sys_pipe2_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_inotify_init_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_timerfd_create_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_inotify_init_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_inotify_init1_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_eventfd2_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
-}
-unsafe extern "C" {
     pub fn f_sys_eventfd2_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_signalfd4_e(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_signalfd4_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
-    pub fn f_sys_signalfd4_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+    pub fn f_sys_kill_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_tkill_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_tgkill_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_sys_prctl_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
@@ -2962,6 +2874,12 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub fn f_sys_pwrite64_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_setuid_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
+}
+unsafe extern "C" {
+    pub fn f_sys_setresuid_x(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;
 }
 unsafe extern "C" {
     pub fn f_terminate_filler(args: *mut event_filler_arguments) -> ::std::os::raw::c_int;

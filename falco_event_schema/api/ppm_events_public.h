@@ -1057,7 +1057,7 @@ or GPL2.txt for full copies of the license.
 #define PPME_DIRECTION_FLAG 1
 #define PPME_IS_ENTER(x) ((x & PPME_DIRECTION_FLAG) == 0)
 #define PPME_IS_EXIT(x) (x & PPME_DIRECTION_FLAG)
-#define PPME_MAKE_ENTER(x) (x & (~1))
+#define PPME_MAKE_EXIT(x) (x | 1)
 
 /*
  * Event category to classify events in generic categories
@@ -1994,7 +1994,9 @@ enum sys_exit_extra_code {
 	PPM_SC_X(LISTXATTRAT, 445)             \
 	PPM_SC_X(GETXATTRAT, 446)              \
 	PPM_SC_X(SETXATTRAT, 447)              \
-	PPM_SC_X(OPEN_TREE_ATTR, 448)
+	PPM_SC_X(OPEN_TREE_ATTR, 448)          \
+	PPM_SC_X(FILE_GETATTR, 449)            \
+	PPM_SC_X(FILE_SETATTR, 450)
 
 typedef enum {
 #define PPM_SC_X(name, value) PPM_SC_##name = (value),
@@ -2056,8 +2058,7 @@ enum ppm_event_flags {
 	// overhead to full event capture */ SUPPORT DROPPED
 	EF_LARGE_PAYLOAD = (1 << 11), /* This event has a large payload, ie: up to UINT32_MAX bytes. DO
 	                                 NOT USE ON syscalls-driven events!!! */
-	EF_TMP_CONVERTER_MANAGED = (1 << 12), /* todo!: this must be removed when we will mark ENTER
-	                                     events as OLD_VERSION */
+	EF_CONVERTER_MANAGED = (1 << 12), /* This event is managed by the scap converter table. */
 };
 
 /*

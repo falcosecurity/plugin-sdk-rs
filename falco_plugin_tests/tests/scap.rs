@@ -86,17 +86,22 @@ mod tests {
         let mut driver = open_capture_file(driver).unwrap();
 
         let mut counter = 0;
+        let mut filtered_counter = 0;
         loop {
             match driver.next_event() {
                 Ok(_) => {
                     counter += 1;
+                }
+                Err(ScapStatus::Filtered) => {
+                    filtered_counter += 1;
                 }
                 Err(ScapStatus::Eof) => break,
                 Err(e) => panic!("{e:?}"),
             }
         }
 
-        assert_eq!(counter, 523412);
+        assert_eq!(counter, 294316);
+        assert_eq!(filtered_counter, 229095);
     }
 
     fn test_with_plugin<D: SavefileTestDriver>() {
@@ -104,17 +109,22 @@ mod tests {
         let mut driver = open_capture_file(driver).unwrap();
 
         let mut counter = 0;
+        let mut filtered_counter = 0;
         loop {
             match driver.next_event() {
                 Ok(_) => {
                     counter += 1;
+                }
+                Err(ScapStatus::Filtered) => {
+                    filtered_counter += 1;
                 }
                 Err(ScapStatus::Eof) => break,
                 Err(e) => panic!("{e:?}"),
             }
         }
 
-        assert_eq!(counter, 523412);
+        assert_eq!(counter, 294316);
+        assert_eq!(filtered_counter, 229095);
 
         // for whatever reason, we're not getting all the events in the parse plugin,
         // but whatever we get, we should parse without errors

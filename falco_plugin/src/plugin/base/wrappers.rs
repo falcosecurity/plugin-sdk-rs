@@ -234,6 +234,12 @@ pub unsafe extern "C-unwind" fn plugin_get_metrics<P: Plugin>(
     plugin.metric_storage.as_ptr().cast_mut()
 }
 
+pub extern "C-unwind" fn plugin_get_required_event_schema_version<T: Plugin>(
+    _plugin: *mut ss_plugin_t,
+) -> *const c_char {
+    T::SCHEMA_VERSION.as_ptr()
+}
+
 #[doc(hidden)]
 #[macro_export]
 macro_rules! wrap_ffi {
@@ -550,6 +556,9 @@ macro_rules! base_plugin_ffi_wrappers {
                 plugin: *mut falco_plugin::api::ss_plugin_t,
                 num_metrics: *mut u32,
             ) -> *mut falco_plugin::api::ss_plugin_metric;
+            unsafe fn plugin_get_required_event_schema_version(
+                plugin: *mut falco_plugin::api::ss_plugin_t
+            ) -> *const std::ffi::c_char;
         }
 
         #[allow(dead_code)]
@@ -581,6 +590,7 @@ macro_rules! base_plugin_ffi_wrappers {
                     $crate::internals::listen::wrappers::CaptureListenApi::<$ty>::LISTEN_API,
                 set_config: Some(plugin_set_config),
                 get_metrics: Some(plugin_get_metrics),
+                get_required_event_schema_version: Some(plugin_get_required_event_schema_version),
             }
         }
     };

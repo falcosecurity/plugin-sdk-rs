@@ -247,6 +247,7 @@ impl CapturingTestDriver for SinspTestDriver<CaptureStarted> {
             -1 => Err(ScapStatus::Timeout),
             6 => Err(ScapStatus::Eof),
             9 => Err(ScapStatus::NotSupported),
+            10 => Err(ScapStatus::Filtered),
             e => Err(ScapStatus::Other(e)),
         }
     }

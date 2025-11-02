@@ -21,6 +21,7 @@ pub use crate::plugin::error::FailureReason;
 pub mod base {
     pub use crate::plugin::base::metrics::{Metric, MetricLabel, MetricType, MetricValue};
     pub use crate::plugin::base::Plugin;
+    pub use crate::plugin::base::CURRENT_SCHEMA_VERSION;
     pub use crate::plugin::schema::Json;
 }
 

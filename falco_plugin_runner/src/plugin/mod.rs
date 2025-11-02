@@ -35,6 +35,7 @@ pub enum ScapStatus {
     Timeout,
     Eof,
     NotSupported,
+    Filtered,
     Other(i32),
 }
 
@@ -46,6 +47,7 @@ impl Display for ScapStatus {
             ScapStatus::Timeout => f.write_str("Timeout"),
             ScapStatus::Eof => f.write_str("Eof"),
             ScapStatus::NotSupported => f.write_str("NotSupported"),
+            ScapStatus::Filtered => f.write_str("Filtered"),
             ScapStatus::Other(rc) => write!(f, "Other({rc})"),
         }
     }
@@ -59,6 +61,7 @@ impl From<i32> for ScapStatus {
             -1 => ScapStatus::Timeout,
             6 => ScapStatus::Eof,
             9 => ScapStatus::NotSupported,
+            10 => ScapStatus::Filtered,
             e => ScapStatus::Other(e),
         }
     }
