@@ -5,7 +5,6 @@ use crate::tables::import::runtime::NoMetadata;
 use crate::tables::import::runtime_table_validator::RuntimeTableValidator;
 use crate::tables::import::table::raw::{IterationResult, RawTable};
 use crate::tables::import::traits::{Entry, TableAccess, TableMetadata};
-use crate::tables::TableFields;
 use crate::tables::TableReader;
 use crate::tables::TableWriter;
 use crate::tables::TablesInput;
@@ -149,8 +148,8 @@ where
     /// **Note**: this method is of limited utility in actual plugin code (you know the fields you
     /// want to access), so it returns the unmodified structure from the plugin API, including
     /// raw pointers to C-style strings. This may change later.
-    pub fn list_fields(&self, fields_vtable: &TableFields) -> &[ss_plugin_table_fieldinfo] {
-        self.raw_table.list_fields(fields_vtable)
+    pub fn list_fields(&self, fields_vtable: &TablesInput) -> &[ss_plugin_table_fieldinfo] {
+        self.raw_table.list_fields(&fields_vtable.fields_ext)
     }
 
     /// # Get a table field by name

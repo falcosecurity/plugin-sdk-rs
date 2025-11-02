@@ -138,6 +138,7 @@
 //! can use them from your plugin (e.g. in a separate thread) concurrently to other plugins
 //! (in the main thread).
 
+pub use crate::tables::data::FieldTypeId;
 pub(crate) use vtable::fields::TableFields;
 pub(crate) use vtable::reader::private::TableReaderImpl;
 pub use vtable::reader::LazyTableReader;
@@ -157,7 +158,3 @@ mod vtable;
 // for macro use only
 #[doc(hidden)]
 pub use crate::tables::data::{Key, Value};
-
-// for macro use only
-#[doc(hidden)]
-pub use crate::tables::data::FieldTypeId;
