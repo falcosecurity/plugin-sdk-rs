@@ -1,8 +1,8 @@
 use crate::error::as_result::WithLastError;
 use crate::tables::import::traits::{TableAccess, TableMetadata};
-use crate::tables::import::RawTable;
+use crate::tables::import::{RawTable, TableInfo};
 use crate::tables::{Key, TablesInput};
-use falco_plugin_api::{ss_plugin_state_type, ss_plugin_table_info};
+use falco_plugin_api::ss_plugin_state_type;
 use std::ffi::CStr;
 
 impl TablesInput<'_> {
@@ -33,17 +33,13 @@ impl TablesInput<'_> {
     }
 
     /// # List the available tables
-    ///
-    /// **Note**: this method is of limited utility in actual plugin code (you know the tables you
-    /// want to access), so it returns the unmodified structure from the plugin API, including
-    /// raw pointers to C-style strings. This may change later.
-    pub fn list_tables(&self) -> &[ss_plugin_table_info] {
+    pub fn list_tables(&self) -> &[TableInfo] {
         let mut num_tables = 0u32;
         let tables = unsafe { (self.list_tables)(self.owner, &mut num_tables as *mut _) };
         if tables.is_null() {
             &[]
         } else {
-            unsafe { std::slice::from_raw_parts(tables, num_tables as usize) }
+            unsafe { std::slice::from_raw_parts(tables.cast(), num_tables as usize) }
         }
     }
 }

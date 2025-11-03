@@ -328,6 +328,7 @@ mod macros;
 mod runtime;
 mod runtime_table_validator;
 mod table;
+mod table_info;
 mod table_input;
 
 // for macro use only
@@ -341,6 +342,7 @@ pub use field::Field;
 pub use field_info::FieldInfo;
 pub use runtime::RuntimeEntry;
 pub use table::Table;
+pub use table_info::TableInfo;
 
 // for macro use only
 #[doc(hidden)]
