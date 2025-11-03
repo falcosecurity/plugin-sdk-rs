@@ -99,20 +99,3 @@ impl TablesInput<'_> {
         }
     }
 }
-
-impl TablesInput<'_> {
-    /// # List the available tables
-    ///
-    /// **Note**: this method is of limited utility in actual plugin code (you know the tables you
-    /// want to access), so it returns the unmodified structure from the plugin API, including
-    /// raw pointers to C-style strings. This may change later.
-    pub fn list_tables(&self) -> &[ss_plugin_table_info] {
-        let mut num_tables = 0u32;
-        let tables = unsafe { (self.list_tables)(self.owner, &mut num_tables as *mut _) };
-        if tables.is_null() {
-            &[]
-        } else {
-            unsafe { std::slice::from_raw_parts(tables, num_tables as usize) }
-        }
-    }
-}
