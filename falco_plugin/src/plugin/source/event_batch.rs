@@ -31,6 +31,10 @@ impl EventBatch<'_> {
             bumpalo::collections::Vec::with_capacity_in(event.binary_size(), self.alloc);
         event.write(&mut event_buf)?;
         self.pointers.push(event_buf.as_ptr());
+        // SAFETY: Don't drop the Vec. The memory must stay in the bump allocator
+        // until this batch is processed by Falco. It will be reclaimed when
+        // the arena is reset before the next batch.
+        std::mem::forget(event_buf);
         Ok(())
     }
 
