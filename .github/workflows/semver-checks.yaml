@@ -1,0 +1,48 @@
+on:
+  pull_request:
+    types: [ opened, synchronize, reopened, edited ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  semver_check:
+    name: SemVer check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@main
+      - name: Install cargo-semver-checks
+        run: cargo binstall --no-confirm cargo-semver-checks
+
+      - name: Fetch base branch
+        run: git fetch origin '${{ github.event.pull_request.base.ref }}'
+
+      - name: Check PR title for breaking change marker
+        id: title
+        run: |
+          set +e
+          TITLE='${{ github.event.pull_request.title }}'
+          grep -q '!' <<< "$TITLE"
+          STATUS=$?
+          if [ $STATUS -eq 0 ]; then
+            echo "pr_title_breaking=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pr_title_breaking=false" >> "$GITHUB_OUTPUT"
+          fi
+          exit 0
+
+      - name: Run cargo-semver-checks against base branch
+        if: steps.title.outputs.pr_title_breaking == 'false'
+        id: semver
+        run: |
+          cargo semver-checks --baseline-rev origin/'${{ github.event.pull_request.base.ref }}'
