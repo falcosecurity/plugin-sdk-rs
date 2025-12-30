@@ -276,7 +276,7 @@ type Event<'a> = falco_event::events::Event<PPME_SYSCALL_OPENAT2_X<'a>>;
 ```
 
 Plugins dealing with several Falco syscall event types may want to define a custom enum for these types.
-See the relevant section in [`falco_event` documentation](`falco_event#raw-event-to-typed-event`).
+See the relevant section in [`falco_event` documentation](falco_event#raw-event-to-typed-event).
 
 Plugins that want to work with the raw byte representation of event payloads will probably want
 to use [`falco_event::events::RawEvent`]:
