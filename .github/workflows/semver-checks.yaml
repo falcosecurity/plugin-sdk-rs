@@ -25,14 +25,17 @@ jobs:
         run: cargo binstall --no-confirm cargo-semver-checks
 
       - name: Fetch base branch
-        run: git fetch origin '${{ github.event.pull_request.base.ref }}'
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: git fetch origin -- "$BASE_REF"
 
       - name: Check PR title for breaking change marker
         id: title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
           set +e
-          TITLE='${{ github.event.pull_request.title }}'
-          grep -q '!' <<< "$TITLE"
+          grep -q '!' <<< "$PR_TITLE"
           STATUS=$?
           if [ $STATUS -eq 0 ]; then
             echo "pr_title_breaking=true" >> "$GITHUB_OUTPUT"
@@ -44,5 +47,7 @@ jobs:
       - name: Run cargo-semver-checks against base branch
         if: steps.title.outputs.pr_title_breaking == 'false'
         id: semver
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          cargo semver-checks --baseline-rev origin/'${{ github.event.pull_request.base.ref }}'
+          cargo semver-checks --baseline-rev "origin/$BASE_REF"
