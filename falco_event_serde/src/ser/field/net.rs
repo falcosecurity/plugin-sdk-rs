@@ -2,6 +2,24 @@ use crate::ser::field::{SerializedField, StrOrBytes};
 use falco_event_schema::fields::types;
 use serde::{Serialize, Serializer};
 
+impl Serialize for SerializedField<&types::PT_IPV6ADDR> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0.serialize(serializer)
+    }
+}
+
+impl Serialize for SerializedField<&types::PT_IPV4ADDR> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0.serialize(serializer)
+    }
+}
+
 impl Serialize for SerializedField<&types::PT_SOCKADDR<'_>> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
