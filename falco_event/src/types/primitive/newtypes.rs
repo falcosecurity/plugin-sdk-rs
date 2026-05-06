@@ -304,6 +304,23 @@ newtype!(
 );
 default_debug!(Port);
 
+impl LowerHex for Port {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self, f)
+    }
+}
+
+#[cfg(test)]
+mod port_tests {
+    use crate::types::Port;
+
+    #[test]
+    fn test_port() {
+        assert_eq!(format!("{:?}", Port(12345)), "12345");
+        assert_eq!(format!("{:x}", Port(12345)), "12345");
+    }
+}
+
 newtype!(
     /// Layer 4 protocol (tcp/udp)
     ///
