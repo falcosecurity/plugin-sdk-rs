@@ -14,7 +14,7 @@ cat api/flag_types
 
 echo
 
-sed -n '/ppm_name_value/,$p' < $EVENT_TABLE | grep -v '^#' | uniq
+sed -n '/ppm_name_value/,$p' < $EVENT_TABLE | grep -v '^#' | uniq | sed 's@, ANON_INODE_FD_TYPE@, anon_inode_fd_type_ANON_INODE_FD_TYPE@'
 
 echo '}') > src/fields/event_flags.rs
 

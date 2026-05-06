@@ -50,3 +50,4 @@ type prctl_options: PT_ENUMFLAGS32;
 type pidfd_open_flags: PT_FLAGS32;
 type finit_module_flags: PT_FLAGS32;
 type creat_flags: PT_FLAGS16;
+type anon_inode_fd_types: PT_FLAGS8;

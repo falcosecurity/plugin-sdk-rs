@@ -790,6 +790,7 @@ pub const PPM_FAILURE_INVALID_USER_MEMORY: i32 = -2;
 pub const PPM_FAILURE_BUG: i32 = -3;
 pub const PPM_SKIP_EVENT: i32 = -4;
 pub const PPM_FAILURE_FRAME_SCRATCH_MAP_FULL: i32 = -5;
+pub const MAX_ITER_EVENT_SIZE: u32 = 65536;
 pub type __u_char = ::std::os::raw::c_uchar;
 pub type __u_short = ::std::os::raw::c_ushort;
 pub type __u_int = ::std::os::raw::c_uint;
@@ -1323,7 +1324,27 @@ pub const ppm_event_code_PPME_SYSCALL_SETREUID_E: ppm_event_code = 426;
 pub const ppm_event_code_PPME_SYSCALL_SETREUID_X: ppm_event_code = 427;
 pub const ppm_event_code_PPME_SYSCALL_SETREGID_E: ppm_event_code = 428;
 pub const ppm_event_code_PPME_SYSCALL_SETREGID_X: ppm_event_code = 429;
-pub const ppm_event_code_PPM_EVENT_MAX: ppm_event_code = 430;
+pub const ppm_event_code_PPME_ITER_TASK_E: ppm_event_code = 430;
+pub const ppm_event_code_PPME_ITER_TASK_X: ppm_event_code = 431;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_PIPE_E: ppm_event_code = 432;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_PIPE_X: ppm_event_code = 433;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_MEMFD_E: ppm_event_code = 434;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_MEMFD_X: ppm_event_code = 435;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_REGULAR_E: ppm_event_code = 436;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_REGULAR_X: ppm_event_code = 437;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_DIRECTORY_E: ppm_event_code = 438;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_DIRECTORY_X: ppm_event_code = 439;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_SOCKET_INET_E: ppm_event_code = 440;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_SOCKET_INET_X: ppm_event_code = 441;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_SOCKET_INET6_E: ppm_event_code = 442;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_SOCKET_INET6_X: ppm_event_code = 443;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_SOCKET_UNIX_E: ppm_event_code = 444;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_SOCKET_UNIX_X: ppm_event_code = 445;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_SOCKET_NETLINK_E: ppm_event_code = 446;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_SOCKET_NETLINK_X: ppm_event_code = 447;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_ANON_INODE_E: ppm_event_code = 448;
+pub const ppm_event_code_PPME_ITER_TASK_FILE_ANON_INODE_X: ppm_event_code = 449;
+pub const ppm_event_code_PPM_EVENT_MAX: ppm_event_code = 450;
 #[doc = " @defgroup etypes Event Types\n  @{"]
 pub type ppm_event_code = ::std::os::raw::c_uint;
 pub const sys_exit_extra_code_T1_EXECVE_X: sys_exit_extra_code = 0;
@@ -1791,7 +1812,9 @@ pub const ppm_sc_code_PPM_SC_SETXATTRAT: ppm_sc_code = 447;
 pub const ppm_sc_code_PPM_SC_OPEN_TREE_ATTR: ppm_sc_code = 448;
 pub const ppm_sc_code_PPM_SC_FILE_GETATTR: ppm_sc_code = 449;
 pub const ppm_sc_code_PPM_SC_FILE_SETATTR: ppm_sc_code = 450;
-pub const ppm_sc_code_PPM_SC_MAX: ppm_sc_code = 451;
+pub const ppm_sc_code_PPM_SC_LISTNS: ppm_sc_code = 451;
+pub const ppm_sc_code_PPM_SC_UPROBE: ppm_sc_code = 452;
+pub const ppm_sc_code_PPM_SC_MAX: ppm_sc_code = 453;
 pub type ppm_sc_code = ::std::os::raw::c_uint;
 pub const ppm_event_category_EC_UNKNOWN: ppm_event_category = 0;
 pub const ppm_event_category_EC_OTHER: ppm_event_category = 1;
@@ -1817,6 +1840,7 @@ pub const ppm_event_category_EC_SYSCALL: ppm_event_category = 512;
 pub const ppm_event_category_EC_TRACEPOINT: ppm_event_category = 1024;
 pub const ppm_event_category_EC_PLUGIN: ppm_event_category = 2048;
 pub const ppm_event_category_EC_METAEVENT: ppm_event_category = 4096;
+pub const ppm_event_category_EC_ITER: ppm_event_category = 8192;
 pub type ppm_event_category = ::std::os::raw::c_uint;
 pub const ppm_event_flags_EF_NONE: ppm_event_flags = 0;
 pub const ppm_event_flags_EF_CREATES_FD: ppm_event_flags = 1;
@@ -1879,7 +1903,9 @@ pub const ppm_param_type_PT_FSRELPATH: ppm_param_type = 43;
 pub const ppm_param_type_PT_ENUMFLAGS8: ppm_param_type = 44;
 pub const ppm_param_type_PT_ENUMFLAGS16: ppm_param_type = 45;
 pub const ppm_param_type_PT_ENUMFLAGS32: ppm_param_type = 46;
-pub const ppm_param_type_PT_MAX: ppm_param_type = 47;
+pub const ppm_param_type_PT_FD32: ppm_param_type = 47;
+pub const ppm_param_type_PT_PID32: ppm_param_type = 48;
+pub const ppm_param_type_PT_MAX: ppm_param_type = 49;
 pub type ppm_param_type = ::std::os::raw::c_uint;
 pub const ppm_print_format_PF_NA: ppm_print_format = 0;
 pub const ppm_print_format_PF_DEC: ppm_print_format = 1;
@@ -2148,6 +2174,9 @@ unsafe extern "C" {
 }
 unsafe extern "C" {
     pub static finit_module_flags: [ppm_name_value; 0usize];
+}
+unsafe extern "C" {
+    pub static anon_inode_fd_types: [ppm_name_value; 0usize];
 }
 #[doc = "\\brief Process information as returned by the PPM_IOCTL_GET_PROCLIST IOCTL."]
 #[repr(C)]
@@ -2931,3 +2960,18 @@ const _: () = {
     ["Offset of field: ppm_event_entry::autofill_args"]
         [::std::mem::offset_of!(ppm_event_entry, autofill_args) - 18usize];
 };
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_UNKNOWN: anon_inode_fd_type = 0;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_EVENTFD: anon_inode_fd_type = 1;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_EVENTPOLL: anon_inode_fd_type = 2;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_INOTIFY: anon_inode_fd_type = 3;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_SIGNALFD: anon_inode_fd_type = 4;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_TIMERFD: anon_inode_fd_type = 5;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_IO_URING: anon_inode_fd_type = 6;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_USERFAULTFD: anon_inode_fd_type = 7;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_PIDFD: anon_inode_fd_type = 8;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_BPF_MAP: anon_inode_fd_type = 9;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_BPF_PROG: anon_inode_fd_type = 10;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_BPF_LINK: anon_inode_fd_type = 11;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_BPF_ITER: anon_inode_fd_type = 12;
+pub const anon_inode_fd_type_ANON_INODE_FD_TYPE_PERF_EVENT: anon_inode_fd_type = 13;
+pub type anon_inode_fd_type = ::std::os::raw::c_uint;

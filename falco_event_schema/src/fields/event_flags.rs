@@ -53,6 +53,7 @@ type prctl_options: PT_ENUMFLAGS32;
 type pidfd_open_flags: PT_FLAGS32;
 type finit_module_flags: PT_FLAGS32;
 type creat_flags: PT_FLAGS16;
+type anon_inode_fd_types: PT_FLAGS8;
 const struct ppm_name_value socket_families[] = {
         {"AF_NFC", PPM_AF_NFC},
         {"AF_ALG", PPM_AF_ALG},
@@ -817,6 +818,24 @@ const struct ppm_name_value finit_module_flags[] = {
         {"MODULE_INIT_IGNORE_MODVERSIONS", PPM_MODULE_INIT_IGNORE_MODVERSIONS},
         {"MODULE_INIT_IGNORE_VERMAGIC", PPM_MODULE_INIT_IGNORE_VERMAGIC},
         {"MODULE_INIT_COMPRESSED_FILE", PPM_MODULE_INIT_COMPRESSED_FILE},
+        {0, 0},
+};
+
+const struct ppm_name_value anon_inode_fd_types[] = {
+        {"ANON_INODE_FD_TYPE_UNKNOWN", anon_inode_fd_type_ANON_INODE_FD_TYPE_UNKNOWN},
+        {"ANON_INODE_FD_TYPE_EVENTFD", anon_inode_fd_type_ANON_INODE_FD_TYPE_EVENTFD},
+        {"ANON_INODE_FD_TYPE_EVENTPOLL", anon_inode_fd_type_ANON_INODE_FD_TYPE_EVENTPOLL},
+        {"ANON_INODE_FD_TYPE_INOTIFY", anon_inode_fd_type_ANON_INODE_FD_TYPE_INOTIFY},
+        {"ANON_INODE_FD_TYPE_SIGNALFD", anon_inode_fd_type_ANON_INODE_FD_TYPE_SIGNALFD},
+        {"ANON_INODE_FD_TYPE_TIMERFD", anon_inode_fd_type_ANON_INODE_FD_TYPE_TIMERFD},
+        {"ANON_INODE_FD_TYPE_IO_URING", anon_inode_fd_type_ANON_INODE_FD_TYPE_IO_URING},
+        {"ANON_INODE_FD_TYPE_USERFAULTFD", anon_inode_fd_type_ANON_INODE_FD_TYPE_USERFAULTFD},
+        {"ANON_INODE_FD_TYPE_PIDFD", anon_inode_fd_type_ANON_INODE_FD_TYPE_PIDFD},
+        {"ANON_INODE_FD_TYPE_BPF_MAP", anon_inode_fd_type_ANON_INODE_FD_TYPE_BPF_MAP},
+        {"ANON_INODE_FD_TYPE_BPF_PROG", anon_inode_fd_type_ANON_INODE_FD_TYPE_BPF_PROG},
+        {"ANON_INODE_FD_TYPE_BPF_LINK", anon_inode_fd_type_ANON_INODE_FD_TYPE_BPF_LINK},
+        {"ANON_INODE_FD_TYPE_BPF_ITER", anon_inode_fd_type_ANON_INODE_FD_TYPE_BPF_ITER},
+        {"ANON_INODE_FD_TYPE_PERF_EVENT", anon_inode_fd_type_ANON_INODE_FD_TYPE_PERF_EVENT},
         {0, 0},
 };
 }

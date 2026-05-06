@@ -18,8 +18,10 @@ macro_rules! impl_serialize_newtype {
 
 impl_serialize_newtype!(types::PT_BOOL);
 impl_serialize_newtype!(types::PT_FD);
+impl_serialize_newtype!(types::PT_FD32);
 impl_serialize_newtype!(types::PT_GID);
 impl_serialize_newtype!(types::PT_PID);
+impl_serialize_newtype!(types::PT_PID32);
 impl_serialize_newtype!(types::PT_PORT);
 impl_serialize_newtype!(types::PT_SIGSET);
 impl_serialize_newtype!(types::PT_SIGTYPE);

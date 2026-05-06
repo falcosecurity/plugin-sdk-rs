@@ -205,6 +205,21 @@ impl Debug for Fd {
     }
 }
 
+newtype!(
+    /// File descriptor (32-bit)
+    Fd32(i32)
+);
+
+impl Debug for Fd32 {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.0 == -100 {
+            f.write_str("AT_FDCWD")
+        } else {
+            Debug::fmt(&self.0, f)
+        }
+    }
+}
+
 #[cfg(test)]
 mod fd_tests {
     use crate::types::Fd;
@@ -221,6 +236,12 @@ newtype!(
     Pid(i64)
 );
 default_debug!(Pid);
+
+newtype!(
+    /// Process or thread id (32-bit)
+    Pid32(i32)
+);
+default_debug!(Pid32);
 
 newtype!(
     /// User id

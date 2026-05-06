@@ -25,8 +25,10 @@ macro_rules! impl_deserialize_newtype {
 
 impl_deserialize_newtype!(types::PT_BOOL);
 impl_deserialize_newtype!(types::PT_FD);
+impl_deserialize_newtype!(types::PT_FD32);
 impl_deserialize_newtype!(types::PT_GID);
 impl_deserialize_newtype!(types::PT_PID);
+impl_deserialize_newtype!(types::PT_PID32);
 impl_deserialize_newtype!(types::PT_PORT);
 impl_deserialize_newtype!(types::PT_SIGSET);
 impl_deserialize_newtype!(types::PT_SIGTYPE);
