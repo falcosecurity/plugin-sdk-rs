@@ -8,6 +8,12 @@ pull_api version:
     wget https://raw.githubusercontent.com/falcosecurity/libs/{{ version }}/driver/SCHEMA_VERSION -O plugin/SCHEMA_VERSION
 
 [working-directory('falco_plugin_api')]
+copy_api path:
+    cp {{ path }}/userspace/plugin/plugin_types.h plugin/plugin_types.h
+    cp {{ path }}/userspace/plugin/plugin_api.h plugin/plugin_api.h
+    cp {{ path }}/driver/SCHEMA_VERSION plugin/SCHEMA_VERSION
+
+[working-directory('falco_plugin_api')]
 regen_api:
     bindgen plugin/plugin_api.h \
         --new-type-alias ss_plugin_table_t --no-copy ss_plugin_table_t \
@@ -39,6 +45,16 @@ pull_events version:
     > api/feature_gates.h
 
 [working-directory('falco_event_schema')]
+copy_events path:
+    cp {{ path }}/driver/ppm_fillers.h api/ppm_fillers.h
+    cat {{ path }}/driver/ppm_events_public.h | sed 's@\<long\>@int64_t@' > api/ppm_events_public.h
+    cp {{ path }}/driver/event_table.c api/event_table.c
+    cp {{ path }}/driver/flags_table.c api/flags_table.c
+    cp {{ path }}/driver/dynamic_params_table.c api/dynamic_params_table.c
+    cp {{ path }}/driver/SCHEMA_VERSION api/SCHEMA_VERSION
+    > api/feature_gates.h
+
+[working-directory('falco_event_schema')]
 regen_events:
     bindgen api/ppm_events_public.h -- -I. > src/ffi.rs
     ./tools/generate_event_table.sh
@@ -48,6 +64,8 @@ regen_events:
 update_events version: (pull_events version) regen_events
 
 pull version: (pull_api version) (pull_events version)
+
+copy path: (copy_api path) (copy_events path)
 
 regen: regen_api regen_events
 
