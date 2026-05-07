@@ -28,7 +28,7 @@
 
 > /area build
 
-> /area ci
+> /area automation
 
 > /area event
 
