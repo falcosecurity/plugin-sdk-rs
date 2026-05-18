@@ -1,7 +1,7 @@
 fn main() {
     println!("cargo:rustc-check-cfg=cfg(have_libsinsp)");
 
-    match pkg_config::probe_library("libsinsp") {
+    match pkg_config::Config::new().statik(true).probe("libsinsp") {
         Ok(sinsp) => {
             cxx_build::bridge("src/ffi.rs")
                 .file("c++/sinsp_test_driver.cpp")
