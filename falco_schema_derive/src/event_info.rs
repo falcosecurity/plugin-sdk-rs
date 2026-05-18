@@ -20,7 +20,8 @@ pub fn lifetime_type(name: &str) -> LifetimeType {
         | "PT_FSRELPATH"
         | "PT_CHARBUFARRAY"
         | "PT_CHARBUF_PAIR_ARRAY"
-        | "PT_DYN_sockopt_dynamic_param" => LifetimeType::Generic,
+        | "PT_DYN_sockopt_dynamic_param"
+        | "PT_DYN_keyctl_dynamic_param" => LifetimeType::Generic,
         _ => LifetimeType::None,
     }
 }
