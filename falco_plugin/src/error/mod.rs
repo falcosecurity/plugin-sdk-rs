@@ -1,6 +1,7 @@
 pub mod as_result;
 pub mod ffi_result;
 pub mod last_error;
+pub mod panic;
 
 use thiserror::Error;
 
