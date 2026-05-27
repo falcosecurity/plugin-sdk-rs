@@ -111,6 +111,34 @@ unsafe extern "C" fn async_handler(
     event: *const ss_plugin_event,
     err: *mut c_char,
 ) -> i32 {
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| unsafe {
+        async_handler_inner(owner, event, err)
+    }));
+
+    match result {
+        Ok(rc) => rc,
+        Err(payload) => {
+            let msg = if let Some(s) = payload.downcast_ref::<&'static str>() {
+                format!("async_handler panicked: {s}")
+            } else if let Some(s) = payload.downcast_ref::<String>() {
+                format!("async_handler panicked: {s}")
+            } else {
+                "async_handler panicked".to_string()
+            };
+            let err = unsafe {
+                std::slice::from_raw_parts_mut(err as *mut _, PLUGIN_MAX_ERRLEN as usize)
+            };
+            write_err_msg(err, &msg);
+            ss_plugin_rc_SS_PLUGIN_FAILURE
+        }
+    }
+}
+
+unsafe fn async_handler_inner(
+    owner: *mut ss_plugin_owner_t,
+    event: *const ss_plugin_event,
+    err: *mut c_char,
+) -> i32 {
     let err = unsafe { std::slice::from_raw_parts_mut(err as *mut _, PLUGIN_MAX_ERRLEN as usize) };
     let owner = unsafe { &mut *(owner as *mut AsyncPlugin) };
     let evt_len = unsafe { (*event).len as usize };
