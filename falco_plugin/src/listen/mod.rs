@@ -9,6 +9,12 @@
 //! Capture listening plugins receive a reference to a thread pool, which can be used to submit
 //! "routines" (tasks running in a separate thread, effectively).
 //!
+//! *Note* due to API limitations, this functionality cannot be made fully leak-free.
+//! When a routine gets dropped at precisely the wrong point in time (as it starts executing),
+//! it will leak a small amount of memory. Consider never dropping routines at all,
+//! and instead use some mechanism to signal to the routine that it should stop rescheduling itself
+//! (e.g., an atomic boolean in a shared struct).
+//!
 //! *Note* there is no built-in mechanism to stop a running routine, so you should avoid doing this
 //! in the routine:
 //! ```ignore
@@ -21,7 +27,7 @@
 //! Instead, have your routine just do a single iteration and request a rerun from the scheduler:
 //! ```ignore
 //! do_something();
-//! std::thread::sleep(some_time)
+//! std::thread::sleep(some_time);
 //! std::ops::ControlFlow::Continue(())
 //! ```
 //!
@@ -73,12 +79,9 @@
 //!         Ok(())
 //!     }
 //!
-//! fn capture_close(&mut self, listen_input: &CaptureListenInput) -> Result<(), Error> {
+//! fn capture_close(&mut self, _listen_input: &CaptureListenInput) -> Result<(), Error> {
 //!         log::info!("Capture stopped");
-//!         for routine in self.tasks.drain(..) {
-//!             listen_input.thread_pool.unsubscribe(&routine)?;
-//!         }
-//!
+//!         self.tasks.clear(); // dropping the handles auto-unsubscribes
 //!         Ok(())
 //!     }
 //! }

@@ -84,11 +84,8 @@ impl CaptureListenPlugin for DummyPlugin {
         Ok(())
     }
 
-    fn capture_close(&mut self, listen_input: &CaptureListenInput) -> Result<(), Error> {
-        if let Some(task) = self.task.take() {
-            listen_input.thread_pool.unsubscribe(&task)?;
-        }
-
+    fn capture_close(&mut self, _listen_input: &CaptureListenInput) -> Result<(), Error> {
+        self.task.take();
         Ok(())
     }
 }
