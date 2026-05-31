@@ -116,5 +116,10 @@ mod tests {
         }
     }
 
-    instantiate_tests!(test_listen);
+    // Miri: ignored because this test relies on real-time threading (background thread scheduling,
+    // sleeps, and wall-clock timeouts) that Miri cannot simulate reliably.
+    instantiate_tests!(
+        #[cfg_attr(miri, ignore)]
+        test_listen
+    );
 }

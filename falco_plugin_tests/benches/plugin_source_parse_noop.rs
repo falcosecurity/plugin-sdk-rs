@@ -67,7 +67,7 @@ fn plugin_source_parse_noop(c: &mut Criterion) {
     g.throughput(Throughput::Elements(NUM_EVENTS as u64));
 
     bench_plugin_source_parse_noop_impl::<falco_plugin_tests::native::Driver, _>(&mut g);
-    #[cfg(have_libsinsp)]
+    #[cfg(all(have_libsinsp, not(miri)))]
     bench_plugin_source_parse_noop_impl::<falco_plugin_tests::ffi::Driver, _>(&mut g);
 
     g.finish();

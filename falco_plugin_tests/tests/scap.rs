@@ -59,7 +59,7 @@ impl ParsePlugin for DummyPlugin {
 static_plugin!(PARSE_API = DummyPlugin);
 
 #[cfg(test)]
-#[cfg_attr(not(have_libsinsp), allow(dead_code))]
+#[cfg_attr(any(not(have_libsinsp), miri), allow(dead_code))]
 mod tests {
     use falco_plugin_tests::{
         init_plugin, instantiate_sinsp_tests, CapturingTestDriver, SavefileTestDriver, ScapStatus,

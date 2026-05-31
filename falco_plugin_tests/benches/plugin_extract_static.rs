@@ -73,7 +73,7 @@ fn plugin_extract_static(c: &mut Criterion) {
     g.throughput(Throughput::Elements(NUM_EVENTS as u64));
 
     plugin_extract_static_impl::<falco_plugin_tests::native::Driver, _>(&mut g);
-    #[cfg(have_libsinsp)]
+    #[cfg(all(have_libsinsp, not(miri)))]
     plugin_extract_static_impl::<falco_plugin_tests::ffi::Driver, _>(&mut g);
 
     g.finish();

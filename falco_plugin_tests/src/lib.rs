@@ -2,7 +2,7 @@
 //!
 //! This crate isn't really intended for public use, except maybe as a collection of sample plugins.
 
-#[cfg(have_libsinsp)]
+#[cfg(all(have_libsinsp, not(miri)))]
 pub mod ffi;
 
 use std::ffi::CStr;
@@ -26,20 +26,22 @@ pub fn init_plugin<D: TestDriver>(
 
 #[macro_export]
 macro_rules! instantiate_tests {
-    ($($func:ident);*) => {
+    ($($(#[$meta:meta])* $func:ident);*) => {
         mod native {
             $(
             #[test]
+            $(#[$meta])*
             fn $func() {
                 super::$func::<$crate::native::Driver>()
             }
             )*
         }
 
-        #[cfg(have_libsinsp)]
+        #[cfg(all(have_libsinsp, not(miri)))]
         mod ffi {
             $(
             #[test]
+            $(#[$meta])*
             fn $func() {
                 super::$func::<$crate::ffi::Driver>()
             }
@@ -51,7 +53,7 @@ macro_rules! instantiate_tests {
 #[macro_export]
 macro_rules! instantiate_sinsp_tests {
     ($($func:ident);*) => {
-        #[cfg(have_libsinsp)]
+        #[cfg(all(have_libsinsp, not(miri)))]
         mod ffi {
             $(
             #[test]
