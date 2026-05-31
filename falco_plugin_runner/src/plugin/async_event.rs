@@ -8,13 +8,17 @@ use std::collections::VecDeque;
 use std::ffi::{c_char, CStr};
 use std::sync::{Arc, Mutex};
 
+struct AsyncOwner {
+    async_events: Vec<String>,
+    event_queue: Arc<Mutex<VecDeque<Vec<u8>>>>,
+}
+
 pub struct AsyncPlugin {
     plugin: *mut ss_plugin_t,
     api: *const plugin_api__bindgen_ty_4,
-    async_events: Vec<String>,
+    owner: Box<AsyncOwner>,
 
     last_event: Option<Vec<u8>>,
-    event_queue: Arc<Mutex<VecDeque<Vec<u8>>>>,
 }
 
 impl AsyncPlugin {
@@ -35,9 +39,11 @@ impl AsyncPlugin {
         Self {
             plugin,
             api,
-            async_events,
+            owner: Box::new(AsyncOwner {
+                async_events,
+                event_queue: Arc::new(Mutex::new(VecDeque::new())),
+            }),
             last_event: None,
-            event_queue: Arc::new(Mutex::new(VecDeque::new())),
         }
     }
 
@@ -45,8 +51,10 @@ impl AsyncPlugin {
         unsafe { &*self.api }
     }
 
-    fn owner(&mut self) -> *mut ss_plugin_owner_t {
-        self as *mut _ as *mut _
+    fn owner(&self) -> *mut ss_plugin_owner_t {
+        (&*self.owner as *const AsyncOwner)
+            .cast_mut()
+            .cast::<ss_plugin_owner_t>()
     }
 
     pub fn on_capture_start(&mut self) -> Result<(), ss_plugin_rc> {
@@ -78,7 +86,7 @@ impl AsyncPlugin {
     }
 
     pub fn next_event(&mut self) -> Result<*mut ss_plugin_event, ss_plugin_rc> {
-        self.last_event = self.event_queue.lock().unwrap().pop_front();
+        self.last_event = self.owner.event_queue.lock().unwrap().pop_front();
         match &self.last_event {
             Some(evt) => Ok(evt.as_ptr().cast::<ss_plugin_event>().cast_mut()),
             None => Err(ss_plugin_rc_SS_PLUGIN_TIMEOUT),
@@ -140,7 +148,7 @@ unsafe fn async_handler_inner(
     err: *mut c_char,
 ) -> i32 {
     let err = unsafe { std::slice::from_raw_parts_mut(err as *mut _, PLUGIN_MAX_ERRLEN as usize) };
-    let owner = unsafe { &mut *(owner as *mut AsyncPlugin) };
+    let owner = unsafe { &*(owner as *const AsyncOwner) };
     let evt_len = unsafe { (*event).len as usize };
 
     let event = event as *const u8;
