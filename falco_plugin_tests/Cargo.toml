@@ -43,7 +43,7 @@ harness = false
 anyhow = "1.0.88"
 cxx = { version = "1.0.124", features = ["c++17"] }
 falco_event_schema = { version = "0.5.0", path = "../falco_event_schema", features = ["derive_deftly"] }
-falco_plugin = { version = "0.5.0", path = "../falco_plugin", features = ["thread-safe-tables"] }
+falco_plugin = { version = "0.5.0", path = "../falco_plugin", default-features = false, features = ["thread-safe-tables"] }
 falco_plugin_runner = { version = "0.5.0", path = "../falco_plugin_runner" }
 log = "0.4.22"
 typed-path = "0.11.0"
