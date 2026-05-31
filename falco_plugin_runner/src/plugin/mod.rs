@@ -185,11 +185,12 @@ impl Plugin {
         self.api().__bindgen_anon_5.capture_open.is_some() // ... etc.
     }
 
-    fn owner(&self) -> *mut ss_plugin_owner_t {
-        self as *const _ as *mut ss_plugin_owner_t
+    fn owner(&mut self) -> *mut ss_plugin_owner_t {
+        self as *mut _ as *mut ss_plugin_owner_t
     }
 
     fn init(&mut self, config: &CStr) -> anyhow::Result<()> {
+        let owner = self.owner();
         let tables = self.tables.borrow();
         let tables_input = falco_plugin_api::ss_plugin_init_tables_input {
             list_tables: Some(list_tables),
@@ -203,7 +204,7 @@ impl Plugin {
 
         let input = falco_plugin_api::ss_plugin_init_input {
             config: config.as_ptr(),
-            owner: self.owner(),
+            owner,
             get_owner_last_error: Some(get_last_owner_error),
             tables: &tables_input,
             log_fn: Some(log),
