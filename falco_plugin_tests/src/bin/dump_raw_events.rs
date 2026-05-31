@@ -37,12 +37,12 @@ impl ParsePlugin for DumperPlugin {
 
 static_plugin!(DUMPER_PLUGIN = DumperPlugin);
 
-#[cfg(not(have_libsinsp))]
+#[cfg(any(not(have_libsinsp), miri))]
 fn main() {
     panic!("libsinsp not available");
 }
 
-#[cfg(have_libsinsp)]
+#[cfg(all(have_libsinsp, not(miri)))]
 fn main() {
     use falco_plugin_tests::CapturingTestDriver;
     use falco_plugin_tests::SavefileTestDriver;

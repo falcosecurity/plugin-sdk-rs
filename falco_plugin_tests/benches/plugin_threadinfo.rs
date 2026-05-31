@@ -110,7 +110,7 @@ impl ParsePlugin for ParseThreadInfoSetCustomField {
 
 static_plugin!(PARSE_THREADINFO_SET_CUSTOM_FIELD = ParseThreadInfoSetCustomField);
 
-#[cfg_attr(not(have_libsinsp), allow(unused))]
+#[cfg_attr(any(not(have_libsinsp), miri), allow(unused))]
 fn bench_plugin_threadinfo_tid<D: TestDriver, M: Measurement>(g: &mut BenchmarkGroup<M>) {
     let (mut driver, _plugin) = init_plugin::<D>(&BATCHED_EMPTY_EVENT, c"1").unwrap();
     let extract_plugin = driver.register_plugin(&EXTRACT_THREADINFO, c"").unwrap();
@@ -139,7 +139,7 @@ fn bench_plugin_threadinfo_tid<D: TestDriver, M: Measurement>(g: &mut BenchmarkG
     );
 }
 
-#[cfg_attr(not(have_libsinsp), allow(unused))]
+#[cfg_attr(any(not(have_libsinsp), miri), allow(unused))]
 fn bench_plugin_threadinfo_missing_custom_field<D: TestDriver, M: Measurement>(
     g: &mut BenchmarkGroup<M>,
 ) {
@@ -171,7 +171,7 @@ fn bench_plugin_threadinfo_missing_custom_field<D: TestDriver, M: Measurement>(
     );
 }
 
-#[cfg_attr(not(have_libsinsp), allow(unused))]
+#[cfg_attr(any(not(have_libsinsp), miri), allow(unused))]
 fn bench_plugin_threadinfo_only_set_custom_field<D: TestDriver, M: Measurement>(
     g: &mut BenchmarkGroup<M>,
 ) {
@@ -200,7 +200,7 @@ fn bench_plugin_threadinfo_only_set_custom_field<D: TestDriver, M: Measurement>(
     );
 }
 
-#[cfg_attr(not(have_libsinsp), allow(unused))]
+#[cfg_attr(any(not(have_libsinsp), miri), allow(unused))]
 fn bench_plugin_threadinfo_custom_field<D: TestDriver, M: Measurement>(g: &mut BenchmarkGroup<M>) {
     let (mut driver, _plugin) = init_plugin::<D>(&BATCHED_EMPTY_EVENT, c"1").unwrap();
     driver
@@ -236,7 +236,7 @@ fn plugin_threadinfo(c: &mut Criterion) {
     let mut g = c.benchmark_group("plugin_threadinfo");
     g.throughput(Throughput::Elements(NUM_EVENTS as u64));
 
-    #[cfg(have_libsinsp)]
+    #[cfg(all(have_libsinsp, not(miri)))]
     {
         crate::bench_plugin_threadinfo_tid::<falco_plugin_tests::ffi::Driver, _>(&mut g);
         crate::bench_plugin_threadinfo_missing_custom_field::<falco_plugin_tests::ffi::Driver, _>(

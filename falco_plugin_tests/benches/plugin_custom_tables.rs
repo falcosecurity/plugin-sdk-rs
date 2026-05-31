@@ -267,7 +267,7 @@ fn bench_plugin_custom_table_extract_only(c: &mut Criterion) {
     g.throughput(Throughput::Elements(NUM_EVENTS as u64));
 
     bench_plugin_custom_table_extract_only_impl::<falco_plugin_tests::native::Driver, _>(&mut g);
-    #[cfg(have_libsinsp)]
+    #[cfg(all(have_libsinsp, not(miri)))]
     bench_plugin_custom_table_extract_only_impl::<falco_plugin_tests::ffi::Driver, _>(&mut g);
 
     g.finish();
@@ -365,7 +365,7 @@ fn bench_plugin_custom_table_insert_and_extract(c: &mut Criterion) {
     bench_plugin_custom_table_insert_and_extract_impl::<falco_plugin_tests::native::Driver, _>(
         &mut g,
     );
-    #[cfg(have_libsinsp)]
+    #[cfg(all(have_libsinsp, not(miri)))]
     bench_plugin_custom_table_insert_and_extract_impl::<falco_plugin_tests::ffi::Driver, _>(&mut g);
 
     g.finish();
