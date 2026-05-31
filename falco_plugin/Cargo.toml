@@ -36,8 +36,12 @@ unexpected_cfgs = { level = "allow", check-cfg = ['cfg(linkage, values("static")
 [[example]]
 name = "dummy_source"
 crate-type = ["cdylib"]
+required-features = ["dylib-examples"]
 
 [features]
+default = ["dylib-examples"]
+miri = ["thread-safe-tables"]
+dylib-examples = []
 thread-safe-tables = ["dep:parking_lot"]
 
 [dependencies]
