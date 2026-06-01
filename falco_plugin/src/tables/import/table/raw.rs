@@ -103,7 +103,7 @@ impl RawTable {
         )?;
         let raw_field = unsafe {
             field
-                .as_mut()
+                .as_ref()
                 .ok_or_else(|| anyhow::anyhow!("Failed to get table field {:?}", name))
                 .with_last_error(&tables_input.last_error)?;
             field
