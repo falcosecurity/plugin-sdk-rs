@@ -538,7 +538,7 @@ pub unsafe extern "C" fn get_table(
     }
     let name = unsafe { CStr::from_ptr(name) };
 
-    let tables = owner.tables.borrow();
+    let mut tables = owner.tables.borrow_mut();
     match tables.get_table(name, key_type) {
         Some(table) => table as *const _ as *mut _,
         None => std::ptr::null_mut(),

@@ -8,9 +8,36 @@ use falco_plugin_api::{
 use std::collections::btree_map::Entry;
 use std::collections::BTreeMap;
 use std::ffi::{c_char, CStr, CString};
+use std::ptr::NonNull;
+
+/// A non-retagging Box-like wrapper to avoid Miri's Stacked Borrows issues.
+/// Unlike Box, moving this struct does not transitively retag the pointee.
+struct RawBox(NonNull<ss_plugin_table_input>);
+
+impl RawBox {
+    fn new(val: ss_plugin_table_input) -> Self {
+        Self(unsafe { NonNull::new_unchecked(Box::into_raw(Box::new(val))) })
+    }
+    fn as_ptr(&self) -> *mut ss_plugin_table_input {
+        self.0.as_ptr()
+    }
+}
+
+impl std::ops::Deref for RawBox {
+    type Target = ss_plugin_table_input;
+    fn deref(&self) -> &ss_plugin_table_input {
+        unsafe { self.0.as_ref() }
+    }
+}
+
+impl Drop for RawBox {
+    fn drop(&mut self) {
+        unsafe { drop(Box::from_raw(self.0.as_ptr())) }
+    }
+}
 
 pub struct Tables {
-    tables: BTreeMap<CString, Box<ss_plugin_table_input>>,
+    tables: BTreeMap<CString, RawBox>,
     reader_ext_store: Vec<ss_plugin_table_reader_vtable_ext>,
     writer_ext_store: Vec<ss_plugin_table_writer_vtable_ext>,
     fields_ext_store: Vec<ss_plugin_table_fields_vtable_ext>,
@@ -20,14 +47,14 @@ pub struct Tables {
 macro_rules! delegate_table_method {
     ($table:expr => $vtable:ident . $method:ident or $error:expr) => {{
         let table_input = $table as *mut ss_plugin_table_input;
-        let table_input = unsafe { table_input.as_mut() };
-        let Some(table_input) = table_input else {
+        if table_input.is_null() {
             #[allow(clippy::unused_unit)]
             return $error;
-        };
+        }
 
         let vtable = unsafe {
-            let Some(vtable) = table_input.$vtable.as_ref() else {
+            let vtable_ptr = std::ptr::addr_of!((*table_input).$vtable);
+            let Some(vtable) = (*vtable_ptr).as_ref() else {
                 #[allow(clippy::unused_unit)]
                 return $error;
             };
@@ -39,7 +66,7 @@ macro_rules! delegate_table_method {
             return $error;
         };
 
-        (method, table_input.table)
+        (method, unsafe { (*table_input).table })
     }};
 }
 
@@ -254,15 +281,15 @@ impl Tables {
     }
 
     pub fn get_table(
-        &self,
+        &mut self,
         name: &CStr,
         key_type: ss_plugin_state_type,
-    ) -> Option<&ss_plugin_table_input> {
+    ) -> Option<*mut ss_plugin_table_input> {
         let table = self.tables.get(name)?;
         if table.key_type != key_type {
             return None;
         }
-        Some(table)
+        Some(table.as_ptr())
     }
 
     pub fn add_table(&mut self, name: &CStr, table_input: &ss_plugin_table_input) -> ss_plugin_rc {
@@ -292,7 +319,7 @@ impl Tables {
                 table_input.writer_ext = writer_ext;
                 table_input.fields_ext = fields_ext;
 
-                entry.insert(Box::new(table_input));
+                entry.insert(RawBox::new(table_input));
                 self.table_info_cache.clear();
                 ss_plugin_rc_SS_PLUGIN_SUCCESS
             }
