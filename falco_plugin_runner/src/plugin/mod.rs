@@ -299,22 +299,33 @@ impl Plugin {
             })?;
         }
 
+        let rollback_source = |this: &mut Self| {
+            if let Some(ref mut source) = this.source {
+                let _ = source.on_capture_stop();
+            }
+        };
+
         if let Some(ref mut async_event) = self.async_event {
-            async_event.on_capture_start().map_err(|e| {
-                anyhow!(
+            if let Err(e) = async_event.on_capture_start() {
+                rollback_source(self);
+                return Err(anyhow!(
                     "failed to notify async capture start, rc {e}, err {:?}",
                     self.last_error()
-                )
-            })?;
+                ));
+            }
         }
 
         if let Some(ref mut capture_listen) = self.capture_listen {
-            capture_listen.on_capture_start().map_err(|e| {
-                anyhow!(
+            if let Err(e) = capture_listen.on_capture_start() {
+                if let Some(ref mut async_event) = self.async_event {
+                    let _ = async_event.on_capture_stop();
+                }
+                rollback_source(self);
+                return Err(anyhow!(
                     "failed to notify capture_listen plugin, rc {e}, err {:?}",
                     self.last_error()
-                )
-            })?;
+                ));
+            }
         }
 
         self.capturing = true;
