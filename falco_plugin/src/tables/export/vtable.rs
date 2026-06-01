@@ -9,8 +9,13 @@ use falco_plugin_api::{
     ss_plugin_table_writer_vtable, ss_plugin_table_writer_vtable_ext,
 };
 use std::borrow::Borrow;
+use std::cell::UnsafeCell;
 
 pub(crate) struct Vtable {
+    pub(crate) inner: UnsafeCell<VtableInner>,
+}
+
+pub(crate) struct VtableInner {
     pub(crate) input: ss_plugin_table_input,
     reader_ext: ss_plugin_table_reader_vtable_ext,
     writer_ext: ss_plugin_table_writer_vtable_ext,
@@ -36,10 +41,11 @@ where
     ) -> *mut ss_plugin_table_input {
         let mut vtable_place = self.vtable.write();
 
-        if let Some(ref mut vtable) = *vtable_place {
+        if let Some(ref vtable) = *vtable_place {
+            let inner = vtable.inner.get();
             // the ss_plugin_table_t value should never change
-            debug_assert_eq!(vtable.input.table, table_ptr.cast());
-            return &mut vtable.input as *mut _;
+            debug_assert_eq!(unsafe { (*inner).input.table }, table_ptr.cast());
+            return unsafe { std::ptr::addr_of_mut!((*inner).input) };
         }
 
         let reader_vtable_ext = reader_vtable::<K, E>();
@@ -74,21 +80,29 @@ where
             fields_ext: std::ptr::null_mut(),
         };
 
-        let mut vtable = Box::new(Vtable {
-            input: table_input,
-            reader_ext: reader_vtable_ext,
-            writer_ext: writer_vtable_ext,
-            fields_ext: fields_vtable_ext,
+        let vtable = Box::new(Vtable {
+            inner: UnsafeCell::new(VtableInner {
+                input: table_input,
+                reader_ext: reader_vtable_ext,
+                writer_ext: writer_vtable_ext,
+                fields_ext: fields_vtable_ext,
+            }),
         });
 
-        // we can init these fields only now, when the target struct is allocated on the heap
-        vtable.input.reader_ext = &mut vtable.reader_ext as *mut _;
-        vtable.input.writer_ext = &mut vtable.writer_ext as *mut _;
-        vtable.input.fields_ext = &mut vtable.fields_ext as *mut _;
-
-        let ptr = &mut vtable.input as *mut _;
+        // Store the vtable first, then set up self-referential pointers
+        // through the stored Box's UnsafeCell to preserve pointer provenance.
         *vtable_place = Some(vtable);
 
-        ptr
+        let inner = vtable_place.as_ref().unwrap().inner.get();
+        unsafe {
+            let reader_ext_ptr = std::ptr::addr_of_mut!((*inner).reader_ext);
+            let writer_ext_ptr = std::ptr::addr_of_mut!((*inner).writer_ext);
+            let fields_ext_ptr = std::ptr::addr_of_mut!((*inner).fields_ext);
+            (*inner).input.reader_ext = reader_ext_ptr;
+            (*inner).input.writer_ext = writer_ext_ptr;
+            (*inner).input.fields_ext = fields_ext_ptr;
+        }
+
+        unsafe { std::ptr::addr_of_mut!((*inner).input) }
     }
 }
