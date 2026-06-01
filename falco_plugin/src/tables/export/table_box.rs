@@ -8,6 +8,8 @@ use std::borrow::Borrow;
 use std::collections::BTreeMap;
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
+use std::ops::{Deref, DerefMut};
+use std::ptr::NonNull;
 
 /// # A table exported to other plugins
 ///
@@ -26,6 +28,10 @@ use std::fmt::{Debug, Formatter};
 /// See [`crate::tables::export`] for details.
 ///
 /// The implementation is thread-safe when the `thread-safe-tables` feature is enabled.
+///
+/// Internally, this uses `NonNull` instead of `Box` to avoid Miri's Stacked Borrows
+/// transitive retagging, which would conflict with FFI callbacks that access the table
+/// through raw pointers.
 pub struct Table<K, E>
 where
     K: Key + Ord,
@@ -34,7 +40,7 @@ where
     E: Entry,
     E::Metadata: TableMetadata,
 {
-    ptr: Box<TableData<K, E>>,
+    ptr: NonNull<TableData<K, E>>,
 }
 
 impl<K, E> Table<K, E>
@@ -47,20 +53,22 @@ where
 {
     /// Wrap a `TableData` into a `Table`.
     pub(crate) fn wrap(value: TableData<K, E>) -> Self {
+        let ptr = Box::into_raw(Box::new(value));
+        // SAFETY: Box::into_raw never returns null
         Self {
-            ptr: Box::new(value),
+            ptr: unsafe { NonNull::new_unchecked(ptr) },
         }
     }
 
     /// Returns a raw mutable pointer to the contained data without creating a reference.
     pub(crate) fn as_mut_ptr(this: &Self) -> *mut TableData<K, E> {
-        &raw const *this.ptr as *mut TableData<K, E>
+        this.ptr.as_ptr()
     }
 
     /// Get or create the vtable for this table, for use in FFI.
     pub(crate) fn get_vtable(&self) -> *mut ss_plugin_table_input {
         let table_ptr = Self::as_mut_ptr(self);
-        self.ptr.get_vtable_with_ptr(table_ptr)
+        (**self).get_vtable_with_ptr(table_ptr)
     }
 
     /// Create a new table
@@ -88,17 +96,17 @@ where
     /// To actually access the BTreeMap, you first need to lock the returned object for reading
     /// (`data.read()`) or writing (`data.write()`).
     pub fn data(&self) -> RefShared<BTreeMap<K, RefShared<ExtensibleEntry<E>>>> {
-        self.ptr.data()
+        (**self).data()
     }
 
     /// Return the table name.
     pub fn name(&self) -> &'static CStr {
-        self.ptr.name()
+        (**self).name()
     }
 
     /// Return the number of entries in the table.
     pub fn size(&self) -> usize {
-        self.ptr.size()
+        (**self).size()
     }
 
     /// Get an entry corresponding to a particular key.
@@ -107,7 +115,7 @@ where
         K: Borrow<Q>,
         Q: Ord + ?Sized,
     {
-        self.ptr.lookup(key)
+        (**self).lookup(key)
     }
 
     /// Get the value for a field in an entry.
@@ -117,7 +125,7 @@ where
         field: &crate::tables::export::field_descriptor::FieldDescriptor,
         out: &mut ss_plugin_state_data,
     ) -> Result<(), anyhow::Error> {
-        self.ptr.get_field_value(entry, field, out)
+        (**self).get_field_value(entry, field, out)
     }
 
     /// Execute a closure on all entries in the table with read-only access.
@@ -128,12 +136,12 @@ where
     where
         F: FnMut(&mut TableEntryType<E>) -> bool,
     {
-        self.ptr.iterate_entries(func)
+        (**self).iterate_entries(func)
     }
 
     /// Remove all entries from the table.
     pub fn clear(&mut self) {
-        self.ptr.clear();
+        (**self).clear()
     }
 
     /// Erase an entry by key.
@@ -142,14 +150,14 @@ where
         K: Borrow<Q>,
         Q: Ord + ?Sized,
     {
-        self.ptr.erase(key)
+        (**self).erase(key)
     }
 
     /// Create a new table entry.
     ///
     /// This is a detached entry that can be later inserted into the table using [`Table::insert`].
     pub fn create_entry(&self) -> Result<TableEntryType<E>, anyhow::Error> {
-        self.ptr.create_entry()
+        (**self).create_entry()
     }
 
     /// Return a closure for creating table entries
@@ -171,7 +179,7 @@ where
     pub fn create_entry_fn(
         &self,
     ) -> impl Fn() -> Result<RefShared<ExtensibleEntry<E>>, anyhow::Error> + use<K, E> {
-        self.ptr.create_entry_fn()
+        (**self).create_entry_fn()
     }
 
     /// Attach an entry to a table key
@@ -180,7 +188,7 @@ where
         K: Borrow<Q>,
         Q: Ord + ToOwned<Owned = K> + ?Sized,
     {
-        self.ptr.insert(key, entry)
+        (**self).insert(key, entry)
     }
 
     /// Write a value to a field of an entry
@@ -190,19 +198,19 @@ where
         field: &crate::tables::export::field_descriptor::FieldDescriptor,
         value: &ss_plugin_state_data,
     ) -> Result<(), anyhow::Error> {
-        self.ptr.write(entry, field, value)
+        (**self).write(entry, field, value)
     }
 
     /// Return a list of fields as a slice of raw FFI objects
     pub fn list_fields(&mut self) -> &[ss_plugin_table_fieldinfo] {
-        self.ptr.list_fields()
+        (**self).list_fields()
     }
 
     /// Return a field descriptor for a particular field
     ///
     /// The requested `field_type` must match the actual type of the field
     pub fn get_field(&self, name: &CStr, field_type: FieldTypeId) -> Option<FieldRef> {
-        self.ptr.get_field(name, field_type)
+        (**self).get_field(name, field_type)
     }
 
     /// Add a new field to the table
@@ -212,7 +220,52 @@ where
         field_type: FieldTypeId,
         read_only: bool,
     ) -> Option<FieldRef> {
-        self.ptr.add_field(name, field_type, read_only)
+        (**self).add_field(name, field_type, read_only)
+    }
+}
+
+impl<K, E> Deref for Table<K, E>
+where
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
+    E: Entry,
+    E::Metadata: TableMetadata,
+{
+    type Target = TableData<K, E>;
+    fn deref(&self) -> &TableData<K, E> {
+        // SAFETY: the pointer is valid as long as self is alive
+        unsafe { self.ptr.as_ref() }
+    }
+}
+
+impl<K, E> DerefMut for Table<K, E>
+where
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
+    E: Entry,
+    E::Metadata: TableMetadata,
+{
+    fn deref_mut(&mut self) -> &mut TableData<K, E> {
+        // SAFETY: the pointer is valid as long as self is alive and we have &mut self
+        unsafe { self.ptr.as_mut() }
+    }
+}
+
+impl<K, E> Drop for Table<K, E>
+where
+    K: Key + Ord,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
+    E: Entry,
+    E::Metadata: TableMetadata,
+{
+    fn drop(&mut self) {
+        // SAFETY: we own the allocation and it hasn't been freed
+        unsafe {
+            drop(Box::from_raw(self.ptr.as_ptr()));
+        }
     }
 }
 
@@ -225,6 +278,26 @@ where
     E::Metadata: TableMetadata + Debug,
 {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.ptr.fmt(f)
+        (**self).fmt(f)
     }
+}
+
+// SAFETY: Table has the same semantics as Box
+unsafe impl<K, E> Send for Table<K, E>
+where
+    K: Key + Ord + Send,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
+    E: Entry + Send,
+    E::Metadata: TableMetadata,
+{
+}
+unsafe impl<K, E> Sync for Table<K, E>
+where
+    K: Key + Ord + Sync,
+    K: Borrow<<K as Key>::Borrowed>,
+    <K as Key>::Borrowed: Ord + ToOwned<Owned = K>,
+    E: Entry + Sync,
+    E::Metadata: TableMetadata,
+{
 }
