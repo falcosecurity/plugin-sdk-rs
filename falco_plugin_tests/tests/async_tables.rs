@@ -27,7 +27,7 @@ struct DummyAsyncPlugin {
     task: Arc<BackgroundTask>,
     thread: Option<JoinHandle<Result<(), Error>>>,
 
-    table: Box<export::Table<u64, TableEntry>>,
+    table: export::Table<u64, TableEntry>,
 }
 
 impl Plugin for DummyAsyncPlugin {

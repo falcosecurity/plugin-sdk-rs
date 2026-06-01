@@ -12,10 +12,10 @@ use std::borrow::Borrow;
 impl TablesInput<'_> {
     /// # Export a table to the Falco plugin API
     ///
-    /// This method returns a Box, which you need to store in your plugin instance
+    /// This method returns a [`Table`], which you need to store in your plugin instance
     /// even if you don't intend to use the table yourself (the table is destroyed when
     /// going out of scope, which will lead to crashes in plugins using your table).
-    pub fn add_table<K, E>(&self, table: Table<K, E>) -> Result<Box<Table<K, E>>, anyhow::Error>
+    pub fn add_table<K, E>(&self, table: Table<K, E>) -> Result<Table<K, E>, anyhow::Error>
     where
         K: Key + Ord,
         K: Borrow<<K as Key>::Borrowed>,
@@ -27,8 +27,7 @@ impl TablesInput<'_> {
         let mut writer_vtable_ext = writer_vtable::<K, E>();
         let mut fields_vtable_ext = fields_vtable::<K, E>();
 
-        let mut table = Box::new(table);
-        let table_ptr = table.as_mut() as *mut Table<K, E>;
+        let table_ptr = Table::as_mut_ptr(&table);
 
         // Note: we lend the ss_plugin_table_input to the FFI api and do not need
         // to hold on to it (everything is copied out), but the name field is copied

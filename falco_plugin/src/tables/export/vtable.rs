@@ -1,7 +1,7 @@
 use crate::tables::export::entry::table_metadata::traits::TableMetadata;
 use crate::tables::export::entry::traits::Entry;
+use crate::tables::export::table::TableData;
 use crate::tables::export::wrappers::{fields_vtable, reader_vtable, writer_vtable};
-use crate::tables::export::Table;
 use crate::tables::Key;
 use falco_plugin_api::{
     ss_plugin_state_type, ss_plugin_table_fields_vtable, ss_plugin_table_fields_vtable_ext,
@@ -17,7 +17,7 @@ pub(crate) struct Vtable {
     fields_ext: ss_plugin_table_fields_vtable_ext,
 }
 
-impl<K, E> Table<K, E>
+impl<K, E> TableData<K, E>
 where
     K: Key + Ord,
     K: Borrow<<K as Key>::Borrowed>,
@@ -25,9 +25,15 @@ where
     E: Entry,
     E::Metadata: TableMetadata,
 {
-    #[allow(clippy::borrowed_box)]
-    pub(crate) fn get_boxed_vtable(self: &Box<Self>) -> *mut ss_plugin_table_input {
-        let table_ptr = self.as_ref() as *const Table<K, E> as *mut Table<K, E>;
+    /// Get or create the vtable for this table.
+    ///
+    /// `table_ptr` must be a raw pointer to `self` with write provenance
+    /// (e.g. from `Table::as_mut_ptr`). This is necessary because the FFI layer
+    /// will use the stored pointer for mutable access.
+    pub(crate) fn get_vtable_with_ptr(
+        &self,
+        table_ptr: *mut TableData<K, E>,
+    ) -> *mut ss_plugin_table_input {
         let mut vtable_place = self.vtable.write();
 
         if let Some(ref mut vtable) = *vtable_place {

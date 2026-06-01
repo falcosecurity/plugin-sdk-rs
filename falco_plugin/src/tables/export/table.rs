@@ -18,25 +18,14 @@ use std::collections::BTreeMap;
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
 
-/// # A table exported to other plugins
+/// The inner data storage for an exported table.
 ///
-/// An instance of this type can be exposed to other plugins via
-/// [`tables::TablesInput::add_table`](`crate::tables::TablesInput::add_table`)
-///
-/// The generic parameters are: key type and entry type. The key type is anything
-/// usable as a table key, while the entry type is a type that can be stored in the table.
-/// You can obtain such a type by `#[derive]`ing Entry on a struct describing all the table fields.
-///
-/// Supported key types include:
-/// - integer types (u8/i8, u16/i16, u32/i32, u64/i64)
-/// - [`crate::tables::import::Bool`] (an API equivalent of bool)
-/// - &CStr (spelled as just `CStr` when used as a generic argument)
-///
-/// See [`crate::tables::export`] for details.
-///
-/// The implementation is thread-safe when the `thread-safe-tables` feature is enabled.
+/// This type holds the actual table data (entries, metadata, field descriptors).
+/// Users should not interact with this type directly; use [`super::Table`] instead,
+/// which wraps `TableData` and provides the public API.
 #[must_use]
-pub struct Table<K, E>
+#[doc(hidden)]
+pub struct TableData<K, E>
 where
     K: Key + Ord,
     K: Borrow<<K as Key>::Borrowed>,
@@ -52,7 +41,7 @@ where
     pub(crate) vtable: RefCounted<Option<Box<Vtable>>>,
 }
 
-impl<K, E> Debug for Table<K, E>
+impl<K, E> Debug for TableData<K, E>
 where
     K: Key + Ord + Debug,
     K: Borrow<<K as Key>::Borrowed>,
@@ -72,7 +61,7 @@ where
 type TableMetadataType<E> = RefShared<ExtensibleEntryMetadata<<E as HasMetadata>::Metadata>>;
 pub(crate) type TableEntryType<E> = RefGuard<ExtensibleEntry<E>>;
 
-impl<K, E> Table<K, E>
+impl<K, E> TableData<K, E>
 where
     K: Key + Ord,
     K: Borrow<<K as Key>::Borrowed>,

@@ -11,7 +11,7 @@ use falco_plugin::tables::TablesInput;
 use std::ffi::CStr;
 
 struct ParseIntoTableDirectPlugin {
-    remaining_table: Box<RemainingEntryTable>,
+    remaining_table: RemainingEntryTable,
 }
 
 impl Plugin for ParseIntoTableDirectPlugin {

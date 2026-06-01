@@ -3,12 +3,12 @@ use crate::tables::export::entry::traits::Entry;
 use crate::tables::export::field_value::dynamic::DynamicFieldValue;
 use crate::tables::export::field_value::traits::FieldValue;
 use crate::tables::export::field_value::traits::{seal, StaticField};
-use crate::tables::export::table::Table;
+use crate::tables::export::table_box::Table;
 use crate::tables::{FieldTypeId, Key};
 use falco_plugin_api::ss_plugin_state_data;
 use std::borrow::Borrow;
 
-impl<K, E> seal::Sealed for Box<Table<K, E>>
+impl<K, E> seal::Sealed for Table<K, E>
 where
     K: Key + Ord,
     K: Borrow<<K as Key>::Borrowed>,
@@ -18,7 +18,7 @@ where
 {
 }
 
-impl<K, E> FieldValue for Box<Table<K, E>>
+impl<K, E> FieldValue for Table<K, E>
 where
     K: Key + Ord,
     K: Borrow<<K as Key>::Borrowed>,
@@ -34,14 +34,14 @@ where
         if type_id != FieldTypeId::Table {
             anyhow::bail!("Type mismatch, requested {:?}, got table", type_id)
         }
-        let vtable = self.get_boxed_vtable();
+        let vtable = self.get_vtable();
 
         out.table = vtable.cast();
         Ok(())
     }
 }
 
-impl<K, E> StaticField for Box<Table<K, E>>
+impl<K, E> StaticField for Table<K, E>
 where
     K: Key + Ord,
     K: Borrow<<K as Key>::Borrowed>,
@@ -53,7 +53,7 @@ where
     const READONLY: bool = true;
 }
 
-impl<K, E> TryFrom<DynamicFieldValue> for Box<Table<K, E>>
+impl<K, E> TryFrom<DynamicFieldValue> for Table<K, E>
 where
     K: Key + Ord,
     K: Borrow<<K as Key>::Borrowed>,

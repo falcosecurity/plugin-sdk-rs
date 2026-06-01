@@ -6,7 +6,7 @@
 //!
 //! Every field in the entry struct must be wrapped in [`Public`](`crate::tables::export::Public`),
 //! [`Private`](`crate::tables::export::Private`) or [`Readonly`](`crate::tables::export::Readonly`),
-//! except for nested tables. These just need to be a `Box<Table<K, E>>`, as it makes no sense
+//! except for nested tables. These just need to be a `Table<K, E>`, as it makes no sense
 //! to have a private nested table and the distinction between writable and readonly is meaningless
 //! for tables (they have no setter to replace the whole table and you can always add/remove
 //! entries from the nested table).
@@ -32,7 +32,7 @@
 //! struct MyPlugin {
 //!     // you can use methods on this instance to access fields bypassing the Falco table API
 //!     // (for performance within your own plugin)
-//!     exported_table: Box<export::Table<u64, ExportedTable>>,
+//!     exported_table: export::Table<u64, ExportedTable>,
 //! }
 //!
 //! // implement the base::Plugin trait
@@ -71,6 +71,7 @@ mod metadata;
 mod ref_shared;
 mod static_field_specialization;
 mod table;
+mod table_box;
 mod tables_input;
 mod vtable;
 mod wrappers;
@@ -78,7 +79,7 @@ mod wrappers;
 pub use field::private::Private;
 pub use field::public::Public;
 pub use field::readonly::Readonly;
-pub use table::Table;
+pub use table_box::Table;
 
 // for macro use only
 #[doc(hidden)]

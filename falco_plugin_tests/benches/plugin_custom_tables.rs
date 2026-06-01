@@ -38,7 +38,7 @@ struct ImportedCustomMetadata {
 
 struct CustomTableApi {
     #[allow(unused)]
-    exported_custom_table: Box<export::Table<i64, ExportedCustomEntry>>,
+    exported_custom_table: export::Table<i64, ExportedCustomEntry>,
     imported_custom_table: import::Table<i64, ImportedCustomEntry>,
 
     insert_val2_on_parse: bool,
@@ -123,7 +123,7 @@ static_plugin!(CUSTOM_TABLE_API = CustomTableApi);
 
 struct CustomTableDirect {
     #[allow(unused)]
-    exported_custom_table: Box<export::Table<i64, ExportedCustomEntry>>,
+    exported_custom_table: export::Table<i64, ExportedCustomEntry>,
 }
 
 impl Plugin for CustomTableDirect {
