@@ -51,7 +51,7 @@ impl EventBatch<'_> {
         self.pointers.reserve(num_events);
     }
 
-    pub(super) fn get_events(&self) -> &[*const u8] {
-        self.pointers.as_slice()
+    pub(super) fn get_events_ptr_len(&mut self) -> (*mut *const u8, usize) {
+        (self.pointers.as_mut_ptr(), self.pointers.len())
     }
 }

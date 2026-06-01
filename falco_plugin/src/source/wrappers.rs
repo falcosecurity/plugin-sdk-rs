@@ -241,9 +241,9 @@ pub unsafe extern "C" fn plugin_next_batch<T: SourcePlugin>(
         }));
         match batch_result {
             Ok(()) => {
-                let events = batch.get_events();
-                *nevts = events.len() as u32;
-                *evts = events as *const _ as *mut _;
+                let (events, events_len) = batch.get_events_ptr_len();
+                *nevts = events_len as u32;
+                *evts = events.cast();
                 ss_plugin_rc_SS_PLUGIN_SUCCESS
             }
             Err(e) => {
