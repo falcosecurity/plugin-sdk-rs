@@ -102,7 +102,7 @@ pub trait Value: TableData {
 
     /// Given a raw table, fetch the field's metadata
     ///
-    /// The only interesting implementation is for `Box<Table>`, which gets all the fields
+    /// The only interesting implementation is for `Table`, which gets all the fields
     /// of a nested table and stores it in the subtable metadata. All others are no-ops.
     ///
     /// # Safety

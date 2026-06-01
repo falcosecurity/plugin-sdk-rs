@@ -6,7 +6,7 @@ pub type RemainingEntryTable = export::Table<u64, RemainingCounter>;
 pub struct RemainingCounter {
     pub remaining: export::Public<u64>,
     pub readonly: export::Readonly<u64>,
-    pub countdown: Box<CountdownTable>,
+    pub countdown: CountdownTable,
 }
 
 pub type CountdownTable = export::Table<u64, Countdown>;

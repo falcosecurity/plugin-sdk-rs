@@ -14,7 +14,7 @@ use std::ffi::CStr;
 
 struct ParseIntoTableApiPlugin {
     #[allow(unused)]
-    remaining_table: Box<RemainingEntryTable>,
+    remaining_table: RemainingEntryTable,
     remaining_table_import: RemainingCounterImportTable,
 }
 

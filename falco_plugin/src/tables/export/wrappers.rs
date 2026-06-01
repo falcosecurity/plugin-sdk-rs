@@ -2,7 +2,7 @@ use crate::error::ffi_result::FfiResult;
 use crate::tables::export::entry::table_metadata::traits::TableMetadata;
 use crate::tables::export::entry::traits::Entry;
 use crate::tables::export::field_descriptor::FieldDescriptor;
-use crate::tables::export::table::{Table, TableEntryType};
+use crate::tables::export::table::{TableData, TableEntryType};
 use crate::tables::{FieldTypeId, Key};
 use falco_plugin_api::{
     ss_plugin_bool, ss_plugin_rc, ss_plugin_rc_SS_PLUGIN_FAILURE, ss_plugin_rc_SS_PLUGIN_SUCCESS,
@@ -25,7 +25,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return std::ptr::null_mut();
         };
         table.name().as_ptr()
@@ -42,7 +42,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return 0;
         };
         table.size() as u64
@@ -63,7 +63,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return std::ptr::null_mut();
         };
         let Some(key) = key.as_ref() else {
@@ -93,7 +93,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         let Some(entry) = (entry as *mut TableEntryType<E>).as_mut() else {
@@ -142,7 +142,7 @@ where
         return 0;
     };
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return 0;
         };
 
@@ -165,7 +165,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         table.clear();
@@ -186,7 +186,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         let Some(key) = key.as_ref() else {
@@ -212,7 +212,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return std::ptr::null_mut();
         };
 
@@ -241,7 +241,7 @@ where
     }
 
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return std::ptr::null_mut();
         };
         let Some(key) = key.as_ref() else {
@@ -272,7 +272,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         let Some(entry) = (entry as *mut TableEntryType<E>).as_mut() else {
@@ -301,7 +301,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return std::ptr::null_mut();
         };
         let fields = table.list_fields();
@@ -324,7 +324,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return std::ptr::null_mut();
         };
         let Some(data_type) = FieldTypeId::from_usize(data_type as usize) else {
@@ -356,7 +356,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut Table<K, E>).as_mut() else {
+        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
             return std::ptr::null_mut();
         };
         let Some(data_type) = FieldTypeId::from_usize(data_type as usize) else {
