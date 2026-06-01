@@ -25,7 +25,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return std::ptr::null_mut();
         };
         table.name().as_ptr()
@@ -42,7 +42,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return 0;
         };
         table.size() as u64
@@ -63,7 +63,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return std::ptr::null_mut();
         };
         let Some(key) = key.as_ref() else {
@@ -93,7 +93,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         let Some(entry) = (entry as *mut TableEntryType<E>).as_mut() else {
@@ -142,7 +142,7 @@ where
         return 0;
     };
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return 0;
         };
 
@@ -212,7 +212,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return std::ptr::null_mut();
         };
 
@@ -324,7 +324,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return std::ptr::null_mut();
         };
         let Some(data_type) = FieldTypeId::from_usize(data_type as usize) else {

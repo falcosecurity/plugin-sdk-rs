@@ -132,7 +132,7 @@ where
     ///
     /// The iteration continues until all entries are visited or the closure returns false.
     // TODO(upstream) the closure cannot store away the entry but we could use explicit docs
-    pub fn iterate_entries<F>(&mut self, func: F) -> bool
+    pub fn iterate_entries<F>(&self, func: F) -> bool
     where
         F: FnMut(&mut TableEntryType<E>) -> bool,
     {
