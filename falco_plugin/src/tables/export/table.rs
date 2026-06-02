@@ -14,6 +14,7 @@ use crate::tables::{FieldTypeId, Key};
 use crate::FailureReason;
 use falco_plugin_api::{ss_plugin_state_data, ss_plugin_table_fieldinfo};
 use std::borrow::Borrow;
+use std::cell::UnsafeCell;
 use std::collections::BTreeMap;
 use std::ffi::CStr;
 use std::fmt::{Debug, Formatter};
@@ -34,7 +35,7 @@ where
     E::Metadata: TableMetadata,
 {
     name: &'static CStr,
-    field_descriptors: Vec<ss_plugin_table_fieldinfo>,
+    field_descriptors: UnsafeCell<Vec<ss_plugin_table_fieldinfo>>,
     metadata: RefShared<ExtensibleEntryMetadata<E::Metadata>>,
     data: RefShared<BTreeMap<K, RefShared<ExtensibleEntry<E>>>>,
 
@@ -78,7 +79,7 @@ where
     ) -> Result<Self, anyhow::Error> {
         let table = Self {
             name: tag,
-            field_descriptors: vec![],
+            field_descriptors: UnsafeCell::new(vec![]),
             metadata: metadata.clone(),
             data: new_shared_ref(BTreeMap::new()),
 
@@ -92,7 +93,7 @@ where
     pub fn new(name: &'static CStr) -> Result<Self, anyhow::Error> {
         Ok(Self {
             name,
-            field_descriptors: vec![],
+            field_descriptors: UnsafeCell::new(vec![]),
             metadata: new_shared_ref(ExtensibleEntryMetadata::new()?),
             data: new_shared_ref(BTreeMap::new()),
 
@@ -161,12 +162,12 @@ where
     }
 
     /// Remove all entries from the table.
-    pub fn clear(&mut self) {
+    pub fn clear(&self) {
         self.data.write().clear()
     }
 
     /// Erase an entry by key.
-    pub fn erase<Q>(&mut self, key: &Q) -> Option<TableEntryType<E>>
+    pub fn erase<Q>(&self, key: &Q) -> Option<TableEntryType<E>>
     where
         K: Borrow<Q>,
         Q: Ord + ?Sized,
@@ -215,7 +216,7 @@ where
     }
 
     /// Attach an entry to a table key
-    pub fn insert<Q>(&mut self, key: &Q, entry: TableEntryType<E>) -> Option<TableEntryType<E>>
+    pub fn insert<Q>(&self, key: &Q, entry: TableEntryType<E>) -> Option<TableEntryType<E>>
     where
         K: Borrow<Q>,
         Q: Ord + ToOwned<Owned = K> + ?Sized,
@@ -253,10 +254,15 @@ where
     }
 
     /// Return a list of fields as a slice of raw FFI objects
-    pub fn list_fields(&mut self) -> &[ss_plugin_table_fieldinfo] {
-        self.field_descriptors.clear();
-        self.field_descriptors.extend(self.metadata.list_fields());
-        self.field_descriptors.as_slice()
+    pub fn list_fields(&self) -> &[ss_plugin_table_fieldinfo] {
+        // SAFETY: `list_fields` is never called re-entrantly; the slice is valid
+        // for the lifetime of `&self` because `field_descriptors` is owned by self.
+        unsafe {
+            let v = &mut *self.field_descriptors.get();
+            v.clear();
+            v.extend(self.metadata.list_fields());
+            std::slice::from_raw_parts(v.as_ptr(), v.len())
+        }
     }
 
     /// Return a field descriptor for a particular field
@@ -270,12 +276,14 @@ where
 
     /// Add a new field to the table
     pub fn add_field(
-        &mut self,
+        &self,
         name: &CStr,
         field_type: FieldTypeId,
         read_only: bool,
     ) -> Option<FieldRef> {
-        self.metadata.add_field(name, field_type, read_only)
+        self.metadata
+            .write_arc()
+            .add_field(name, field_type, read_only)
     }
 }
 
