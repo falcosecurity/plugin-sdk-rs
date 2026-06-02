@@ -202,7 +202,7 @@ where
     }
 
     /// Return a list of fields as a slice of raw FFI objects
-    pub fn list_fields(&mut self) -> &[ss_plugin_table_fieldinfo] {
+    pub fn list_fields(&self) -> &[ss_plugin_table_fieldinfo] {
         (**self).list_fields()
     }
 
@@ -215,7 +215,7 @@ where
 
     /// Add a new field to the table
     pub fn add_field(
-        &mut self,
+        &self,
         name: &CStr,
         field_type: FieldTypeId,
         read_only: bool,

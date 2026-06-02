@@ -165,7 +165,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         table.clear();
@@ -186,7 +186,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         let Some(key) = key.as_ref() else {
@@ -241,7 +241,7 @@ where
     }
 
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return std::ptr::null_mut();
         };
         let Some(key) = key.as_ref() else {
@@ -272,7 +272,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return ss_plugin_rc_SS_PLUGIN_FAILURE;
         };
         let Some(entry) = (entry as *mut TableEntryType<E>).as_mut() else {
@@ -301,7 +301,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return std::ptr::null_mut();
         };
         let fields = table.list_fields();
@@ -356,7 +356,7 @@ where
     E::Metadata: TableMetadata,
 {
     unsafe {
-        let Some(table) = (table as *mut TableData<K, E>).as_mut() else {
+        let Some(table) = (table as *const TableData<K, E>).as_ref() else {
             return std::ptr::null_mut();
         };
         let Some(data_type) = FieldTypeId::from_usize(data_type as usize) else {
