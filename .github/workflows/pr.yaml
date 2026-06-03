@@ -61,3 +61,18 @@ jobs:
         run: cargo clippy --all-features --all-targets
       - name: Render docs
         run: cargo doc --all-features --no-deps
+
+  miri:
+    name: Miri test
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@nightly
+      - name: Install Miri
+        run: rustup component add miri
+      - name: Build and test
+        run: cargo +nightly miri test --no-default-features --features=miri
