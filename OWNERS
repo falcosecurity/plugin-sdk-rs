@@ -1,5 +1,6 @@
 approvers:
   - gnosek
   - mrgian
-  - andreagit97
   - ekoops
+emeritus_approvers:
+  - andreaterzolo
