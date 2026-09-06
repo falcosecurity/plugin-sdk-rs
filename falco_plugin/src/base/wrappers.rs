@@ -117,7 +117,7 @@ pub unsafe extern "C" fn plugin_init<P: Plugin>(
             plugin.cast()
         }
         Err(e) => {
-            let error_str = format!("{:#}", &e);
+            let error_str = format!("{:#}", e);
             log::error!("Failed to initialize plugin: {error_str}");
             let plugin = Box::new(PluginWrapper::<P>::new_error(error_str));
             unsafe {
