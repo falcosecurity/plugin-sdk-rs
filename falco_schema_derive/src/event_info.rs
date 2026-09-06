@@ -109,8 +109,7 @@ impl EventArg {
             let num = num.base10_parse().ok()?;
             let (_, _, args) = event_info.args.as_ref()?;
             let dirfd_arg = args.iter().nth(num)?.ident();
-            let method_name =
-                Ident::new(&format!("{}_dirfd", &self.name.value()), self.name.span());
+            let method_name = Ident::new(&format!("{}_dirfd", self.name.value()), self.name.span());
 
             Some(quote!(
                 #[inline]

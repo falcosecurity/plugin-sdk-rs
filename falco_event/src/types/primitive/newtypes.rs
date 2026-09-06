@@ -273,7 +273,7 @@ impl SigSet {
 
 impl Debug for SigSet {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(fmt, "{:#2x}", self.0)?;
+        write!(fmt, "{:#4x}", self.0)?;
         if self.0 != 0 {
             let mut first = true;
             for sig in self.iter() {
